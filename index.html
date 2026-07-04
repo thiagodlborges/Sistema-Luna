@@ -36,6 +36,8 @@
     font-family:'Jost',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
     color:var(--creme);cursor:pointer;transition:background .2s}
   .btn:hover{background:var(--bordo-dark)} .btn:disabled{opacity:.6;cursor:default}
+  .btn-outline{background:none;border:1.5px solid var(--bordo);color:var(--bordo)}
+  .btn-outline:hover{background:var(--bordo);color:var(--creme)}
   .forgot{display:block;width:100%;background:none;border:none;color:var(--marrom);font-family:'Jost',sans-serif;
     font-size:.72rem;text-decoration:underline;text-align:center;margin-top:14px;cursor:pointer}
   .msg{font-size:.78rem;text-align:center;margin-top:14px;display:none}
@@ -53,6 +55,10 @@
     font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
     padding:7px 14px;border-radius:6px;cursor:pointer;transition:background .2s}
   .logout:hover{background:rgba(255,255,255,.22)}
+  .icon-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:var(--creme);
+    font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.04em;
+    padding:7px 12px;border-radius:6px;cursor:pointer;transition:background .2s}
+  .icon-btn:hover{background:rgba(255,255,255,.22)}
   main{flex:1;max-width:1040px;width:100%;margin:0 auto;padding:44px 26px}
   .hello{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--bordo-dark);margin-bottom:4px}
   .hello-sub{color:var(--text-light);font-size:.9rem;margin-bottom:32px}
@@ -67,6 +73,23 @@
   .empty{background:var(--white);border:1px dashed var(--creme-dark);border-radius:12px;padding:40px;text-align:center;color:var(--text-light)}
   .loading{text-align:center;color:var(--text-light);padding:40px;font-size:.9rem}
   footer{text-align:center;color:var(--marrom);font-size:.7rem;letter-spacing:.06em;padding:22px}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,24,16,.45);z-index:50;
+    align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.show{display:flex}
+  .modal{width:100%;max-width:420px;background:var(--white);border-radius:14px;padding:28px 26px;
+    box-shadow:0 24px 60px rgba(0,0,0,.25)}
+  .modal h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo-dark);margin-bottom:6px}
+  .modal p.sub{color:var(--text-light);font-size:.82rem;margin-bottom:18px}
+  .modal-actions{display:flex;gap:10px;margin-top:6px}
+  .modal-actions .btn, .modal-actions .btn-outline{flex:1}
+  .modal-close{background:none;border:none;color:var(--marrom);font-size:.78rem;text-decoration:underline;cursor:pointer;
+    display:block;margin:14px auto 0}
+  .result-box{background:var(--creme);border:1px dashed var(--marrom-light);border-radius:8px;padding:14px 16px;
+    margin-top:10px;font-family:'DM Mono',monospace;font-size:.95rem;text-align:center;color:var(--bordo-dark)}
+  .admin-link{background:none;border:none;color:var(--marrom-dark);font-family:'Jost',sans-serif;font-size:.78rem;
+    text-decoration:underline;cursor:pointer;display:block;margin-top:8px}
 </style>
 </head>
 <body>
@@ -80,7 +103,6 @@
     <label for="senha">Senha</label>
     <input class="inp" id="senha" type="password" autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
     <button class="btn" id="btnLogin" onclick="login()">Entrar</button>
-    <button class="forgot" onclick="esqueciSenha()">Esqueci minha senha</button>
     <div class="msg" id="loginMsg"></div>
   </div>
 </div>
@@ -90,6 +112,7 @@
     <div class="wordmark"><div class="brand">LUNA</div><div class="sub">Sistema Luna</div></div>
     <div class="userbox">
       <span class="greet" id="greet"></span>
+      <button class="icon-btn" onclick="abrirTrocarSenha()">🔑 Trocar senha</button>
       <button class="logout" onclick="logout()">Sair</button>
     </div>
   </header>
@@ -97,8 +120,47 @@
     <div class="hello" id="hello"></div>
     <div class="hello-sub" id="helloSub">Escolha um sistema para acessar.</div>
     <div id="content"><div class="loading">Carregando seus sistemas&hellip;</div></div>
+
+    <div id="adminBlock" style="display:none;margin-top:40px;padding-top:28px;border-top:1px solid var(--creme-dark)">
+      <div class="hello" style="font-size:1.4rem">Administração</div>
+      <div class="hello-sub" style="margin-bottom:18px">Redefinir a senha de qualquer usuário (sem depender de e-mail).</div>
+      <button class="btn-outline btn" style="max-width:260px" onclick="abrirResetAdmin()">🔧 Resetar senha de usuário</button>
+    </div>
   </main>
   <footer>LUNA GELATO &amp; CAFFÈ &mdash; acesso interno</footer>
+</div>
+
+<!-- MODAL: Trocar minha senha -->
+<div class="modal-overlay" id="modalTrocar">
+  <div class="modal">
+    <h3>Trocar minha senha</h3>
+    <p class="sub">Defina a nova senha que você vai usar a partir de agora.</p>
+    <label for="novaSenha1">Nova senha</label>
+    <input class="inp" id="novaSenha1" type="password" placeholder="Mínimo 6 caracteres">
+    <label for="novaSenha2">Confirmar nova senha</label>
+    <input class="inp" id="novaSenha2" type="password" placeholder="Repita a senha">
+    <div class="msg" id="trocarMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnTrocar" onclick="trocarMinhaSenha()">Salvar</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalTrocar')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL: Reset admin -->
+<div class="modal-overlay" id="modalReset">
+  <div class="modal">
+    <h3>Resetar senha de usuário</h3>
+    <p class="sub">Gera uma senha temporária na hora — sem enviar e-mail. Compartilhe com a pessoa por WhatsApp ou pessoalmente; ela pode trocar depois em "Trocar senha".</p>
+    <label for="resetEmail">E-mail do usuário</label>
+    <input class="inp" id="resetEmail" type="email" placeholder="pessoa@lunagelato.com.br">
+    <div class="msg" id="resetMsg"></div>
+    <div id="resetResultado"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnReset" onclick="resetarSenhaUsuario()">Gerar senha temporária</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalReset')">Fechar</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -107,37 +169,35 @@ const SUPABASE_URL = 'https://pbuhwpcpdcnaheaywmdv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBidWh3cGNwZGNuYWhlYXl3bWR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjU5MzksImV4cCI6MjA5MTg0MTkzOX0.Mg4PVg96ZiV3C2Rn0GLQU9c7ui_41OlU6Ldqn5jcvyY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = id => document.getElementById(id);
-function showMsg(txt, tipo){ const m=$('loginMsg'); m.textContent=txt; m.className='msg '+(tipo||''); }
+let souMaster = false;
+
+function showMsg(id, txt, tipo){ const m=$(id); m.textContent=txt; m.className='msg '+(tipo||''); }
 
 async function login(){
   const email=$('email').value.trim(), senha=$('senha').value;
   const btn=$('btnLogin');
-  if(!email||!senha){ showMsg('Preencha e-mail e senha.','err'); return; }
-  btn.disabled=true; btn.textContent='Entrando\u2026'; showMsg('','');
+  if(!email||!senha){ showMsg('loginMsg','Preencha e-mail e senha.','err'); return; }
+  btn.disabled=true; btn.textContent='Entrando\u2026'; showMsg('loginMsg','','');
   const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
   btn.disabled=false; btn.textContent='Entrar';
-  if(error){ showMsg('E-mail ou senha incorretos.','err'); return; }
+  if(error){ showMsg('loginMsg','E-mail ou senha incorretos.','err'); return; }
   entrarPortal(data.user);
-}
-
-async function esqueciSenha(){
-  const email=$('email').value.trim();
-  if(!email){ showMsg('Digite seu e-mail para receber o link de redefini\u00e7\u00e3o.','err'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
-  showMsg(error ? 'N\u00e3o foi poss\u00edvel enviar agora. Tente novamente.' : 'Enviamos um link de redefini\u00e7\u00e3o para seu e-mail.', error?'err':'ok');
 }
 
 async function entrarPortal(user){
   $('login').style.display='none';
   $('portal').style.display='flex';
   let nome = user.email;
+  souMaster = false;
   try{
-    const { data: perfil } = await sb.from('perfis').select('nome').eq('id', user.id).single();
+    const { data: perfil } = await sb.from('perfis').select('nome, tipo').eq('id', user.id).single();
     if(perfil && perfil.nome) nome = perfil.nome;
+    if(perfil && perfil.tipo === 'master') souMaster = true;
   }catch(e){}
   const primeiro = (nome||'').split(' ')[0];
   $('greet').innerHTML = 'Ol\u00e1, <b>'+nome+'</b>';
   $('hello').textContent = 'Bem-vindo, '+primeiro+'.';
+  $('adminBlock').style.display = souMaster ? 'block' : 'none';
   try{
     const { data: sistemas, error } = await sb.rpc('meus_sistemas');
     if(error) throw error;
@@ -165,6 +225,64 @@ function render(sistemas){
 }
 
 async function logout(){ await sb.auth.signOut(); window.location.reload(); }
+
+// ── Trocar minha senha ──
+function abrirTrocarSenha(){
+  $('novaSenha1').value=''; $('novaSenha2').value='';
+  showMsg('trocarMsg','','');
+  $('modalTrocar').classList.add('show');
+}
+
+function fecharModal(id){ $(id).classList.remove('show'); }
+
+async function trocarMinhaSenha(){
+  const s1 = $('novaSenha1').value, s2 = $('novaSenha2').value;
+  const btn = $('btnTrocar');
+  if(!s1 || s1.length < 6){ showMsg('trocarMsg','A senha precisa ter pelo menos 6 caracteres.','err'); return; }
+  if(s1 !== s2){ showMsg('trocarMsg','As senhas n\u00e3o coincidem.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Salvando\u2026';
+  const { error } = await sb.auth.updateUser({ password: s1 });
+  btn.disabled = false; btn.textContent = 'Salvar';
+  if(error){ showMsg('trocarMsg','N\u00e3o foi poss\u00edvel trocar agora: '+error.message,'err'); return; }
+  showMsg('trocarMsg','Senha atualizada com sucesso!','ok');
+  setTimeout(() => fecharModal('modalTrocar'), 1400);
+}
+
+// ── Reset admin (só master) ──
+function abrirResetAdmin(){
+  $('resetEmail').value=''; $('resetResultado').innerHTML='';
+  showMsg('resetMsg','','');
+  $('modalReset').classList.add('show');
+}
+
+async function resetarSenhaUsuario(){
+  const email = $('resetEmail').value.trim();
+  const btn = $('btnReset');
+  if(!email){ showMsg('resetMsg','Digite o e-mail do usu\u00e1rio.','err'); return; }
+  const { data: sessionData } = await sb.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if(!token){ showMsg('resetMsg','Sess\u00e3o expirada, recarregue a p\u00e1gina.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Gerando\u2026';
+  $('resetResultado').innerHTML = '';
+  try{
+    const r = await fetch(SUPABASE_URL + '/functions/v1/reset-senhas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ email })
+    });
+    const d = await r.json();
+    btn.disabled = false; btn.textContent = 'Gerar senha tempor\u00e1ria';
+    if(!d.ok){
+      showMsg('resetMsg', d.error === 'usuario nao encontrado' ? 'Nenhum usu\u00e1rio com esse e-mail.' : 'Erro: '+(d.error||'desconhecido'), 'err');
+      return;
+    }
+    showMsg('resetMsg','Senha tempor\u00e1ria gerada para '+d.nome+':','ok');
+    $('resetResultado').innerHTML = '<div class="result-box">'+d.senhaTemporaria+'</div>';
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Gerar senha tempor\u00e1ria';
+    showMsg('resetMsg','Erro de conex\u00e3o. Tente novamente.','err');
+  }
+}
 
 sb.auth.getSession().then(({ data }) => { if(data && data.session) entrarPortal(data.session.user); });
 $('senha').addEventListener('keydown', e => { if(e.key==='Enter') login(); });

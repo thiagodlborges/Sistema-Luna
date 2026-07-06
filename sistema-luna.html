@@ -128,8 +128,11 @@
 
     <div id="adminBlock" style="display:none;margin-top:40px;padding-top:28px;border-top:1px solid var(--creme-dark);width:100%">
       <div class="hello" style="font-size:1.4rem">Administração</div>
-      <div class="hello-sub" style="margin-bottom:18px">Redefinir a senha de qualquer usuário (sem depender de e-mail).</div>
-      <button class="btn-outline btn" style="max-width:260px" onclick="abrirResetAdmin()">🔧 Resetar senha de usuário</button>
+      <div class="hello-sub" style="margin-bottom:18px">Gerencie usuários, acessos e senhas sem precisar pedir ajuda.</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn-outline btn" style="max-width:260px" onclick="abrirGerenciarUsuarios()">👥 Gerenciar usuários e acessos</button>
+        <button class="btn-outline btn" style="max-width:260px" onclick="abrirResetAdmin()">🔧 Resetar senha de usuário</button>
+      </div>
     </div>
   </main>
   <footer>LUNA GELATO &amp; CAFFÈ &mdash; acesso interno</footer>
@@ -165,6 +168,84 @@
       <button class="btn" id="btnReset" onclick="resetarSenhaUsuario()">Gerar senha temporária</button>
     </div>
     <button class="modal-close" onclick="fecharModal('modalReset')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL: Gerenciar usuários e acessos -->
+<div class="modal-overlay" id="modalUsuarios">
+  <div class="modal" style="max-width:960px;width:96%;max-height:88vh;display:flex;flex-direction:column">
+    <h3>Usuários e acessos</h3>
+    <p class="sub">Marque ou desmarque os sistemas que cada pessoa pode acessar. As mudanças salvam na hora.</p>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <input class="inp" id="filtroUsuarios" placeholder="Buscar por nome ou e-mail..." style="margin-bottom:0;max-width:280px" oninput="renderTabelaUsuarios()">
+      <button class="btn" style="width:auto;padding:10px 18px" onclick="abrirNovoUsuario()">+ Novo usuário</button>
+    </div>
+
+    <div id="usuariosMsg" class="msg"></div>
+
+    <div style="overflow:auto;border:1px solid var(--creme-dark);border-radius:8px;flex:1">
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem" id="tabelaUsuarios">
+        <thead>
+          <tr style="background:var(--creme);position:sticky;top:0">
+            <th style="text-align:left;padding:10px 12px;white-space:nowrap">Nome</th>
+            <th style="text-align:left;padding:10px 12px;white-space:nowrap">Tipo</th>
+            <th style="text-align:left;padding:10px 12px;white-space:nowrap">Loja(s)</th>
+            <th id="theadSistemas" style="text-align:left;padding:10px 12px"></th>
+            <th style="padding:10px 12px"></th>
+          </tr>
+        </thead>
+        <tbody id="corpoTabelaUsuarios">
+          <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="modal-close" onclick="fecharModal('modalUsuarios')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL: Novo usuário -->
+<div class="modal-overlay" id="modalNovoUsuario">
+  <div class="modal">
+    <h3>Novo usuário</h3>
+    <p class="sub">Cria o login e já mostra uma senha temporária para você repassar.</p>
+    <label for="novoNome">Nome</label>
+    <input class="inp" id="novoNome" placeholder="Nome completo">
+    <label for="novoEmail">E-mail</label>
+    <input class="inp" id="novoEmail" type="email" placeholder="pessoa@lunagelato.com.br">
+    <label for="novoTipo">Tipo de acesso</label>
+    <select class="inp" id="novoTipo" onchange="onNovoTipoChange()">
+      <option value="loja">Loja</option>
+      <option value="fabrica">Fábrica</option>
+      <option value="master_loja">Master de loja (gerente)</option>
+      <option value="externo">Externo</option>
+      <option value="master">Master (acesso total)</option>
+    </select>
+    <div id="novoLojaWrap">
+      <label for="novoLoja">Loja (opcional)</label>
+      <input class="inp" id="novoLoja" placeholder="Ex: Shopping Itaquera">
+    </div>
+    <div class="msg" id="novoUsuarioMsg"></div>
+    <div id="novoUsuarioResultado"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnNovoUsuario" onclick="criarUsuario()">Criar usuário</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalNovoUsuario')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL: Editar lojas -->
+<div class="modal-overlay" id="modalLojas">
+  <div class="modal">
+    <h3>Loja(s) de <span id="lojasNomeUsuario"></span></h3>
+    <p class="sub">Marque uma ou mais lojas. Se marcar mais de uma, a pessoa poderá escolher entre elas ao fazer um pedido.</p>
+    <div id="lojasCheckboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:280px;overflow:auto;margin-bottom:16px"></div>
+    <div class="msg" id="lojasMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnSalvarLojas" onclick="salvarLojas()">Salvar</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalLojas')">Cancelar</button>
   </div>
 </div>
 
@@ -297,6 +378,171 @@ async function resetarSenhaUsuario(){
   }catch(e){
     btn.disabled = false; btn.textContent = 'Gerar senha tempor\u00e1ria';
     showMsg('resetMsg','Erro de conex\u00e3o. Tente novamente.','err');
+  }
+}
+
+// ── Gerenciar usuários e acessos (só master) ──
+let usuariosCache = { perfis: [], acessos: [], sistemas: [] };
+
+async function chamarAdminUsuarios(action, payload={}){
+  const { data: sessionData } = await sb.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if(!token) throw new Error('Sess\u00e3o expirada, recarregue a p\u00e1gina.');
+  const r = await fetch(SUPABASE_URL + '/functions/v1/admin-usuarios', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ action, ...payload })
+  });
+  return r.json();
+}
+
+async function abrirGerenciarUsuarios(){
+  $('modalUsuarios').classList.add('show');
+  $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>';
+  await carregarUsuarios();
+}
+
+async function carregarUsuarios(){
+  try{
+    const d = await chamarAdminUsuarios('listar');
+    if(!d.ok){ showMsg('usuariosMsg', 'Erro: '+(d.error||'desconhecido'), 'err'); return; }
+    usuariosCache = { perfis: d.perfis, acessos: d.acessos, sistemas: d.sistemas };
+    renderTabelaUsuarios();
+  }catch(e){
+    showMsg('usuariosMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+const LOJAS_DISPONIVEIS = ['Esplanada','Cianê','Tucuruvi','Indaiatuba','Jundiaí','Praça da Moça - Diadema','Buriti Mogi Guaçu','SP Market','Iguatemi Campinas','Shopping Itaquera','Atrium'];
+
+function renderTabelaUsuarios(){
+  const filtro = ($('filtroUsuarios').value || '').toLowerCase().trim();
+  const { perfis, acessos, sistemas } = usuariosCache;
+
+  $('theadSistemas').innerHTML = sistemas.map(s => '<span style="display:inline-block;min-width:70px;text-align:center;font-size:.68rem">'+s.nome+'</span>').join('');
+
+  const acessoSet = new Set(acessos.map(a => a.perfil_id+'|'+a.sistema_slug));
+  const lista = perfis.filter(p =>
+    !filtro || (p.nome||'').toLowerCase().includes(filtro) || (p.email||'').toLowerCase().includes(filtro)
+  );
+
+  if(!lista.length){
+    $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-light)">Nenhum usu\u00e1rio encontrado.</td></tr>';
+    return;
+  }
+
+  $('corpoTabelaUsuarios').innerHTML = lista.map(p => {
+    const checks = sistemas.map(s => {
+      const marcado = acessoSet.has(p.id+'|'+s.slug);
+      const disabled = p.tipo === 'master' ? 'disabled title="Master j\u00e1 tem acesso a tudo"' : '';
+      return '<span style="display:inline-block;min-width:70px;text-align:center">'+
+        '<input type="checkbox" '+(marcado||p.tipo==='master' ? 'checked' : '')+' '+disabled+
+        ' onchange="toggleAcesso(\''+p.id+'\',\''+s.slug+'\',this.checked)" style="width:16px;height:16px;cursor:pointer">'+
+      '</span>';
+    }).join('');
+    const podeTerLoja = p.tipo === 'loja' || p.tipo === 'master_loja';
+    const lojasTexto = p.loja ? p.loja : (p.lojas && p.lojas.length ? p.lojas.join(' + ') : '\u2014');
+    const celulaLoja = podeTerLoja
+      ? '<button onclick=\'abrirEditarLojas('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.loja)+','+JSON.stringify(p.lojas)+')\' style="background:none;border:none;color:var(--bordo);text-decoration:underline;cursor:pointer;font-size:.78rem;text-align:left;padding:0">'+lojasTexto+'</button>'
+      : '<span style="color:var(--text-light)">\u2014</span>';
+    return '<tr style="border-top:1px solid var(--creme-dark)">'+
+      '<td style="padding:10px 12px"><div style="font-weight:500">'+p.nome+'</div><div style="color:var(--text-light);font-size:.72rem">'+p.email+'</div></td>'+
+      '<td style="padding:10px 12px;white-space:nowrap">'+p.tipo+'</td>'+
+      '<td style="padding:10px 12px;max-width:160px">'+celulaLoja+'</td>'+
+      '<td style="padding:10px 12px">'+checks+'</td>'+
+      '<td style="padding:10px 12px;white-space:nowrap"><button onclick="excluirUsuario(\''+p.id+'\',\''+p.nome.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem" title="Excluir usu\u00e1rio">\uD83D\uDDD1\uFE0F</button></td>'+
+    '</tr>';
+  }).join('');
+}
+
+let lojasEditandoId = null;
+
+function abrirEditarLojas(perfil_id, nome, loja, lojas){
+  lojasEditandoId = perfil_id;
+  $('lojasNomeUsuario').textContent = nome;
+  const atuais = new Set(loja ? [loja] : (lojas || []));
+  $('lojasCheckboxes').innerHTML = LOJAS_DISPONIVEIS.map(l =>
+    '<label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer">'+
+      '<input type="checkbox" value="'+l+'" '+(atuais.has(l) ? 'checked' : '')+' style="width:15px;height:15px">'+l+
+    '</label>'
+  ).join('');
+  showMsg('lojasMsg','','');
+  $('modalLojas').classList.add('show');
+}
+
+async function salvarLojas(){
+  const marcadas = Array.from($('lojasCheckboxes').querySelectorAll('input:checked')).map(i => i.value);
+  const btn = $('btnSalvarLojas');
+  btn.disabled = true; btn.textContent = 'Salvando\u2026';
+  try{
+    const d = await chamarAdminUsuarios('atualizar_lojas', { perfil_id: lojasEditandoId, lojas: marcadas });
+    btn.disabled = false; btn.textContent = 'Salvar';
+    if(!d.ok){ showMsg('lojasMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
+    showMsg('lojasMsg','Salvo!','ok');
+    await carregarUsuarios();
+    setTimeout(() => fecharModal('modalLojas'), 700);
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Salvar';
+    showMsg('lojasMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+async function toggleAcesso(perfil_id, sistema_slug, marcado){
+  showMsg('usuariosMsg', 'Salvando...', 'ok');
+  try{
+    const d = await chamarAdminUsuarios(marcado ? 'conceder_acesso' : 'revogar_acesso', { perfil_id, sistema_slug });
+    if(!d.ok){ showMsg('usuariosMsg', 'Erro: '+(d.error||'desconhecido'), 'err'); await carregarUsuarios(); return; }
+    if(marcado) usuariosCache.acessos.push({ perfil_id, sistema_slug });
+    else usuariosCache.acessos = usuariosCache.acessos.filter(a => !(a.perfil_id===perfil_id && a.sistema_slug===sistema_slug));
+    showMsg('usuariosMsg', 'Acesso atualizado.', 'ok');
+  }catch(e){
+    showMsg('usuariosMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+async function excluirUsuario(perfil_id, nome){
+  if(!confirm('Excluir o usu\u00e1rio "'+nome+'"? Essa a\u00e7\u00e3o \u00e9 permanente e remove todos os acessos dele.')) return;
+  showMsg('usuariosMsg', 'Excluindo...', 'ok');
+  try{
+    const d = await chamarAdminUsuarios('excluir_usuario', { perfil_id });
+    if(!d.ok){ showMsg('usuariosMsg', 'Erro: '+(d.error||'desconhecido'), 'err'); return; }
+    showMsg('usuariosMsg', 'Usu\u00e1rio exclu\u00eddo.', 'ok');
+    await carregarUsuarios();
+  }catch(e){
+    showMsg('usuariosMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+function onNovoTipoChange(){
+  const tipo = $('novoTipo').value;
+  $('novoLojaWrap').style.display = (tipo === 'loja' || tipo === 'master_loja') ? 'block' : 'none';
+}
+
+function abrirNovoUsuario(){
+  $('novoNome').value=''; $('novoEmail').value=''; $('novoTipo').value='loja'; $('novoLoja').value='';
+  onNovoTipoChange();
+  showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
+  $('modalNovoUsuario').classList.add('show');
+}
+
+async function criarUsuario(){
+  const nome = $('novoNome').value.trim();
+  const email = $('novoEmail').value.trim();
+  const tipo = $('novoTipo').value;
+  const loja = $('novoLoja').value.trim();
+  const btn = $('btnNovoUsuario');
+  if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Criando\u2026';
+  try{
+    const d = await chamarAdminUsuarios('criar_usuario', { nome, email, tipo, loja });
+    btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';
+    if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
+    showMsg('novoUsuarioMsg','Usu\u00e1rio criado! Senha tempor\u00e1ria:','ok');
+    $('novoUsuarioResultado').innerHTML = '<div class="result-box">'+d.senhaTemporaria+'</div>';
+    await carregarUsuarios();
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';
+    showMsg('novoUsuarioMsg', e.message || 'Erro de conex\u00e3o.', 'err');
   }
 }
 

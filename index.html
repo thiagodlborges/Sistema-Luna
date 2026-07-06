@@ -187,16 +187,15 @@
     <div style="overflow:auto;border:1px solid var(--creme-dark);border-radius:8px;flex:1">
       <table style="width:100%;border-collapse:collapse;font-size:.8rem" id="tabelaUsuarios">
         <thead>
-          <tr style="background:var(--creme);position:sticky;top:0">
+          <tr style="background:var(--creme);position:sticky;top:0" id="linhaCabecalhoUsuarios">
             <th style="text-align:left;padding:10px 12px;white-space:nowrap">Nome</th>
             <th style="text-align:left;padding:10px 12px;white-space:nowrap">Tipo</th>
             <th style="text-align:left;padding:10px 12px;white-space:nowrap">Loja(s)</th>
-            <th id="theadSistemas" style="text-align:left;padding:10px 12px"></th>
-            <th style="padding:10px 12px"></th>
+            <th style="padding:10px 12px" id="thExcluir"></th>
           </tr>
         </thead>
         <tbody id="corpoTabelaUsuarios">
-          <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>
+          <tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -384,7 +383,7 @@ async function resetarSenhaUsuario(){
 // ── Gerenciar usuários e acessos (só master) ──
 let usuariosCache = { perfis: [], acessos: [], sistemas: [] };
 
-async function chamarAdminUsuarios(action, payload={}){
+async function chamarAdminUsuarios(action, payload={}, tentouRenovar=false){
   const { data: sessionData } = await sb.auth.getSession();
   const token = sessionData?.session?.access_token;
   if(!token) throw new Error('Sess\u00e3o expirada, recarregue a p\u00e1gina.');
@@ -393,12 +392,17 @@ async function chamarAdminUsuarios(action, payload={}){
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
     body: JSON.stringify({ action, ...payload })
   });
+  // Se o token expirou no meio do uso, renova a sess\u00e3o e tenta mais uma vez
+  if (r.status === 401 && !tentouRenovar) {
+    const { error: refreshErr } = await sb.auth.refreshSession();
+    if (!refreshErr) return chamarAdminUsuarios(action, payload, true);
+  }
   return r.json();
 }
 
 async function abrirGerenciarUsuarios(){
   $('modalUsuarios').classList.add('show');
-  $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>';
+  $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>';
   await carregarUsuarios();
 }
 
@@ -419,7 +423,12 @@ function renderTabelaUsuarios(){
   const filtro = ($('filtroUsuarios').value || '').toLowerCase().trim();
   const { perfis, acessos, sistemas } = usuariosCache;
 
-  $('theadSistemas').innerHTML = sistemas.map(s => '<span style="display:inline-block;min-width:70px;text-align:center;font-size:.68rem">'+s.nome+'</span>').join('');
+  // Cabeçalho: um <th> de verdade por sistema (evita texto/checkbox desalinhados)
+  document.querySelectorAll('#linhaCabecalhoUsuarios .th-sistema').forEach(el => el.remove());
+  const thsSistemas = sistemas.map(s =>
+    '<th class="th-sistema" style="text-align:center;padding:8px 6px;width:82px;font-size:.66rem;font-weight:600;line-height:1.2">'+s.nome+'</th>'
+  ).join('');
+  $('thExcluir').insertAdjacentHTML('beforebegin', thsSistemas);
 
   const acessoSet = new Set(acessos.map(a => a.perfil_id+'|'+a.sistema_slug));
   const lista = perfis.filter(p =>
@@ -427,7 +436,7 @@ function renderTabelaUsuarios(){
   );
 
   if(!lista.length){
-    $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-light)">Nenhum usu\u00e1rio encontrado.</td></tr>';
+    $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="'+(4+sistemas.length)+'" style="padding:20px;text-align:center;color:var(--text-light)">Nenhum usu\u00e1rio encontrado.</td></tr>';
     return;
   }
 
@@ -435,10 +444,10 @@ function renderTabelaUsuarios(){
     const checks = sistemas.map(s => {
       const marcado = acessoSet.has(p.id+'|'+s.slug);
       const disabled = p.tipo === 'master' ? 'disabled title="Master j\u00e1 tem acesso a tudo"' : '';
-      return '<span style="display:inline-block;min-width:70px;text-align:center">'+
+      return '<td style="padding:8px 6px;text-align:center;width:82px">'+
         '<input type="checkbox" '+(marcado||p.tipo==='master' ? 'checked' : '')+' '+disabled+
         ' onchange="toggleAcesso(\''+p.id+'\',\''+s.slug+'\',this.checked)" style="width:16px;height:16px;cursor:pointer">'+
-      '</span>';
+      '</td>';
     }).join('');
     const podeTerLoja = p.tipo === 'loja' || p.tipo === 'master_loja';
     const lojasTexto = p.loja ? p.loja : (p.lojas && p.lojas.length ? p.lojas.join(' + ') : '\u2014');
@@ -446,10 +455,10 @@ function renderTabelaUsuarios(){
       ? '<button onclick=\'abrirEditarLojas('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.loja)+','+JSON.stringify(p.lojas)+')\' style="background:none;border:none;color:var(--bordo);text-decoration:underline;cursor:pointer;font-size:.78rem;text-align:left;padding:0">'+lojasTexto+'</button>'
       : '<span style="color:var(--text-light)">\u2014</span>';
     return '<tr style="border-top:1px solid var(--creme-dark)">'+
-      '<td style="padding:10px 12px"><div style="font-weight:500">'+p.nome+'</div><div style="color:var(--text-light);font-size:.72rem">'+p.email+'</div></td>'+
+      '<td style="padding:10px 12px;white-space:nowrap"><div style="font-weight:500">'+p.nome+'</div><div style="color:var(--text-light);font-size:.72rem">'+p.email+'</div></td>'+
       '<td style="padding:10px 12px;white-space:nowrap">'+p.tipo+'</td>'+
       '<td style="padding:10px 12px;max-width:160px">'+celulaLoja+'</td>'+
-      '<td style="padding:10px 12px">'+checks+'</td>'+
+      checks+
       '<td style="padding:10px 12px;white-space:nowrap"><button onclick="excluirUsuario(\''+p.id+'\',\''+p.nome.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem" title="Excluir usu\u00e1rio">\uD83D\uDDD1\uFE0F</button></td>'+
     '</tr>';
   }).join('');

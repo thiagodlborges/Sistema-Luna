@@ -207,8 +207,8 @@
 <!-- MODAL: Novo usuário -->
 <div class="modal-overlay" id="modalNovoUsuario">
   <div class="modal">
-    <h3>Novo usuário</h3>
-    <p class="sub">Cria o login e já mostra uma senha temporária para você repassar.</p>
+    <h3 id="tituloNovoUsuario">Novo usuário</h3>
+    <p class="sub" id="subNovoUsuario">Cria o login e já mostra uma senha temporária para você repassar.</p>
     <label for="novoNome">Nome</label>
     <input class="inp" id="novoNome" placeholder="Nome completo">
     <label for="novoEmail">E-mail</label>
@@ -228,7 +228,7 @@
     <div class="msg" id="novoUsuarioMsg"></div>
     <div id="novoUsuarioResultado"></div>
     <div class="modal-actions">
-      <button class="btn" id="btnNovoUsuario" onclick="criarUsuario()">Criar usuário</button>
+      <button class="btn" id="btnNovoUsuario" onclick="salvarUsuario()">Criar usuário</button>
     </div>
     <button class="modal-close" onclick="fecharModal('modalNovoUsuario')">Cancelar</button>
   </div>
@@ -459,7 +459,10 @@ function renderTabelaUsuarios(){
       '<td style="padding:10px 12px;white-space:nowrap">'+p.tipo+'</td>'+
       '<td style="padding:10px 12px;max-width:160px">'+celulaLoja+'</td>'+
       checks+
-      '<td style="padding:10px 12px;white-space:nowrap"><button onclick="excluirUsuario(\''+p.id+'\',\''+p.nome.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem" title="Excluir usu\u00e1rio">\uD83D\uDDD1\uFE0F</button></td>'+
+      '<td style="padding:10px 12px;white-space:nowrap">'+
+        '<button onclick=\'abrirEditarUsuario('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.email)+','+JSON.stringify(p.tipo)+')\' style="background:none;border:none;color:var(--marrom-dark);cursor:pointer;font-size:.85rem;margin-right:8px" title="Editar usu\u00e1rio">\u270f\ufe0f</button>'+
+        '<button onclick="excluirUsuario(\''+p.id+'\',\''+p.nome.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem" title="Excluir usu\u00e1rio">\uD83D\uDDD1\uFE0F</button>'+
+      '</td>'+
     '</tr>';
   }).join('');
 }
@@ -527,11 +530,54 @@ function onNovoTipoChange(){
   $('novoLojaWrap').style.display = (tipo === 'loja' || tipo === 'master_loja') ? 'block' : 'none';
 }
 
+let usuarioEditandoId = null;
+
 function abrirNovoUsuario(){
+  usuarioEditandoId = null;
+  $('tituloNovoUsuario').textContent = 'Novo usuário';
+  $('subNovoUsuario').textContent = 'Cria o login e já mostra uma senha temporária para você repassar.';
+  $('btnNovoUsuario').textContent = 'Criar usuário';
+  $('novoLojaWrap').style.display = '';
   $('novoNome').value=''; $('novoEmail').value=''; $('novoTipo').value='loja'; $('novoLoja').value='';
   onNovoTipoChange();
   showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
   $('modalNovoUsuario').classList.add('show');
+}
+
+function abrirEditarUsuario(perfil_id, nome, email, tipo){
+  usuarioEditandoId = perfil_id;
+  $('tituloNovoUsuario').textContent = 'Editar usuário';
+  $('subNovoUsuario').textContent = 'Corrige nome, e-mail ou tipo de acesso. Loja(s) e senha se editam nos botões próprios da tabela.';
+  $('btnNovoUsuario').textContent = 'Salvar alterações';
+  $('novoLojaWrap').style.display = 'none';
+  $('novoNome').value = nome; $('novoEmail').value = email; $('novoTipo').value = tipo;
+  showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
+  $('modalNovoUsuario').classList.add('show');
+}
+
+async function salvarUsuario(){
+  if (usuarioEditandoId) return editarUsuario();
+  return criarUsuario();
+}
+
+async function editarUsuario(){
+  const nome = $('novoNome').value.trim();
+  const email = $('novoEmail').value.trim();
+  const tipo = $('novoTipo').value;
+  const btn = $('btnNovoUsuario');
+  if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Salvando\u2026';
+  try{
+    const d = await chamarAdminUsuarios('editar_usuario', { perfil_id: usuarioEditandoId, nome, email, tipo });
+    btn.disabled = false; btn.textContent = 'Salvar altera\u00e7\u00f5es';
+    if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
+    showMsg('novoUsuarioMsg','Salvo!','ok');
+    await carregarUsuarios();
+    setTimeout(() => fecharModal('modalNovoUsuario'), 700);
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Salvar altera\u00e7\u00f5es';
+    showMsg('novoUsuarioMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
 }
 
 async function criarUsuario(){

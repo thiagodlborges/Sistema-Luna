@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Luna — Controle de Uniformes</title>
+<title>Sistema Luna</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -14,163 +14,237 @@
     --text:#2C1810; --text-light:#6B4F3A; --white:#FDFAF6;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Jost',sans-serif;background:var(--creme);color:var(--text);min-height:100vh}
-  a{color:inherit}
+  body{font-family:'Jost',sans-serif;color:var(--text);background:var(--creme);min-height:100vh}
 
-  #carregandoOverlay{position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#4A1220 0%,#2C0A14 60%,#1A0008 100%);display:flex;align-items:center;justify-content:center;color:#C4A882;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase}
+  .wordmark{line-height:1}
+  .wordmark .brand{font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:.18em;color:var(--bordo)}
+  .wordmark .sub{font-family:'Jost',sans-serif;font-weight:400;letter-spacing:.32em;font-size:.52em;color:var(--marrom);text-transform:uppercase;margin-top:.15em}
 
-  #appRoot{display:none}
-  header{background:var(--bordo);color:var(--creme);padding:14px 26px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;box-shadow:0 2px 14px rgba(74,18,32,.25)}
-  .brand{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.4rem}
-  .brand-sub{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--marrom-light);margin-top:-2px}
-  header .spacer{flex:1}
-  header select{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:var(--creme);padding:8px 12px;border-radius:6px;font-family:'Jost',sans-serif;font-size:.82rem}
-  header select option{color:var(--text)}
-  .hbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:var(--creme);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:.78rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
-  .hbtn:hover{background:rgba(255,255,255,.22)}
-
-  nav.tabs{display:flex;gap:2px;background:var(--white);border-bottom:1px solid var(--creme-dark);padding:0 26px;overflow-x:auto}
-  .tab{padding:14px 18px;font-size:.82rem;font-weight:500;color:var(--text-light);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
-  .tab.active{color:var(--bordo);border-bottom-color:var(--bordo);font-weight:600}
-
-  main{max-width:1100px;margin:0 auto;padding:28px 26px 60px}
-  .card{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:22px;margin-bottom:18px}
-  .card h2{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo-dark);margin-bottom:14px}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
-  .field{display:flex;flex-direction:column;gap:4px}
-  .field label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:500}
-  .inp,select.inp,textarea.inp{padding:9px 12px;border:1.5px solid var(--creme-dark);border-radius:7px;font-family:'Jost',sans-serif;font-size:.85rem;color:var(--text);background:var(--white)}
+  /* LOGIN */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(120% 120% at 50% 0%, #fff8ec 0%, var(--creme) 55%, var(--creme-dark) 100%)}
+  .card{width:100%;max-width:380px;background:var(--white);border:1px solid var(--creme-dark);
+    border-radius:16px;box-shadow:0 18px 50px rgba(74,18,32,.10);padding:38px 30px}
+  .card .wordmark{text-align:center;margin-bottom:6px}
+  .card .wordmark .brand{font-size:2.5rem}
+  .login-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--bordo-dark);text-align:center;margin-bottom:26px}
+  label{display:block;font-size:.72rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:6px}
+  .inp{width:100%;padding:12px 14px;border:1.5px solid var(--creme-dark);border-radius:8px;
+    font-family:'Jost',sans-serif;font-size:.93rem;color:var(--text);background:var(--white);transition:border-color .2s;margin-bottom:16px}
   .inp:focus{outline:none;border-color:var(--marrom)}
-  .btn{background:var(--bordo);color:var(--creme);border:none;padding:10px 18px;border-radius:7px;font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:background .15s}
-  .btn:hover{background:var(--bordo-dark)}
-  .btn:disabled{opacity:.5;cursor:default}
+  .btn{width:100%;padding:13px;background:var(--bordo);border:none;border-radius:8px;
+    font-family:'Jost',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--creme);cursor:pointer;transition:background .2s}
+  .btn:hover{background:var(--bordo-dark)} .btn:disabled{opacity:.6;cursor:default}
   .btn-outline{background:none;border:1.5px solid var(--bordo);color:var(--bordo)}
   .btn-outline:hover{background:var(--bordo);color:var(--creme)}
-  .btn-danger{background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem}
-  .btn-sm{padding:6px 12px;font-size:.72rem}
+  .forgot{display:block;width:100%;background:none;border:none;color:var(--marrom);font-family:'Jost',sans-serif;
+    font-size:.72rem;text-decoration:underline;text-align:center;margin-top:14px;cursor:pointer}
+  .msg{font-size:.78rem;text-align:center;margin-top:14px;display:none}
+  .msg.err{color:#B43C3C;display:block} .msg.ok{color:var(--marrom-dark);display:block}
 
-  table{width:100%;border-collapse:collapse;font-size:.82rem}
-  th{text-align:left;padding:9px 10px;background:var(--creme);color:var(--text-light);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em}
-  td{padding:9px 10px;border-top:1px solid var(--creme-dark)}
-  tr.inativo td{color:var(--text-light);opacity:.6}
-  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:600}
-  .badge-ativo{background:#E8F8F0;color:#27AE60}
-  .badge-inativo{background:#FDEDEC;color:#B43C3C}
-  .badge-pend{background:#FEF3E2;color:#E67E22}
+  /* PORTAL */
+  #portal{display:none;min-height:100vh;flex-direction:column}
+  header{background:var(--bordo);color:var(--creme);padding:16px 26px;display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 2px 14px rgba(74,18,32,.25)}
+  header .wordmark .brand{font-size:1.5rem;color:var(--creme)}
+  header .wordmark .sub{color:var(--marrom-light)}
+  .userbox{display:flex;align-items:center;gap:16px;font-size:.85rem}
+  .userbox .greet b{font-weight:500}
+  .logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:var(--creme);
+    font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+    padding:7px 14px;border-radius:6px;cursor:pointer;transition:background .2s}
+  .logout:hover{background:rgba(255,255,255,.22)}
+  .icon-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:var(--creme);
+    font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.04em;
+    padding:7px 12px;border-radius:6px;cursor:pointer;transition:background .2s}
+  .icon-btn:hover{background:rgba(255,255,255,.22)}
+  main{flex:1;max-width:1160px;width:100%;margin:0 auto;padding:56px 26px 64px;display:flex;flex-direction:column;align-items:center}
+  .hello{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--bordo-dark);margin-bottom:4px;width:100%}
+  .hello-sub{color:var(--text-light);font-size:.9rem;margin-bottom:32px;width:100%}
+  .grid{display:flex;flex-wrap:wrap;justify-content:center;gap:26px;width:100%;margin-top:8px}
+  .sys{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;
+    background:var(--white);border:1px solid var(--creme-dark);border-radius:16px;
+    padding:36px 28px;cursor:pointer;text-decoration:none;color:inherit;width:220px;
+    transition:transform .18s, box-shadow .18s, border-color .18s}
+  .sys:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(74,18,32,.14);border-color:var(--marrom-light)}
+  .sys .ic-badge{width:68px;height:68px;border-radius:50%;background:var(--bordo);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .18s}
+  .sys:hover .ic-badge{background:var(--bordo-dark)}
+  .sys .ic-badge svg{width:32px;height:32px;color:var(--creme)}
+  .sys .nm{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo-dark);font-weight:600;line-height:1.25}
+  .sys .go{color:var(--marrom-light);font-size:1rem}
+  .empty{background:var(--white);border:1px dashed var(--creme-dark);border-radius:12px;padding:40px;text-align:center;color:var(--text-light);width:100%}
+  .loading{text-align:center;color:var(--text-light);padding:40px;font-size:.9rem;width:100%}
+  #content{width:100%}
+  footer{text-align:center;color:var(--marrom);font-size:.7rem;letter-spacing:.06em;padding:22px}
 
-  .empty{text-align:center;padding:40px;color:var(--text-light);font-size:.85rem}
-  .loading{text-align:center;padding:30px;color:var(--text-light)}
-
-  .item-linha{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-  .item-linha select{flex:2}
-  .item-linha input{flex:1}
-
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,24,16,.5);z-index:500;align-items:center;justify-content:center;padding:20px}
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,24,16,.45);z-index:50;
+    align-items:center;justify-content:center;padding:20px}
   .modal-overlay.show{display:flex}
-  .modal{width:100%;max-width:480px;max-height:88vh;overflow:auto;background:var(--white);border-radius:14px;padding:26px}
-  .modal h3{font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--bordo-dark);margin-bottom:14px}
-  .modal-actions{display:flex;gap:10px;margin-top:16px}
-  .modal-close{background:none;border:none;color:var(--marrom-dark);text-decoration:underline;cursor:pointer;font-size:.78rem;display:block;margin:14px auto 0}
-  .msg{font-size:.78rem;margin-top:8px;display:none}
-  .msg.show{display:block}
-  .msg.err{color:#B43C3C}
-  .msg.ok{color:#27AE60}
-
-  .chip-tipo{display:inline-flex;border-radius:8px;overflow:hidden;border:1px solid var(--creme-dark)}
-  .chip-tipo button{padding:8px 16px;border:none;background:var(--white);font-size:.75rem;cursor:pointer;color:var(--text-light)}
-  .chip-tipo button.active{background:var(--bordo);color:var(--creme)}
+  .modal{width:100%;max-width:420px;background:var(--white);border-radius:14px;padding:28px 26px;
+    box-shadow:0 24px 60px rgba(0,0,0,.25)}
+  .modal h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo-dark);margin-bottom:6px}
+  .modal p.sub{color:var(--text-light);font-size:.82rem;margin-bottom:18px}
+  .modal-actions{display:flex;gap:10px;margin-top:6px}
+  .modal-actions .btn, .modal-actions .btn-outline{flex:1}
+  .modal-close{background:none;border:none;color:var(--marrom);font-size:.78rem;text-decoration:underline;cursor:pointer;
+    display:block;margin:14px auto 0}
+  .result-box{background:var(--creme);border:1px dashed var(--marrom-light);border-radius:8px;padding:14px 16px;
+    margin-top:10px;font-family:'DM Mono',monospace;font-size:.95rem;text-align:center;color:var(--bordo-dark)}
+  .admin-link{background:none;border:none;color:var(--marrom-dark);font-family:'Jost',sans-serif;font-size:.78rem;
+    text-decoration:underline;cursor:pointer;display:block;margin-top:8px}
 </style>
 </head>
 <body>
 
-<div id="carregandoOverlay">Carregando…</div>
-
-<div id="appRoot">
-<header>
-  <div>
-    <div class="brand">LUNA <span style="font-size:.7em;font-weight:400">Uniformes</span></div>
-    <div class="brand-sub">Controle de Entrega e Devolução</div>
-  </div>
-  <div class="field" style="min-width:220px">
-    <label style="color:var(--marrom-light)">Loja</label>
-    <select id="seletorLoja" class="inp" onchange="onTrocarLoja()"></select>
-  </div>
-  <div class="spacer"></div>
-  <a href="https://thiagodlborges.github.io/Sistema-Luna/" class="hbtn">← Sistema Luna</a>
-  <button class="hbtn" onclick="sairApp()">Sair</button>
-</header>
-
-<nav class="tabs">
-  <div class="tab active" data-tab="equipe" onclick="mudarTab('equipe')">👤 Equipe</div>
-  <div class="tab" data-tab="itens" onclick="mudarTab('itens')">👕 Itens de Uniforme</div>
-  <div class="tab" data-tab="movimentos" onclick="mudarTab('movimentos')">📋 Entregas &amp; Devoluções</div>
-  <div class="tab" data-tab="pendencias" onclick="mudarTab('pendencias')">⚠️ Pendências</div>
-</nav>
-
-<main id="mainContent"><div class="loading">Carregando…</div></main>
-</div>
-
-<!-- MODAL: Novo/Editar funcionário -->
-<div class="modal-overlay" id="modalFuncionario">
-  <div class="modal">
-    <h3 id="tituloFuncionario">Novo Colaborador</h3>
-    <div class="field" style="margin-bottom:10px"><label>Nome</label><input class="inp" id="fNome"></div>
-    <div class="field" style="margin-bottom:10px"><label>Cargo</label><input class="inp" id="fCargo" placeholder="Ex: Atendente"></div>
-    <div class="field" style="margin-bottom:10px"><label>Data de Admissão</label><input class="inp" type="date" id="fAdmissao"></div>
-    <div class="field" style="margin-bottom:10px"><label>Observações</label><textarea class="inp" id="fObs" rows="2"></textarea></div>
-    <div class="msg" id="funcMsg"></div>
-    <div class="modal-actions"><button class="btn" onclick="salvarFuncionario()" id="btnSalvarFunc">Salvar</button></div>
-    <button class="modal-close" onclick="fecharModal('modalFuncionario')">Cancelar</button>
+<div id="login">
+  <div class="card">
+    <div class="wordmark"><div class="brand">LUNA</div><div class="sub">Gelato &amp; Caffè</div></div>
+    <div class="login-title">Sistema Luna</div>
+    <label for="email">E-mail</label>
+    <input class="inp" id="email" type="email" autocomplete="username" placeholder="voce@lunagelato.com.br">
+    <label for="senha">Senha</label>
+    <input class="inp" id="senha" type="password" autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+    <button class="btn" id="btnLogin" onclick="login()">Entrar</button>
+    <div class="msg" id="loginMsg"></div>
   </div>
 </div>
 
-<!-- MODAL: Desligar funcionário -->
-<div class="modal-overlay" id="modalDesligar">
-  <div class="modal">
-    <h3>Desligar <span id="desligarNome"></span></h3>
-    <div class="field" style="margin-bottom:10px"><label>Data de Desligamento</label><input class="inp" type="date" id="fDesligamento"></div>
-    <div id="desligarPendencias"></div>
-    <div class="msg" id="desligarMsg"></div>
-    <div class="modal-actions"><button class="btn" onclick="confirmarDesligamento()" id="btnDesligar">Confirmar Desligamento</button></div>
-    <button class="modal-close" onclick="fecharModal('modalDesligar')">Cancelar</button>
-  </div>
-</div>
-
-<!-- MODAL: Novo item de uniforme -->
-<div class="modal-overlay" id="modalItem">
-  <div class="modal">
-    <h3>Novo Item de Uniforme</h3>
-    <div class="field" style="margin-bottom:10px"><label>Nome (ex: Polo M, Calça G)</label><input class="inp" id="iNome"></div>
-    <div class="msg" id="itemMsg"></div>
-    <div class="modal-actions"><button class="btn" onclick="salvarItem()">Criar</button></div>
-    <button class="modal-close" onclick="fecharModal('modalItem')">Cancelar</button>
-  </div>
-</div>
-
-<!-- MODAL: Nova entrega/devolução -->
-<div class="modal-overlay" id="modalMovimento">
-  <div class="modal" style="max-width:600px">
-    <h3>Registrar Entrega/Devolução</h3>
-    <div class="row">
-      <div class="field" style="flex:2"><label>Colaborador</label><select class="inp" id="mFuncionario"></select></div>
-      <div class="field">
-        <label>Tipo</label>
-        <div class="chip-tipo">
-          <button type="button" class="active" onclick="setTipoMov('entrega',this)">Entrega</button>
-          <button type="button" onclick="setTipoMov('devolucao',this)">Devolução</button>
-        </div>
-      </div>
-      <div class="field"><label>Data</label><input class="inp" type="date" id="mData"></div>
+<div id="portal">
+  <header>
+    <div class="wordmark"><div class="brand">LUNA</div><div class="sub">Sistema Luna</div></div>
+    <div class="userbox">
+      <span class="greet" id="greet"></span>
+      <button class="icon-btn" onclick="abrirTrocarSenha()">🔑 Trocar senha</button>
+      <button class="logout" onclick="logout()">Sair</button>
     </div>
-    <label style="font-size:.7rem;text-transform:uppercase;color:var(--text-light);font-weight:500">Peças</label>
-    <div id="itensMovimento" style="margin-top:8px"></div>
-    <button class="btn-outline btn btn-sm" style="margin-top:4px" onclick="addLinhaItem()">+ Adicionar peça</button>
+  </header>
+  <main>
+    <div class="hello" id="hello"></div>
+    <div class="hello-sub" id="helloSub">Escolha um sistema para acessar.</div>
+    <div id="content"><div class="loading">Carregando seus sistemas&hellip;</div></div>
 
-    <div class="field" style="margin-top:14px"><label>Termo assinado (foto ou PDF)</label><input class="inp" type="file" id="mArquivo" accept="image/*,application/pdf"></div>
-    <div class="field" style="margin-top:10px"><label>Observações</label><textarea class="inp" id="mObs" rows="2"></textarea></div>
-    <div class="msg" id="movMsg"></div>
-    <div class="modal-actions"><button class="btn" id="btnSalvarMov" onclick="salvarMovimento()">Salvar</button></div>
-    <button class="modal-close" onclick="fecharModal('modalMovimento')">Cancelar</button>
+    <div id="adminBlock" style="display:none;margin-top:40px;padding-top:28px;border-top:1px solid var(--creme-dark);width:100%">
+      <div class="hello" style="font-size:1.4rem">Administração</div>
+      <div class="hello-sub" style="margin-bottom:18px">Gerencie usuários, acessos e senhas sem precisar pedir ajuda.</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn-outline btn" style="max-width:260px" onclick="abrirGerenciarUsuarios()">👥 Gerenciar usuários e acessos</button>
+        <button class="btn-outline btn" style="max-width:260px" onclick="abrirResetAdmin()">🔧 Resetar senha de usuário</button>
+      </div>
+    </div>
+  </main>
+  <footer>LUNA GELATO &amp; CAFFÈ &mdash; acesso interno</footer>
+</div>
+
+<!-- MODAL: Trocar minha senha -->
+<div class="modal-overlay" id="modalTrocar">
+  <div class="modal">
+    <h3>Trocar minha senha</h3>
+    <p class="sub">Defina a nova senha que você vai usar a partir de agora.</p>
+    <label for="novaSenha1">Nova senha</label>
+    <input class="inp" id="novaSenha1" type="password" placeholder="Mínimo 6 caracteres">
+    <label for="novaSenha2">Confirmar nova senha</label>
+    <input class="inp" id="novaSenha2" type="password" placeholder="Repita a senha">
+    <div class="msg" id="trocarMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnTrocar" onclick="trocarMinhaSenha()">Salvar</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalTrocar')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL: Reset admin -->
+<div class="modal-overlay" id="modalReset">
+  <div class="modal">
+    <h3>Resetar senha de usuário</h3>
+    <p class="sub">Gera uma senha temporária na hora — sem enviar e-mail. Compartilhe com a pessoa por WhatsApp ou pessoalmente; ela pode trocar depois em "Trocar senha".</p>
+    <label for="resetEmail">E-mail do usuário</label>
+    <input class="inp" id="resetEmail" type="email" placeholder="pessoa@lunagelato.com.br">
+    <div class="msg" id="resetMsg"></div>
+    <div id="resetResultado"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnReset" onclick="resetarSenhaUsuario()">Gerar senha temporária</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalReset')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL: Gerenciar usuários e acessos -->
+<div class="modal-overlay" id="modalUsuarios">
+  <div class="modal" style="max-width:960px;width:96%;max-height:88vh;display:flex;flex-direction:column">
+    <h3>Usuários e acessos</h3>
+    <p class="sub">Marque ou desmarque os sistemas que cada pessoa pode acessar. As mudanças salvam na hora.</p>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <input class="inp" id="filtroUsuarios" placeholder="Buscar por nome ou e-mail..." style="margin-bottom:0;max-width:280px" oninput="renderTabelaUsuarios()">
+      <button class="btn" style="width:auto;padding:10px 18px" onclick="abrirNovoUsuario()">+ Novo usuário</button>
+    </div>
+
+    <div id="usuariosMsg" class="msg"></div>
+
+    <div style="overflow:auto;border:1px solid var(--creme-dark);border-radius:8px;flex:1">
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem" id="tabelaUsuarios">
+        <thead>
+          <tr style="background:var(--creme);position:sticky;top:0" id="linhaCabecalhoUsuarios">
+            <th style="text-align:left;padding:10px 12px;white-space:nowrap">Nome</th>
+            <th style="text-align:left;padding:10px 12px;white-space:nowrap">Tipo</th>
+            <th style="text-align:left;padding:10px 12px;white-space:nowrap">Loja(s)</th>
+            <th style="padding:10px 12px" id="thExcluir"></th>
+          </tr>
+        </thead>
+        <tbody id="corpoTabelaUsuarios">
+          <tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="modal-close" onclick="fecharModal('modalUsuarios')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL: Novo usuário -->
+<div class="modal-overlay" id="modalNovoUsuario">
+  <div class="modal">
+    <h3 id="tituloNovoUsuario">Novo usuário</h3>
+    <p class="sub" id="subNovoUsuario">Cria o login e já mostra uma senha temporária para você repassar.</p>
+    <label for="novoNome">Nome</label>
+    <input class="inp" id="novoNome" placeholder="Nome completo">
+    <label for="novoEmail">E-mail</label>
+    <input class="inp" id="novoEmail" type="email" placeholder="pessoa@lunagelato.com.br">
+    <label for="novoTipo">Tipo de acesso</label>
+    <select class="inp" id="novoTipo" onchange="onNovoTipoChange()">
+      <option value="loja">Loja</option>
+      <option value="fabrica">Fábrica</option>
+      <option value="master_loja">Master de loja (gerente)</option>
+      <option value="externo">Externo</option>
+      <option value="master">Master (acesso total)</option>
+    </select>
+    <div id="novoLojaWrap">
+      <label for="novoLoja">Loja (opcional)</label>
+      <input class="inp" id="novoLoja" placeholder="Ex: Shopping Itaquera">
+    </div>
+    <div class="msg" id="novoUsuarioMsg"></div>
+    <div id="novoUsuarioResultado"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnNovoUsuario" onclick="salvarUsuario()">Criar usuário</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalNovoUsuario')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL: Editar lojas -->
+<div class="modal-overlay" id="modalLojas">
+  <div class="modal">
+    <h3>Loja(s) de <span id="lojasNomeUsuario"></span></h3>
+    <p class="sub">Marque uma ou mais lojas. Se marcar mais de uma, a pessoa poderá escolher entre elas ao fazer um pedido.</p>
+    <div id="lojasCheckboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:280px;overflow:auto;margin-bottom:16px"></div>
+    <div class="msg" id="lojasMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnSalvarLojas" onclick="salvarLojas()">Salvar</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalLojas')">Cancelar</button>
   </div>
 </div>
 
@@ -179,352 +253,357 @@
 const SUPABASE_URL = 'https://pbuhwpcpdcnaheaywmdv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBidWh3cGNwZGNuYWhlYXl3bWR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjU5MzksImV4cCI6MjA5MTg0MTkzOX0.Mg4PVg96ZiV3C2Rn0GLQU9c7ui_41OlU6Ldqn5jcvyY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const PORTAL_URL = 'https://thiagodlborges.github.io/Sistema-Luna/';
 const $ = id => document.getElementById(id);
+let souMaster = false;
 
-const TODAS_LOJAS = ['Esplanada','Cianê','Tucuruvi','Indaiatuba','Jundiaí','Praça da Moça - Diadema','Buriti Mogi Guaçu','SP Market','Iguatemi Campinas','Shopping Itaquera','Atrium'];
+function showMsg(id, txt, tipo){ const m=$(id); m.textContent=txt; m.className='msg '+(tipo||''); }
 
-let meuPerfil = null;
-let minhasLojas = [];
-let lojaAtual = null;
-let currentTab = 'equipe';
-let catalogoUniformes = [];
-let funcionarioParaDesligar = null;
-let tipoMovimentoAtual = 'entrega';
-
-function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-async function sairApp(){
-  await sb.auth.signOut();
-  window.location.href = PORTAL_URL;
+async function login(){
+  const email=$('email').value.trim(), senha=$('senha').value;
+  const btn=$('btnLogin');
+  if(!email||!senha){ showMsg('loginMsg','Preencha e-mail e senha.','err'); return; }
+  btn.disabled=true; btn.textContent='Entrando\u2026'; showMsg('loginMsg','','');
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+  btn.disabled=false; btn.textContent='Entrar';
+  if(error){ showMsg('loginMsg','E-mail ou senha incorretos.','err'); return; }
+  entrarPortal(data.user);
 }
 
-async function verificarAcessoEIniciar(){
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = PORTAL_URL; return; }
+async function entrarPortal(user){
+  $('login').style.display='none';
+  $('portal').style.display='flex';
+  let nome = user.email;
+  souMaster = false;
+  try{
+    const { data: perfil } = await sb.from('perfis').select('nome, tipo').eq('id', user.id).single();
+    if(perfil && perfil.nome) nome = perfil.nome;
+    if(perfil && perfil.tipo === 'master') souMaster = true;
+  }catch(e){}
+  const primeiro = (nome||'').split(' ')[0];
+  $('greet').innerHTML = 'Ol\u00e1, <b>'+nome+'</b>';
+  $('hello').textContent = 'Bem-vindo, '+primeiro+'.';
+  $('adminBlock').style.display = souMaster ? 'block' : 'none';
+  try{
+    const { data: sistemas, error } = await sb.rpc('meus_sistemas');
+    if(error) throw error;
+    render(sistemas||[]);
+  }catch(e){
+    $('content').innerHTML = '<div class="empty">N\u00e3o foi poss\u00edvel carregar os sistemas agora. Recarregue a p\u00e1gina.</div>';
+  }
+}
 
-  const { data: ok, error } = await sb.rpc('tem_acesso', { p_slug: 'uniformes' });
-  if (error || !ok) { await sb.auth.signOut(); window.location.href = PORTAL_URL; return; }
+const ICONS = {
+  pedidos_loja: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
+  pedidos_fabrica: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>',
+  cmv: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>',
+  projetos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/><path d="M9 8h1"/></svg>',
+  estoque_fabrica: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+  estoque_cd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>',
+  cobranca: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
+  uniformes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 .55.45 1 1 1h10a1 1 0 0 0 1-1V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23Z"/></svg>'
+};
+const ICON_PADRAO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
 
-  const { data: perfil } = await sb.from('perfis').select('*').eq('id', session.user.id).single();
-  meuPerfil = perfil;
+function render(sistemas){
+  if(!sistemas.length){
+    $('helloSub').textContent = 'Voc\u00ea ainda n\u00e3o tem acesso a nenhum sistema.';
+    $('content').innerHTML = '<div class="empty">Nenhum sistema liberado para o seu acesso.<br>Fale com o administrador para solicitar acesso.</div>';
+    return;
+  }
+  $('helloSub').textContent = 'Escolha um sistema para acessar.';
+  const html = sistemas.map(s => (
+    '<a class="sys" href="'+s.url+'">'+
+      '<span class="ic-badge">'+(ICONS[s.slug]||ICON_PADRAO)+'</span>'+
+      '<span class="nm">'+s.nome+'</span>'+
+      '<span class="go">\u2192</span>'+
+    '</a>'
+  )).join('');
+  $('content').innerHTML = '<div class="grid">'+html+'</div>';
+}
 
-  if (perfil.tipo === 'master' || perfil.tipo === 'master_loja') minhasLojas = [...TODAS_LOJAS];
-  else if (perfil.lojas && perfil.lojas.length) minhasLojas = perfil.lojas;
-  else if (perfil.loja) minhasLojas = [perfil.loja];
-  else minhasLojas = [];
+async function logout(){ await sb.auth.signOut(); window.location.reload(); }
 
-  if (!minhasLojas.length){
-    document.getElementById('carregandoOverlay').textContent = 'Nenhuma loja vinculada ao seu usuário. Fale com o administrador.';
+// ── Trocar minha senha ──
+function abrirTrocarSenha(){
+  $('novaSenha1').value=''; $('novaSenha2').value='';
+  showMsg('trocarMsg','','');
+  $('modalTrocar').classList.add('show');
+}
+
+function fecharModal(id){ $(id).classList.remove('show'); }
+
+async function trocarMinhaSenha(){
+  const s1 = $('novaSenha1').value, s2 = $('novaSenha2').value;
+  const btn = $('btnTrocar');
+  if(!s1 || s1.length < 6){ showMsg('trocarMsg','A senha precisa ter pelo menos 6 caracteres.','err'); return; }
+  if(s1 !== s2){ showMsg('trocarMsg','As senhas n\u00e3o coincidem.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Salvando\u2026';
+  const { error } = await sb.auth.updateUser({ password: s1 });
+  btn.disabled = false; btn.textContent = 'Salvar';
+  if(error){ showMsg('trocarMsg','N\u00e3o foi poss\u00edvel trocar agora: '+error.message,'err'); return; }
+  showMsg('trocarMsg','Senha atualizada com sucesso!','ok');
+  setTimeout(() => fecharModal('modalTrocar'), 1400);
+}
+
+// ── Reset admin (só master) ──
+function abrirResetAdmin(){
+  $('resetEmail').value=''; $('resetResultado').innerHTML='';
+  showMsg('resetMsg','','');
+  $('modalReset').classList.add('show');
+}
+
+async function resetarSenhaUsuario(){
+  const email = $('resetEmail').value.trim();
+  const btn = $('btnReset');
+  if(!email){ showMsg('resetMsg','Digite o e-mail do usu\u00e1rio.','err'); return; }
+  const { data: sessionData } = await sb.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if(!token){ showMsg('resetMsg','Sess\u00e3o expirada, recarregue a p\u00e1gina.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Gerando\u2026';
+  $('resetResultado').innerHTML = '';
+  try{
+    const r = await fetch(SUPABASE_URL + '/functions/v1/reset-senhas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ email })
+    });
+    const d = await r.json();
+    btn.disabled = false; btn.textContent = 'Gerar senha tempor\u00e1ria';
+    if(!d.ok){
+      showMsg('resetMsg', d.error === 'usuario nao encontrado' ? 'Nenhum usu\u00e1rio com esse e-mail.' : 'Erro: '+(d.error||'desconhecido'), 'err');
+      return;
+    }
+    showMsg('resetMsg','Senha tempor\u00e1ria gerada para '+d.nome+':','ok');
+    $('resetResultado').innerHTML = '<div class="result-box">'+d.senhaTemporaria+'</div>';
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Gerar senha tempor\u00e1ria';
+    showMsg('resetMsg','Erro de conex\u00e3o. Tente novamente.','err');
+  }
+}
+
+// ── Gerenciar usuários e acessos (só master) ──
+let usuariosCache = { perfis: [], acessos: [], sistemas: [] };
+
+async function chamarAdminUsuarios(action, payload={}, tentouRenovar=false){
+  const { data: sessionData } = await sb.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if(!token) throw new Error('Sess\u00e3o expirada, recarregue a p\u00e1gina.');
+  const r = await fetch(SUPABASE_URL + '/functions/v1/admin-usuarios', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ action, ...payload })
+  });
+  // Se o token expirou no meio do uso, renova a sess\u00e3o e tenta mais uma vez
+  if (r.status === 401 && !tentouRenovar) {
+    const { error: refreshErr } = await sb.auth.refreshSession();
+    if (!refreshErr) return chamarAdminUsuarios(action, payload, true);
+  }
+  return r.json();
+}
+
+async function abrirGerenciarUsuarios(){
+  $('modalUsuarios').classList.add('show');
+  $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>';
+  await carregarUsuarios();
+}
+
+async function carregarUsuarios(){
+  try{
+    const d = await chamarAdminUsuarios('listar');
+    if(!d.ok){ showMsg('usuariosMsg', 'Erro: '+(d.error||'desconhecido'), 'err'); return; }
+    usuariosCache = { perfis: d.perfis, acessos: d.acessos, sistemas: d.sistemas };
+    renderTabelaUsuarios();
+  }catch(e){
+    showMsg('usuariosMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+const LOJAS_DISPONIVEIS = ['Esplanada','Cianê','Tucuruvi','Indaiatuba','Jundiaí','Praça da Moça - Diadema','Buriti Mogi Guaçu','SP Market','Iguatemi Campinas','Shopping Itaquera','Atrium'];
+
+function renderTabelaUsuarios(){
+  const filtro = ($('filtroUsuarios').value || '').toLowerCase().trim();
+  const { perfis, acessos, sistemas } = usuariosCache;
+
+  // Cabeçalho: um <th> de verdade por sistema (evita texto/checkbox desalinhados)
+  document.querySelectorAll('#linhaCabecalhoUsuarios .th-sistema').forEach(el => el.remove());
+  const thsSistemas = sistemas.map(s =>
+    '<th class="th-sistema" style="text-align:center;padding:8px 6px;width:82px;font-size:.66rem;font-weight:600;line-height:1.2">'+s.nome+'</th>'
+  ).join('');
+  $('thExcluir').insertAdjacentHTML('beforebegin', thsSistemas);
+
+  const acessoSet = new Set(acessos.map(a => a.perfil_id+'|'+a.sistema_slug));
+  const lista = perfis.filter(p =>
+    !filtro || (p.nome||'').toLowerCase().includes(filtro) || (p.email||'').toLowerCase().includes(filtro)
+  );
+
+  if(!lista.length){
+    $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="'+(4+sistemas.length)+'" style="padding:20px;text-align:center;color:var(--text-light)">Nenhum usu\u00e1rio encontrado.</td></tr>';
     return;
   }
 
-  const sel = $('seletorLoja');
-  sel.innerHTML = minhasLojas.map(l => '<option value="'+esc(l)+'">'+esc(l)+'</option>').join('');
-  lojaAtual = minhasLojas[0];
-
-  document.getElementById('appRoot').style.display = 'block';
-  document.getElementById('carregandoOverlay').remove();
-  renderTab();
-
-  // Carrega catálogo de uniformes uma vez (usado em vários lugares)
-  await carregarCatalogo();
+  $('corpoTabelaUsuarios').innerHTML = lista.map(p => {
+    const checks = sistemas.map(s => {
+      const marcado = acessoSet.has(p.id+'|'+s.slug);
+      const disabled = p.tipo === 'master' ? 'disabled title="Master j\u00e1 tem acesso a tudo"' : '';
+      return '<td style="padding:8px 6px;text-align:center;width:82px">'+
+        '<input type="checkbox" '+(marcado||p.tipo==='master' ? 'checked' : '')+' '+disabled+
+        ' onchange="toggleAcesso(\''+p.id+'\',\''+s.slug+'\',this.checked)" style="width:16px;height:16px;cursor:pointer">'+
+      '</td>';
+    }).join('');
+    const podeTerLoja = p.tipo === 'loja' || p.tipo === 'master_loja';
+    const lojasTexto = p.loja ? p.loja : (p.lojas && p.lojas.length ? p.lojas.join(' + ') : '\u2014');
+    const celulaLoja = podeTerLoja
+      ? '<button onclick=\'abrirEditarLojas('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.loja)+','+JSON.stringify(p.lojas)+')\' style="background:none;border:none;color:var(--bordo);text-decoration:underline;cursor:pointer;font-size:.78rem;text-align:left;padding:0">'+lojasTexto+'</button>'
+      : '<span style="color:var(--text-light)">\u2014</span>';
+    return '<tr style="border-top:1px solid var(--creme-dark)">'+
+      '<td style="padding:10px 12px;white-space:nowrap"><div style="font-weight:500">'+p.nome+'</div><div style="color:var(--text-light);font-size:.72rem">'+p.email+'</div></td>'+
+      '<td style="padding:10px 12px;white-space:nowrap">'+p.tipo+'</td>'+
+      '<td style="padding:10px 12px;max-width:160px">'+celulaLoja+'</td>'+
+      checks+
+      '<td style="padding:10px 12px;white-space:nowrap">'+
+        '<button onclick=\'abrirEditarUsuario('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.email)+','+JSON.stringify(p.tipo)+')\' style="background:none;border:none;color:var(--marrom-dark);cursor:pointer;font-size:.85rem;margin-right:8px" title="Editar usu\u00e1rio">\u270f\ufe0f</button>'+
+        '<button onclick="excluirUsuario(\''+p.id+'\',\''+p.nome.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem" title="Excluir usu\u00e1rio">\uD83D\uDDD1\uFE0F</button>'+
+      '</td>'+
+    '</tr>';
+  }).join('');
 }
 
-function onTrocarLoja(){ lojaAtual = $('seletorLoja').value; renderTab(); }
+let lojasEditandoId = null;
 
-function mudarTab(tab){
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
-  renderTab();
+function abrirEditarLojas(perfil_id, nome, loja, lojas){
+  lojasEditandoId = perfil_id;
+  $('lojasNomeUsuario').textContent = nome;
+  const atuais = new Set(loja ? [loja] : (lojas || []));
+  $('lojasCheckboxes').innerHTML = LOJAS_DISPONIVEIS.map(l =>
+    '<label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer">'+
+      '<input type="checkbox" value="'+l+'" '+(atuais.has(l) ? 'checked' : '')+' style="width:15px;height:15px">'+l+
+    '</label>'
+  ).join('');
+  showMsg('lojasMsg','','');
+  $('modalLojas').classList.add('show');
 }
 
-function renderTab(){
-  if(currentTab==='equipe') renderEquipe();
-  else if(currentTab==='itens') renderItens();
-  else if(currentTab==='movimentos') renderMovimentos();
-  else if(currentTab==='pendencias') renderPendencias();
-}
-
-async function carregarCatalogo(){
-  const { data } = await sb.from('catalogo_produtos').select('*').eq('categoria','Uniforme').order('nome');
-  catalogoUniformes = data || [];
-}
-
-// ── EQUIPE ─────────────────────────────────────────────
-async function renderEquipe(){
-  const el = $('mainContent');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-  const { data, error } = await sb.from('uniformes_funcionarios').select('*').eq('loja', lojaAtual).order('ativo',{ascending:false}).order('nome');
-  if(error){ el.innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
-  const lista = data || [];
-  el.innerHTML =
-    '<div class="card">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
-        '<h2 style="margin:0">Equipe — '+esc(lojaAtual)+'</h2>'+
-        '<button class="btn" onclick="abrirNovoFuncionario()">+ Novo Colaborador</button>'+
-      '</div>'+
-      (lista.length ? '<table><thead><tr><th>Nome</th><th>Cargo</th><th>Admissão</th><th>Status</th><th></th></tr></thead><tbody>'+
-        lista.map(f => (
-          '<tr class="'+(f.ativo?'':'inativo')+'">'+
-            '<td>'+esc(f.nome)+'</td>'+
-            '<td>'+esc(f.cargo||'—')+'</td>'+
-            '<td>'+(f.data_admissao?new Date(f.data_admissao+'T12:00').toLocaleDateString('pt-BR'):'—')+'</td>'+
-            '<td>'+(f.ativo?'<span class="badge badge-ativo">Ativo</span>':'<span class="badge badge-inativo">Desligado '+(f.data_desligamento?new Date(f.data_desligamento+'T12:00').toLocaleDateString('pt-BR'):'')+'</span>')+'</td>'+
-            '<td style="white-space:nowrap">'+
-              (f.ativo?'<button class="btn-danger" onclick=\'abrirDesligar('+JSON.stringify(f.id)+','+JSON.stringify(f.nome)+')\'>Desligar</button>':'')+
-            '</td>'+
-          '</tr>'
-        )).join('')+'</tbody></table>'
-      : '<div class="empty">Nenhum colaborador cadastrado nesta loja ainda.</div>')+
-    '</div>';
-}
-
-function abrirNovoFuncionario(){
-  $('tituloFuncionario').textContent = 'Novo Colaborador';
-  $('fNome').value=''; $('fCargo').value=''; $('fAdmissao').value=''; $('fObs').value='';
-  showMsg('funcMsg','','');
-  $('modalFuncionario').classList.add('show');
-}
-
-async function salvarFuncionario(){
-  const nome = $('fNome').value.trim();
-  if(!nome){ showMsg('funcMsg','Informe o nome.','err'); return; }
-  const btn = $('btnSalvarFunc');
-  btn.disabled = true; btn.textContent = 'Salvando…';
-  const { error } = await sb.from('uniformes_funcionarios').insert({
-    loja: lojaAtual, nome, cargo: $('fCargo').value.trim()||null,
-    data_admissao: $('fAdmissao').value||null, observacoes: $('fObs').value.trim()||null,
-  });
-  btn.disabled = false; btn.textContent = 'Salvar';
-  if(error){ showMsg('funcMsg','Erro: '+error.message,'err'); return; }
-  fecharModal('modalFuncionario');
-  renderEquipe();
-}
-
-async function abrirDesligar(id, nome){
-  funcionarioParaDesligar = id;
-  $('desligarNome').textContent = nome;
-  $('fDesligamento').value = new Date().toISOString().slice(0,10);
-  showMsg('desligarMsg','','');
-  $('desligarPendencias').innerHTML = '<div class="loading" style="padding:10px">Verificando pendências…</div>';
-  $('modalDesligar').classList.add('show');
-  const { data } = await sb.from('vw_uniformes_saldo').select('*').eq('funcionario_id', id).gt('saldo',0);
-  if(data && data.length){
-    $('desligarPendencias').innerHTML = '<div class="msg show err" style="background:#FDEDEC;padding:10px;border-radius:8px">⚠️ Pendências encontradas — um e-mail de aviso será enviado:<ul style="margin:6px 0 0 18px">'+
-      data.map(d=>'<li>'+esc(d.produto_nome)+': '+d.saldo+'</li>').join('')+'</ul></div>';
-  } else {
-    $('desligarPendencias').innerHTML = '<div class="msg show ok">✅ Sem pendências de uniforme.</div>';
-  }
-}
-
-async function confirmarDesligamento(){
-  const btn = $('btnDesligar');
-  btn.disabled = true; btn.textContent = 'Processando…';
-  const { error } = await sb.from('uniformes_funcionarios').update({
-    ativo: false, data_desligamento: $('fDesligamento').value || new Date().toISOString().slice(0,10),
-  }).eq('id', funcionarioParaDesligar);
-  if(error){ showMsg('desligarMsg','Erro: '+error.message,'err'); btn.disabled=false; btn.textContent='Confirmar Desligamento'; return; }
-
-  // Dispara checagem/e-mail de pendência (silenciosa — não bloqueia o fluxo se falhar)
+async function salvarLojas(){
+  const marcadas = Array.from($('lojasCheckboxes').querySelectorAll('input:checked')).map(i => i.value);
+  const btn = $('btnSalvarLojas');
+  btn.disabled = true; btn.textContent = 'Salvando\u2026';
   try{
-    const { data: { session } } = await sb.auth.getSession();
-    await fetch(SUPABASE_URL+'/functions/v1/uniformes-notificar-desligamento', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
-      body: JSON.stringify({ funcionario_id: funcionarioParaDesligar }),
-    });
-  }catch(e){ console.error('Falha ao notificar:', e); }
-
-  btn.disabled = false; btn.textContent = 'Confirmar Desligamento';
-  fecharModal('modalDesligar');
-  renderEquipe();
-}
-
-// ── ITENS DE UNIFORME ──────────────────────────────────
-async function renderItens(){
-  await carregarCatalogo();
-  const el = $('mainContent');
-  el.innerHTML =
-    '<div class="card">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
-        '<h2 style="margin:0">Itens de Uniforme (catálogo compartilhado com Pedidos-Fábrica)</h2>'+
-        '<button class="btn" onclick="abrirNovoItem()">+ Novo Item</button>'+
-      '</div>'+
-      (catalogoUniformes.length ? '<table><thead><tr><th>Nome</th><th>Status</th><th></th></tr></thead><tbody>'+
-        catalogoUniformes.map(p => (
-          '<tr class="'+(p.ativo?'':'inativo')+'">'+
-            '<td>'+esc(p.nome)+'</td>'+
-            '<td>'+(p.ativo?'<span class="badge badge-ativo">Ativo</span>':'<span class="badge badge-inativo">Inativo</span>')+'</td>'+
-            '<td style="white-space:nowrap">'+
-              '<button class="btn-outline btn btn-sm" onclick=\'toggleAtivoItem('+JSON.stringify(p.id)+','+(!p.ativo)+')\'>'+(p.ativo?'Desativar':'Ativar')+'</button> '+
-              '<button class="btn-danger" onclick=\'excluirItem('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+')\'>🗑️</button>'+
-            '</td>'+
-          '</tr>'
-        )).join('')+'</tbody></table>'
-      : '<div class="empty">Nenhum item de uniforme cadastrado.</div>')+
-    '</div>';
-}
-
-function abrirNovoItem(){ $('iNome').value=''; showMsg('itemMsg','',''); $('modalItem').classList.add('show'); }
-
-async function salvarItem(){
-  const nome = $('iNome').value.trim();
-  if(!nome){ showMsg('itemMsg','Informe o nome do item.','err'); return; }
-  const { error } = await sb.from('catalogo_produtos').insert({ nome, categoria:'Uniforme', ativo:true });
-  if(error){ showMsg('itemMsg','Erro: '+error.message,'err'); return; }
-  fecharModal('modalItem');
-  renderItens();
-}
-
-async function toggleAtivoItem(id, novoAtivo){
-  await sb.from('catalogo_produtos').update({ ativo: novoAtivo }).eq('id', id);
-  renderItens();
-}
-
-async function excluirItem(id, nome){
-  if(!confirm('Excluir "'+nome+'" do catálogo de uniformes? Isso também o remove do Pedidos-Fábrica.\nSe já tiver entregas registradas, prefira "Desativar" em vez de excluir.')) return;
-  const { error } = await sb.from('catalogo_produtos').delete().eq('id', id);
-  if(error){ alert('Não foi possível excluir — provavelmente já existem entregas com esse item.\nUse "Desativar" em vez de excluir.\n\nDetalhe: '+error.message); return; }
-  renderItens();
-}
-
-// ── ENTREGAS & DEVOLUÇÕES ──────────────────────────────
-async function renderMovimentos(){
-  const el = $('mainContent');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-  const { data: funcs } = await sb.from('uniformes_funcionarios').select('id,nome').eq('loja', lojaAtual).eq('ativo', true).order('nome');
-  const { data: movs, error } = await sb.from('uniformes_entregas').select('*, uniformes_funcionarios(nome), uniformes_entrega_itens(quantidade, catalogo_produtos(nome))').eq('loja', lojaAtual).order('data',{ascending:false}).order('criado_em',{ascending:false});
-
-  if(error){ el.innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
-
-  el.innerHTML =
-    '<div class="card">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
-        '<h2 style="margin:0">Entregas &amp; Devoluções — '+esc(lojaAtual)+'</h2>'+
-        '<button class="btn" onclick="abrirNovoMovimento()">+ Registrar</button>'+
-      '</div>'+
-      ((movs&&movs.length) ? '<table><thead><tr><th>Data</th><th>Colaborador</th><th>Tipo</th><th>Itens</th><th>Termo</th></tr></thead><tbody>'+
-        movs.map(m => (
-          '<tr><td>'+new Date(m.data+'T12:00').toLocaleDateString('pt-BR')+'</td>'+
-          '<td>'+esc(m.uniformes_funcionarios?.nome||'—')+'</td>'+
-          '<td>'+(m.tipo==='entrega'?'📥 Entrega':'📤 Devolução')+'</td>'+
-          '<td>'+(m.uniformes_entrega_itens||[]).map(i=>esc(i.catalogo_produtos?.nome)+' ('+i.quantidade+')').join(', ')+'</td>'+
-          '<td>'+(m.termo_path?'<button class="btn-outline btn btn-sm" onclick=\'baixarTermo('+JSON.stringify(m.termo_path)+')\'>Ver termo</button>':'<span style="color:var(--text-light);font-size:.75rem">sem arquivo</span>')+'</td>'+
-          '</tr>'
-        )).join('')+'</tbody></table>'
-      : '<div class="empty">Nenhum registro ainda.</div>')+
-    '</div>';
-
-  window._funcsAtivos = funcs||[];
-}
-
-function abrirNovoMovimento(){
-  const sel = $('mFuncionario');
-  sel.innerHTML = (window._funcsAtivos||[]).map(f=>'<option value="'+f.id+'">'+esc(f.nome)+'</option>').join('');
-  if(!sel.innerHTML){ alert('Cadastre um colaborador ativo nesta loja antes de registrar entrega/devolução.'); return; }
-  tipoMovimentoAtual = 'entrega';
-  document.querySelectorAll('#modalMovimento .chip-tipo button').forEach((b,i)=>b.classList.toggle('active', i===0));
-  $('mData').value = new Date().toISOString().slice(0,10);
-  $('itensMovimento').innerHTML = '';
-  addLinhaItem();
-  $('mArquivo').value = '';
-  $('mObs').value = '';
-  showMsg('movMsg','','');
-  $('modalMovimento').classList.add('show');
-}
-
-function setTipoMov(tipo, btn){
-  tipoMovimentoAtual = tipo;
-  document.querySelectorAll('#modalMovimento .chip-tipo button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function addLinhaItem(){
-  const div = document.createElement('div');
-  div.className = 'item-linha';
-  div.innerHTML =
-    '<select class="inp item-produto">'+catalogoUniformes.filter(p=>p.ativo).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('')+'</select>'+
-    '<input class="inp item-qtd" type="number" min="1" value="1" style="max-width:80px">'+
-    '<button type="button" class="btn-danger" onclick="this.parentElement.remove()">✕</button>';
-  $('itensMovimento').appendChild(div);
-}
-
-async function salvarMovimento(){
-  const funcionario_id = $('mFuncionario').value;
-  const data = $('mData').value;
-  if(!funcionario_id || !data){ showMsg('movMsg','Preencha colaborador e data.','err'); return; }
-  const linhas = [...document.querySelectorAll('#itensMovimento .item-linha')].map(l => ({
-    produto_id: l.querySelector('.item-produto').value,
-    quantidade: parseInt(l.querySelector('.item-qtd').value) || 0,
-  })).filter(l => l.quantidade > 0);
-  if(!linhas.length){ showMsg('movMsg','Adicione ao menos uma peça com quantidade válida.','err'); return; }
-
-  const btn = $('btnSalvarMov');
-  btn.disabled = true; btn.textContent = 'Salvando…';
-
-  let termo_path = null, termo_nome_original = null;
-  const arquivo = $('mArquivo').files[0];
-  if(arquivo){
-    const ext = arquivo.name.split('.').pop();
-    const path = lojaAtual+'/'+funcionario_id+'/'+Date.now()+'.'+ext;
-    const { error: upErr } = await sb.storage.from('uniformes-termos').upload(path, arquivo);
-    if(upErr){ showMsg('movMsg','Erro ao enviar arquivo: '+upErr.message,'err'); btn.disabled=false; btn.textContent='Salvar'; return; }
-    termo_path = path; termo_nome_original = arquivo.name;
+    const d = await chamarAdminUsuarios('atualizar_lojas', { perfil_id: lojasEditandoId, lojas: marcadas });
+    btn.disabled = false; btn.textContent = 'Salvar';
+    if(!d.ok){ showMsg('lojasMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
+    showMsg('lojasMsg','Salvo!','ok');
+    await carregarUsuarios();
+    setTimeout(() => fecharModal('modalLojas'), 700);
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Salvar';
+    showMsg('lojasMsg', e.message || 'Erro de conex\u00e3o.', 'err');
   }
-
-  const { data: entrega, error: e1 } = await sb.from('uniformes_entregas').insert({
-    funcionario_id, loja: lojaAtual, tipo: tipoMovimentoAtual, data,
-    termo_path, termo_nome_original, observacoes: $('mObs').value.trim()||null,
-    criado_por: meuPerfil.id,
-  }).select().single();
-
-  if(e1){ showMsg('movMsg','Erro: '+e1.message,'err'); btn.disabled=false; btn.textContent='Salvar'; return; }
-
-  const itensParaInserir = linhas.map(l => ({ entrega_id: entrega.id, produto_id: l.produto_id, quantidade: l.quantidade }));
-  const { error: e2 } = await sb.from('uniformes_entrega_itens').insert(itensParaInserir);
-
-  btn.disabled = false; btn.textContent = 'Salvar';
-  if(e2){ showMsg('movMsg','Erro ao salvar itens: '+e2.message,'err'); return; }
-
-  fecharModal('modalMovimento');
-  renderMovimentos();
 }
 
-async function baixarTermo(path){
-  const { data, error } = await sb.storage.from('uniformes-termos').createSignedUrl(path, 300);
-  if(error){ alert('Erro ao abrir o arquivo: '+error.message); return; }
-  window.open(data.signedUrl, '_blank');
+async function toggleAcesso(perfil_id, sistema_slug, marcado){
+  showMsg('usuariosMsg', 'Salvando...', 'ok');
+  try{
+    const d = await chamarAdminUsuarios(marcado ? 'conceder_acesso' : 'revogar_acesso', { perfil_id, sistema_slug });
+    if(!d.ok){ showMsg('usuariosMsg', 'Erro: '+(d.error||'desconhecido'), 'err'); await carregarUsuarios(); return; }
+    if(marcado) usuariosCache.acessos.push({ perfil_id, sistema_slug });
+    else usuariosCache.acessos = usuariosCache.acessos.filter(a => !(a.perfil_id===perfil_id && a.sistema_slug===sistema_slug));
+    showMsg('usuariosMsg', 'Acesso atualizado.', 'ok');
+  }catch(e){
+    showMsg('usuariosMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
 }
 
-// ── PENDÊNCIAS ──────────────────────────────────────────
-async function renderPendencias(){
-  const el = $('mainContent');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-  const { data, error } = await sb.from('vw_uniformes_saldo').select('*').eq('loja', lojaAtual).order('funcionario_ativo',{ascending:false}).order('funcionario_nome');
-  if(error){ el.innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
-  const lista = data || [];
-  el.innerHTML =
-    '<div class="card">'+
-      '<h2>Peças com Colaboradores — '+esc(lojaAtual)+'</h2>'+
-      (lista.length ? '<table><thead><tr><th>Colaborador</th><th>Situação</th><th>Peça</th><th>Quantidade</th></tr></thead><tbody>'+
-        lista.map(p => (
-          '<tr>'+
-            '<td>'+esc(p.funcionario_nome)+'</td>'+
-            '<td>'+(p.funcionario_ativo?'<span class="badge badge-ativo">Ativo</span>':'<span class="badge badge-pend">Desligado — pendente</span>')+'</td>'+
-            '<td>'+esc(p.produto_nome)+'</td>'+
-            '<td>'+p.saldo+'</td>'+
-          '</tr>'
-        )).join('')+'</tbody></table>'
-      : '<div class="empty">Nenhuma peça em posse de colaboradores no momento.</div>')+
-    '</div>';
+async function excluirUsuario(perfil_id, nome){
+  if(!confirm('Excluir o usu\u00e1rio "'+nome+'"? Essa a\u00e7\u00e3o \u00e9 permanente e remove todos os acessos dele.')) return;
+  showMsg('usuariosMsg', 'Excluindo...', 'ok');
+  try{
+    const d = await chamarAdminUsuarios('excluir_usuario', { perfil_id });
+    if(!d.ok){ showMsg('usuariosMsg', 'Erro: '+(d.error||'desconhecido'), 'err'); return; }
+    showMsg('usuariosMsg', 'Usu\u00e1rio exclu\u00eddo.', 'ok');
+    await carregarUsuarios();
+  }catch(e){
+    showMsg('usuariosMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
 }
 
-// ── util ──
-function fecharModal(id){ $(id).classList.remove('show'); }
-function showMsg(id, txt, tipo){ const m=$(id); m.textContent=txt; m.className='msg'+(txt?' show '+(tipo||''):''); }
+function onNovoTipoChange(){
+  const tipo = $('novoTipo').value;
+  $('novoLojaWrap').style.display = (tipo === 'loja' || tipo === 'master_loja') ? 'block' : 'none';
+}
 
-verificarAcessoEIniciar();
+let usuarioEditandoId = null;
+
+function abrirNovoUsuario(){
+  usuarioEditandoId = null;
+  $('tituloNovoUsuario').textContent = 'Novo usuário';
+  $('subNovoUsuario').textContent = 'Cria o login e já mostra uma senha temporária para você repassar.';
+  $('btnNovoUsuario').textContent = 'Criar usuário';
+  $('novoLojaWrap').style.display = '';
+  $('novoNome').value=''; $('novoEmail').value=''; $('novoTipo').value='loja'; $('novoLoja').value='';
+  onNovoTipoChange();
+  showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
+  $('modalNovoUsuario').classList.add('show');
+}
+
+function abrirEditarUsuario(perfil_id, nome, email, tipo){
+  usuarioEditandoId = perfil_id;
+  $('tituloNovoUsuario').textContent = 'Editar usuário';
+  $('subNovoUsuario').textContent = 'Corrige nome, e-mail ou tipo de acesso. Loja(s) e senha se editam nos botões próprios da tabela.';
+  $('btnNovoUsuario').textContent = 'Salvar alterações';
+  $('novoLojaWrap').style.display = 'none';
+  $('novoNome').value = nome; $('novoEmail').value = email; $('novoTipo').value = tipo;
+  showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
+  $('modalNovoUsuario').classList.add('show');
+}
+
+async function salvarUsuario(){
+  if (usuarioEditandoId) return editarUsuario();
+  return criarUsuario();
+}
+
+async function editarUsuario(){
+  const nome = $('novoNome').value.trim();
+  const email = $('novoEmail').value.trim();
+  const tipo = $('novoTipo').value;
+  const btn = $('btnNovoUsuario');
+  if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Salvando\u2026';
+  try{
+    const d = await chamarAdminUsuarios('editar_usuario', { perfil_id: usuarioEditandoId, nome, email, tipo });
+    btn.disabled = false; btn.textContent = 'Salvar altera\u00e7\u00f5es';
+    if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
+    showMsg('novoUsuarioMsg','Salvo!','ok');
+    await carregarUsuarios();
+    setTimeout(() => fecharModal('modalNovoUsuario'), 700);
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Salvar altera\u00e7\u00f5es';
+    showMsg('novoUsuarioMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+async function criarUsuario(){
+  const nome = $('novoNome').value.trim();
+  const email = $('novoEmail').value.trim();
+  const tipo = $('novoTipo').value;
+  const loja = $('novoLoja').value.trim();
+  const btn = $('btnNovoUsuario');
+  if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Criando\u2026';
+  try{
+    const d = await chamarAdminUsuarios('criar_usuario', { nome, email, tipo, loja });
+    btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';
+    if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
+    showMsg('novoUsuarioMsg','Usu\u00e1rio criado! Senha tempor\u00e1ria:','ok');
+    $('novoUsuarioResultado').innerHTML = '<div class="result-box">'+d.senhaTemporaria+'</div>';
+    await carregarUsuarios();
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';
+    showMsg('novoUsuarioMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+sb.auth.getSession().then(({ data }) => { if(data && data.session) entrarPortal(data.session.user); });
+$('senha').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
 </script>
 </body>
 </html>

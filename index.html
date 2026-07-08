@@ -219,11 +219,12 @@
       <option value="fabrica">Fábrica</option>
       <option value="master_loja">Master de loja (gerente)</option>
       <option value="externo">Externo</option>
+      <option value="uniformes_backoffice">Backoffice de Uniformes</option>
       <option value="master">Master (acesso total)</option>
     </select>
     <div id="novoLojaWrap">
-      <label for="novoLoja">Loja (opcional)</label>
-      <input class="inp" id="novoLoja" placeholder="Ex: Shopping Itaquera">
+      <label for="novoLoja">Loja</label>
+      <select class="inp" id="novoLoja"></select>
     </div>
     <div class="msg" id="novoUsuarioMsg"></div>
     <div id="novoUsuarioResultado"></div>
@@ -539,7 +540,8 @@ function abrirNovoUsuario(){
   $('subNovoUsuario').textContent = 'Cria o login e já mostra uma senha temporária para você repassar.';
   $('btnNovoUsuario').textContent = 'Criar usuário';
   $('novoLojaWrap').style.display = '';
-  $('novoNome').value=''; $('novoEmail').value=''; $('novoTipo').value='loja'; $('novoLoja').value='';
+  $('novoLoja').innerHTML = LOJAS_DISPONIVEIS.map(l=>'<option value="'+l+'">'+l+'</option>').join('');
+  $('novoNome').value=''; $('novoEmail').value=''; $('novoTipo').value='loja';
   onNovoTipoChange();
   showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
   $('modalNovoUsuario').classList.add('show');

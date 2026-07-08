@@ -219,13 +219,16 @@
       <option value="fabrica">Fábrica</option>
       <option value="master_loja">Master de loja (gerente)</option>
       <option value="externo">Externo</option>
-      <option value="uniformes_backoffice">Backoffice de Uniformes</option>
       <option value="master">Master (acesso total)</option>
     </select>
     <div id="novoLojaWrap">
       <label for="novoLoja">Loja</label>
       <select class="inp" id="novoLoja"></select>
     </div>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;letter-spacing:0;margin-top:10px;cursor:pointer">
+      <input type="checkbox" id="novoBackoffice" style="width:16px;height:16px">
+      Backoffice de Uniformes (permissão adicional — pode combinar com qualquer tipo acima)
+    </label>
     <div class="msg" id="novoUsuarioMsg"></div>
     <div id="novoUsuarioResultado"></div>
     <div class="modal-actions">
@@ -458,11 +461,11 @@ function renderTabelaUsuarios(){
       : '<span style="color:var(--text-light)">\u2014</span>';
     return '<tr style="border-top:1px solid var(--creme-dark)">'+
       '<td style="padding:10px 12px;white-space:nowrap"><div style="font-weight:500">'+p.nome+'</div><div style="color:var(--text-light);font-size:.72rem">'+p.email+'</div></td>'+
-      '<td style="padding:10px 12px;white-space:nowrap">'+p.tipo+'</td>'+
+      '<td style="padding:10px 12px;white-space:nowrap">'+p.tipo+(p.uniformes_backoffice?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Backoffice Unif.</span>':'')+'</td>'+
       '<td style="padding:10px 12px;max-width:160px">'+celulaLoja+'</td>'+
       checks+
       '<td style="padding:10px 12px;white-space:nowrap">'+
-        '<button onclick=\'abrirEditarUsuario('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.email)+','+JSON.stringify(p.tipo)+')\' style="background:none;border:none;color:var(--marrom-dark);cursor:pointer;font-size:.85rem;margin-right:8px" title="Editar usu\u00e1rio">\u270f\ufe0f</button>'+
+        '<button onclick=\'abrirEditarUsuario('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.email)+','+JSON.stringify(p.tipo)+','+JSON.stringify(!!p.uniformes_backoffice)+')\' style="background:none;border:none;color:var(--marrom-dark);cursor:pointer;font-size:.85rem;margin-right:8px" title="Editar usu\u00e1rio">\u270f\ufe0f</button>'+
         '<button onclick="excluirUsuario(\''+p.id+'\',\''+p.nome.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem" title="Excluir usu\u00e1rio">\uD83D\uDDD1\uFE0F</button>'+
       '</td>'+
     '</tr>';
@@ -541,19 +544,20 @@ function abrirNovoUsuario(){
   $('btnNovoUsuario').textContent = 'Criar usuário';
   $('novoLojaWrap').style.display = '';
   $('novoLoja').innerHTML = LOJAS_DISPONIVEIS.map(l=>'<option value="'+l+'">'+l+'</option>').join('');
-  $('novoNome').value=''; $('novoEmail').value=''; $('novoTipo').value='loja';
+  $('novoNome').value=''; $('novoEmail').value=''; $('novoTipo').value='loja'; $('novoBackoffice').checked=false;
   onNovoTipoChange();
   showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
   $('modalNovoUsuario').classList.add('show');
 }
 
-function abrirEditarUsuario(perfil_id, nome, email, tipo){
+function abrirEditarUsuario(perfil_id, nome, email, tipo, backoffice){
   usuarioEditandoId = perfil_id;
   $('tituloNovoUsuario').textContent = 'Editar usuário';
   $('subNovoUsuario').textContent = 'Corrige nome, e-mail ou tipo de acesso. Loja(s) e senha se editam nos botões próprios da tabela.';
   $('btnNovoUsuario').textContent = 'Salvar alterações';
   $('novoLojaWrap').style.display = 'none';
   $('novoNome').value = nome; $('novoEmail').value = email; $('novoTipo').value = tipo;
+  $('novoBackoffice').checked = !!backoffice;
   showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
   $('modalNovoUsuario').classList.add('show');
 }
@@ -567,11 +571,12 @@ async function editarUsuario(){
   const nome = $('novoNome').value.trim();
   const email = $('novoEmail').value.trim();
   const tipo = $('novoTipo').value;
+  const uniformes_backoffice = $('novoBackoffice').checked;
   const btn = $('btnNovoUsuario');
   if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
   btn.disabled = true; btn.textContent = 'Salvando\u2026';
   try{
-    const d = await chamarAdminUsuarios('editar_usuario', { perfil_id: usuarioEditandoId, nome, email, tipo });
+    const d = await chamarAdminUsuarios('editar_usuario', { perfil_id: usuarioEditandoId, nome, email, tipo, uniformes_backoffice });
     btn.disabled = false; btn.textContent = 'Salvar altera\u00e7\u00f5es';
     if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
     showMsg('novoUsuarioMsg','Salvo!','ok');
@@ -588,11 +593,12 @@ async function criarUsuario(){
   const email = $('novoEmail').value.trim();
   const tipo = $('novoTipo').value;
   const loja = $('novoLoja').value.trim();
+  const uniformes_backoffice = $('novoBackoffice').checked;
   const btn = $('btnNovoUsuario');
   if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
   btn.disabled = true; btn.textContent = 'Criando\u2026';
   try{
-    const d = await chamarAdminUsuarios('criar_usuario', { nome, email, tipo, loja });
+    const d = await chamarAdminUsuarios('criar_usuario', { nome, email, tipo, loja, uniformes_backoffice });
     btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';
     if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
     showMsg('novoUsuarioMsg','Usu\u00e1rio criado! Senha tempor\u00e1ria:','ok');

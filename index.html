@@ -545,6 +545,7 @@ async function excluirUsuario(perfil_id, nome){
 
 function onNovoTipoChange(){
   const tipo = $('novoTipo').value;
+  if(usuarioEditandoId){ $('novoLojaWrap').style.display = 'none'; return; }
   $('novoLojaWrap').style.display = (tipo === 'loja' || tipo === 'master_loja') ? 'block' : 'none';
 }
 

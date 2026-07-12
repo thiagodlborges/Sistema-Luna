@@ -77,6 +77,21 @@
   .empty{background:var(--white);border:1px dashed var(--creme-dark);border-radius:12px;padding:40px;text-align:center;color:var(--text-light);width:100%}
   .loading{text-align:center;color:var(--text-light);padding:40px;font-size:.9rem;width:100%}
   #content{width:100%}
+
+  /* CENTRAL DE APROVAÇÕES */
+  #aprovacoesBlock{width:100%;margin-bottom:40px}
+  .approval-group{background:var(--white);border:1px solid var(--creme-dark);border-radius:14px;padding:20px 22px;margin-bottom:14px;width:100%}
+  .approval-group-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--bordo-dark);margin-bottom:10px;display:flex;align-items:center;gap:9px}
+  .badge-count{background:var(--bordo);color:var(--creme);font-family:'Jost',sans-serif;font-size:.68rem;font-weight:600;padding:2px 9px;border-radius:20px;line-height:1.6}
+  .approval-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--creme-dark);flex-wrap:wrap}
+  .approval-item:first-of-type{border-top:none;padding-top:2px}
+  .approval-l1{font-size:.9rem;font-weight:500;color:var(--text)}
+  .approval-l2{font-size:.76rem;color:var(--text-light);margin-top:2px}
+  .approval-actions{display:flex;gap:8px;flex-shrink:0}
+  .btn-approve{background:#27AE60;color:#fff;border:none;padding:8px 16px;border-radius:7px;font-family:'Jost',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:background .15s}
+  .btn-approve:hover{background:#1e8449}
+  .btn-reject{background:none;border:1.5px solid #B43C3C;color:#B43C3C;padding:6.5px 14px;border-radius:7px;font-family:'Jost',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:.15s}
+  .btn-reject:hover{background:#B43C3C;color:#fff}
   footer{text-align:center;color:var(--marrom);font-size:.7rem;letter-spacing:.06em;padding:22px}
 
   /* MODAL */
@@ -124,6 +139,13 @@
   <main>
     <div class="hello" id="hello"></div>
     <div class="hello-sub" id="helloSub">Escolha um sistema para acessar.</div>
+
+    <div id="aprovacoesBlock" style="display:none">
+      <div class="hello" style="font-size:1.4rem;margin-bottom:4px">Central de Aprovações</div>
+      <div class="hello-sub" style="margin-bottom:16px">Pendências que dependem da sua aprovação, direto por aqui — sem precisar entrar em cada módulo.</div>
+      <div id="aprovacoesConteudo"><div class="loading">Carregando pendências&hellip;</div></div>
+    </div>
+
     <div id="content"><div class="loading">Carregando seus sistemas&hellip;</div></div>
 
     <div id="adminBlock" style="display:none;margin-top:40px;padding-top:28px;border-top:1px solid var(--creme-dark);width:100%">
@@ -237,6 +259,10 @@
       <input type="checkbox" id="novoFreelancerAgencia" style="width:16px;height:16px">
       Agência de Freelancers (vê aprovados de todas as lojas — permissão adicional)
     </label>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;letter-spacing:0;margin-top:10px;cursor:pointer">
+      <input type="checkbox" id="novoPrecificacaoBackoffice" style="width:16px;height:16px">
+      Backoffice de Precificação (permissão adicional — pode combinar com qualquer tipo acima)
+    </label>
     <div class="msg" id="novoUsuarioMsg"></div>
     <div id="novoUsuarioResultado"></div>
     <div class="modal-actions">
@@ -267,6 +293,14 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 let souMaster = false;
+let souCoordenador = false;
+let meuId = null;
+let meuNome = null;
+
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtData(d){ return d ? new Date(d+'T12:00').toLocaleDateString('pt-BR') : '—'; }
+function fmtMoeda(v){ return (Number(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }); }
+function labelElo(elo){ return { fabrica_loja:'Fábrica → Loja', loja_consumidor:'Loja → Consumidor', loja_delivery:'Loja → Delivery', compra_revenda:'Compra Revenda' }[elo] || elo; }
 
 function showMsg(id, txt, tipo){ const m=$(id); m.textContent=txt; m.className='msg '+(tipo||''); }
 
@@ -286,15 +320,23 @@ async function entrarPortal(user){
   $('portal').style.display='flex';
   let nome = user.email;
   souMaster = false;
+  souCoordenador = false;
+  meuId = user.id;
   try{
-    const { data: perfil } = await sb.from('perfis').select('nome, tipo').eq('id', user.id).single();
+    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador').eq('id', user.id).single();
     if(perfil && perfil.nome) nome = perfil.nome;
     if(perfil && perfil.tipo === 'master') souMaster = true;
+    if(perfil && perfil.freelancer_coordenador) souCoordenador = true;
   }catch(e){}
+  meuNome = nome;
   const primeiro = (nome||'').split(' ')[0];
   $('greet').innerHTML = 'Ol\u00e1, <b>'+nome+'</b>';
   $('hello').textContent = 'Bem-vindo, '+primeiro+'.';
   $('adminBlock').style.display = souMaster ? 'block' : 'none';
+  if(souMaster || souCoordenador){
+    $('aprovacoesBlock').style.display = 'block';
+    carregarAprovacoes();
+  }
   try{
     const { data: sistemas, error } = await sb.rpc('meus_sistemas');
     if(error) throw error;
@@ -313,7 +355,9 @@ const ICONS = {
   estoque_cd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>',
   cobranca: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
   uniformes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 .55.45 1 1 1h10a1 1 0 0 0 1-1V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23Z"/></svg>',
-  freelancers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><path d="M2 12h20"/></svg>'
+  freelancers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><path d="M2 12h20"/></svg>',
+  precificacao: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>',
+  perdas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>'
 };
 const ICON_PADRAO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
 
@@ -332,6 +376,211 @@ function render(sistemas){
     '</a>'
   )).join('');
   $('content').innerHTML = '<div class="grid">'+html+'</div>';
+}
+
+// ── CENTRAL DE APROVAÇÕES ──────────────────────────────────
+async function carregarAprovacoes(){
+  const tarefas = [];
+  const promises = [];
+
+  // Freelancers pendentes — master e coordenador de lojas
+  tarefas.push('freelancers');
+  promises.push(sb.from('freelancer_solicitacoes')
+    .select('id, loja, solicitado_por_nome, criado_em, freelancers(nome_completo)')
+    .eq('status','pendente').order('criado_em'));
+
+  // Pedidos loja → fábrica aguardando aprovação — master e coordenador de lojas
+  tarefas.push('pedidos');
+  promises.push(sb.from('pedidos')
+    .select('id, numero_pedido, loja, data_pedido, data_entrega_prevista, observacoes')
+    .eq('status','pendente_aprovacao').order('data_pedido'));
+
+  if(souMaster){
+    tarefas.push('precos');
+    promises.push(sb.from('precificacao_precos')
+      .select('id, elo, custo, preco_venda, vigencia_inicio, criado_por_nome, precificacao_produtos(nome)')
+      .eq('status','pendente').order('criado_em'));
+
+    tarefas.push('tributos');
+    promises.push(sb.from('precificacao_tributos')
+      .select('id, elo, categoria, tipo_tributo, aliquota, vigencia_inicio, criado_por_nome')
+      .eq('status','pendente').order('criado_em'));
+
+    tarefas.push('combos');
+    promises.push(sb.from('precificacao_combo_precos')
+      .select('id, preco_combo, vigencia_inicio, criado_por_nome, precificacao_combos(nome)')
+      .eq('status','pendente').order('criado_em'));
+
+    tarefas.push('projetos');
+    promises.push(sb.from('projects')
+      .select('id, name, area, responsible, planned_result')
+      .eq('status_aprovacao','proposta').order('start_date'));
+  }
+
+  const resultados = await Promise.all(promises);
+  const dados = {};
+  tarefas.forEach((t, i) => { dados[t] = (resultados[i] && resultados[i].data) || []; });
+  renderAprovacoes(dados);
+}
+
+function renderAprovacoes(dados){
+  const grupos = [];
+
+  if(dados.freelancers && dados.freelancers.length){
+    grupos.push({
+      titulo: '💼 Freelancers — contratações pendentes',
+      itens: dados.freelancers.map(f => ({
+        l1: (f.freelancers ? f.freelancers.nome_completo : 'Freelancer'),
+        l2: esc(f.loja)+' · solicitado por '+esc(f.solicitado_por_nome||'—')+' · '+fmtData(f.criado_em),
+        aprovar: "aprovarFreelancer('"+f.id+"')",
+        rejeitar: "reprovarFreelancer('"+f.id+"')",
+      }))
+    });
+  }
+
+  if(dados.pedidos && dados.pedidos.length){
+    grupos.push({
+      titulo: '🏭 Pedidos para a fábrica — aguardando aprovação',
+      itens: dados.pedidos.map(p => ({
+        l1: esc(p.numero_pedido)+' — '+esc(p.loja),
+        l2: 'Pedido em '+fmtData(p.data_pedido)+' · entrega prevista '+fmtData(p.data_entrega_prevista)+(p.observacoes?' · '+esc(p.observacoes):''),
+        aprovar: "aprovarPedido("+p.id+")",
+        rejeitar: "rejeitarPedido("+p.id+")",
+      }))
+    });
+  }
+
+  if(dados.precos && dados.precos.length){
+    grupos.push({
+      titulo: '💲 Precificação — novos preços',
+      itens: dados.precos.map(p => ({
+        l1: (p.precificacao_produtos?esc(p.precificacao_produtos.nome):'Produto')+' · '+labelElo(p.elo),
+        l2: 'Custo '+fmtMoeda(p.custo)+' · Venda '+fmtMoeda(p.preco_venda)+' · vigência '+fmtData(p.vigencia_inicio)+' · proposto por '+esc(p.criado_por_nome||'—'),
+        aprovar: "aprovarPrecificacao('precificacao_precos','"+p.id+"')",
+        rejeitar: "rejeitarPrecificacao('precificacao_precos','"+p.id+"')",
+      }))
+    });
+  }
+
+  if(dados.tributos && dados.tributos.length){
+    grupos.push({
+      titulo: '📑 Precificação — tributos',
+      itens: dados.tributos.map(t => ({
+        l1: esc(t.categoria)+' · '+esc(t.tipo_tributo)+' · '+labelElo(t.elo),
+        l2: 'Alíquota '+Number(t.aliquota)+'% · vigência '+fmtData(t.vigencia_inicio)+' · proposto por '+esc(t.criado_por_nome||'—'),
+        aprovar: "aprovarPrecificacao('precificacao_tributos','"+t.id+"')",
+        rejeitar: "rejeitarPrecificacao('precificacao_tributos','"+t.id+"')",
+      }))
+    });
+  }
+
+  if(dados.combos && dados.combos.length){
+    grupos.push({
+      titulo: '🎁 Precificação — combos',
+      itens: dados.combos.map(c => ({
+        l1: (c.precificacao_combos?esc(c.precificacao_combos.nome):'Combo'),
+        l2: 'Preço '+fmtMoeda(c.preco_combo)+' · vigência '+fmtData(c.vigencia_inicio)+' · proposto por '+esc(c.criado_por_nome||'—'),
+        aprovar: "aprovarPrecificacao('precificacao_combo_precos','"+c.id+"')",
+        rejeitar: "rejeitarPrecificacao('precificacao_combo_precos','"+c.id+"')",
+      }))
+    });
+  }
+
+  if(dados.projetos && dados.projetos.length){
+    grupos.push({
+      titulo: '📋 Projetos — aguardando validação',
+      itens: dados.projetos.map(p => ({
+        l1: esc(p.name)+' ('+esc(p.area)+')',
+        l2: 'Responsável '+esc(p.responsible||'—')+(p.planned_result?' · '+esc(p.planned_result):''),
+        aprovar: "validarProjeto('"+p.id+"')",
+        rejeitar: null,
+      }))
+    });
+  }
+
+  if(!grupos.length){
+    $('aprovacoesConteudo').innerHTML = '<div class="empty" style="padding:26px">Nenhuma pendência de aprovação no momento. 🎉</div>';
+    return;
+  }
+
+  $('aprovacoesConteudo').innerHTML = grupos.map(g => (
+    '<div class="approval-group">'+
+      '<div class="approval-group-title">'+g.titulo+' <span class="badge-count">'+g.itens.length+'</span></div>'+
+      g.itens.map(it => (
+        '<div class="approval-item">'+
+          '<div class="approval-info"><div class="approval-l1">'+it.l1+'</div><div class="approval-l2">'+it.l2+'</div></div>'+
+          '<div class="approval-actions">'+
+            '<button class="btn-approve" onclick="'+it.aprovar+'">Aprovar</button>'+
+            (it.rejeitar ? '<button class="btn-reject" onclick="'+it.rejeitar+'">Rejeitar</button>' : '')+
+          '</div>'+
+        '</div>'
+      )).join('')+
+    '</div>'
+  )).join('');
+}
+
+async function aprovarFreelancer(id){
+  if(!confirm('Aprovar esta contratação de freelancer?')) return;
+  const { error } = await sb.from('freelancer_solicitacoes').update({
+    status: 'aprovado', aprovado_por: meuId, aprovado_por_nome: meuNome, data_aprovacao: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  carregarAprovacoes();
+}
+
+async function reprovarFreelancer(id){
+  const motivo = prompt('Motivo da reprovação (opcional):');
+  if(motivo === null) return; // cancelou o prompt
+  const { error } = await sb.from('freelancer_solicitacoes').update({
+    status: 'reprovado', motivo_reprovacao: motivo || null, aprovado_por: meuId, aprovado_por_nome: meuNome, data_aprovacao: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ alert('Erro ao reprovar: '+error.message); return; }
+  carregarAprovacoes();
+}
+
+async function aprovarPedido(id){
+  if(!confirm('Aprovar este pedido para seguir à produção?')) return;
+  const { data: pedido, error } = await sb.from('pedidos').update({ status: 'aprovado', aprovado_por: meuNome }).eq('id', id).select().single();
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  await sb.from('notificacoes').insert({
+    pedido_id: pedido.id, numero_pedido: pedido.numero_pedido, loja: pedido.loja,
+    de: 'fabrica', tipo: 'confirmacao', titulo: 'Pedido aprovado',
+    mensagem: 'Seu pedido '+pedido.numero_pedido+' foi aprovado e segue para produção.'
+  });
+  carregarAprovacoes();
+}
+
+async function rejeitarPedido(id){
+  if(!confirm('Rejeitar este pedido?')) return;
+  const { data: pedido, error } = await sb.from('pedidos').update({ status: 'rejeitado', aprovado_por: meuNome }).eq('id', id).select().single();
+  if(error){ alert('Erro ao rejeitar: '+error.message); return; }
+  await sb.from('notificacoes').insert({
+    pedido_id: pedido.id, numero_pedido: pedido.numero_pedido, loja: pedido.loja,
+    de: 'fabrica', tipo: 'rejeicao', titulo: 'Pedido rejeitado',
+    mensagem: 'Seu pedido '+pedido.numero_pedido+' foi rejeitado. Fale com a coordenação para mais detalhes.'
+  });
+  carregarAprovacoes();
+}
+
+async function aprovarPrecificacao(tabela, id){
+  if(!confirm('Aprovar este item de Precificação?')) return;
+  const { error } = await sb.from(tabela).update({ status: 'aprovado' }).eq('id', id);
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  carregarAprovacoes();
+}
+
+async function rejeitarPrecificacao(tabela, id){
+  if(!confirm('Rejeitar este item de Precificação?')) return;
+  const { error } = await sb.from(tabela).update({ status: 'rejeitado' }).eq('id', id);
+  if(error){ alert('Erro ao rejeitar: '+error.message); return; }
+  carregarAprovacoes();
+}
+
+async function validarProjeto(id){
+  if(!confirm('Validar este projeto?')) return;
+  const { error } = await sb.from('projects').update({ status_aprovacao: 'validado' }).eq('id', id);
+  if(error){ alert('Erro ao validar: '+error.message); return; }
+  carregarAprovacoes();
 }
 
 async function logout(){ await sb.auth.signOut(); window.location.reload(); }
@@ -474,11 +723,12 @@ function renderTabelaUsuarios(){
         (p.uniformes_backoffice?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Backoffice Unif.</span>':'')+
         (p.freelancer_coordenador?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Coord. Freelancers</span>':'')+
         (p.freelancer_agencia?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Ag\u00eancia Freelancers</span>':'')+
+        (p.precificacao_backoffice?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Backoffice Precific.</span>':'')+
       '</td>'+
       '<td style="padding:10px 12px;max-width:160px">'+celulaLoja+'</td>'+
       checks+
       '<td style="padding:10px 12px;white-space:nowrap">'+
-        '<button onclick=\'abrirEditarUsuario('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.email)+','+JSON.stringify(p.tipo)+','+JSON.stringify(!!p.uniformes_backoffice)+','+JSON.stringify(!!p.freelancer_coordenador)+','+JSON.stringify(!!p.freelancer_agencia)+','+JSON.stringify(p.loja||null)+')\' style="background:none;border:none;color:var(--marrom-dark);cursor:pointer;font-size:.85rem;margin-right:8px" title="Editar usu\u00e1rio">\u270f\ufe0f</button>'+
+        '<button onclick=\'abrirEditarUsuario('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.email)+','+JSON.stringify(p.tipo)+','+JSON.stringify(!!p.uniformes_backoffice)+','+JSON.stringify(!!p.freelancer_coordenador)+','+JSON.stringify(!!p.freelancer_agencia)+','+JSON.stringify(!!p.precificacao_backoffice)+','+JSON.stringify(p.loja||null)+')\' style="background:none;border:none;color:var(--marrom-dark);cursor:pointer;font-size:.85rem;margin-right:8px" title="Editar usu\u00e1rio">\u270f\ufe0f</button>'+
         '<button onclick="excluirUsuario(\''+p.id+'\',\''+p.nome.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem" title="Excluir usu\u00e1rio">\uD83D\uDDD1\uFE0F</button>'+
       '</td>'+
     '</tr>';
@@ -559,13 +809,13 @@ function abrirNovoUsuario(){
   $('novoLojaWrap').style.display = '';
   $('novoLoja').innerHTML = LOJAS_DISPONIVEIS.map(l=>'<option value="'+l+'">'+l+'</option>').join('');
   $('novoNome').value=''; $('novoEmail').value=''; $('novoTipo').value='loja'; $('novoBackoffice').checked=false;
-  $('novoFreelancerCoordenador').checked=false; $('novoFreelancerAgencia').checked=false;
+  $('novoFreelancerCoordenador').checked=false; $('novoFreelancerAgencia').checked=false; $('novoPrecificacaoBackoffice').checked=false;
   onNovoTipoChange();
   showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
   $('modalNovoUsuario').classList.add('show');
 }
 
-function abrirEditarUsuario(perfil_id, nome, email, tipo, backoffice, freelancerCoordenador, freelancerAgencia, lojaAtualDoUsuario){
+function abrirEditarUsuario(perfil_id, nome, email, tipo, backoffice, freelancerCoordenador, freelancerAgencia, precificacaoBackoffice, lojaAtualDoUsuario){
   usuarioEditandoId = perfil_id;
   $('tituloNovoUsuario').textContent = 'Editar usuário';
   $('subNovoUsuario').textContent = 'Corrige nome, e-mail ou tipo de acesso. Loja(s) e senha se editam nos botões próprios da tabela.';
@@ -577,6 +827,7 @@ function abrirEditarUsuario(perfil_id, nome, email, tipo, backoffice, freelancer
   $('novoBackoffice').checked = !!backoffice;
   $('novoFreelancerCoordenador').checked = !!freelancerCoordenador;
   $('novoFreelancerAgencia').checked = !!freelancerAgencia;
+  $('novoPrecificacaoBackoffice').checked = !!precificacaoBackoffice;
   showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
   $('modalNovoUsuario').classList.add('show');
 }
@@ -593,11 +844,12 @@ async function editarUsuario(){
   const uniformes_backoffice = $('novoBackoffice').checked;
   const freelancer_coordenador = $('novoFreelancerCoordenador').checked;
   const freelancer_agencia = $('novoFreelancerAgencia').checked;
+  const precificacao_backoffice = $('novoPrecificacaoBackoffice').checked;
   const btn = $('btnNovoUsuario');
   if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
   btn.disabled = true; btn.textContent = 'Salvando\u2026';
   try{
-    const d = await chamarAdminUsuarios('editar_usuario', { perfil_id: usuarioEditandoId, nome, email, tipo, uniformes_backoffice, freelancer_coordenador, freelancer_agencia });
+    const d = await chamarAdminUsuarios('editar_usuario', { perfil_id: usuarioEditandoId, nome, email, tipo, uniformes_backoffice, freelancer_coordenador, freelancer_agencia, precificacao_backoffice });
     btn.disabled = false; btn.textContent = 'Salvar altera\u00e7\u00f5es';
     if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
     showMsg('novoUsuarioMsg','Salvo!','ok');
@@ -617,11 +869,12 @@ async function criarUsuario(){
   const uniformes_backoffice = $('novoBackoffice').checked;
   const freelancer_coordenador = $('novoFreelancerCoordenador').checked;
   const freelancer_agencia = $('novoFreelancerAgencia').checked;
+  const precificacao_backoffice = $('novoPrecificacaoBackoffice').checked;
   const btn = $('btnNovoUsuario');
   if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
   btn.disabled = true; btn.textContent = 'Criando\u2026';
   try{
-    const d = await chamarAdminUsuarios('criar_usuario', { nome, email, tipo, loja, uniformes_backoffice, freelancer_coordenador, freelancer_agencia });
+    const d = await chamarAdminUsuarios('criar_usuario', { nome, email, tipo, loja, uniformes_backoffice, freelancer_coordenador, freelancer_agencia, precificacao_backoffice });
     btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';
     if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
     showMsg('novoUsuarioMsg','Usu\u00e1rio criado! Senha tempor\u00e1ria:','ok');

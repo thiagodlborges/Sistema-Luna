@@ -85,13 +85,25 @@
   .badge-count{background:var(--bordo);color:var(--creme);font-family:'Jost',sans-serif;font-size:.68rem;font-weight:600;padding:2px 9px;border-radius:20px;line-height:1.6}
   .approval-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--creme-dark);flex-wrap:wrap}
   .approval-item:first-of-type{border-top:none;padding-top:2px}
+  .approval-info{cursor:pointer;border-radius:8px;padding:4px 8px;margin:-4px -8px;transition:background .15s}
+  .approval-info:hover{background:var(--creme)}
   .approval-l1{font-size:.9rem;font-weight:500;color:var(--text)}
+  .approval-l1::after{content:' →';color:var(--marrom-light);opacity:0;transition:opacity .15s}
+  .approval-info:hover .approval-l1::after{opacity:1}
   .approval-l2{font-size:.76rem;color:var(--text-light);margin-top:2px}
   .approval-actions{display:flex;gap:8px;flex-shrink:0}
   .btn-approve{background:#27AE60;color:#fff;border:none;padding:8px 16px;border-radius:7px;font-family:'Jost',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:background .15s}
   .btn-approve:hover{background:#1e8449}
   .btn-reject{background:none;border:1.5px solid #B43C3C;color:#B43C3C;padding:6.5px 14px;border-radius:7px;font-family:'Jost',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:.15s}
   .btn-reject:hover{background:#B43C3C;color:#fff}
+
+  /* MODAL DE DETALHE DA APROVAÇÃO */
+  .detail-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:500;margin-bottom:3px}
+  .detail-value{font-size:.9rem;color:var(--text);margin-bottom:14px;line-height:1.4}
+  .detail-table{width:100%;border-collapse:collapse;font-size:.8rem;margin:6px 0 14px}
+  .detail-table th{text-align:left;padding:7px 9px;background:var(--creme);color:var(--text-light);font-size:.66rem;text-transform:uppercase;letter-spacing:.04em}
+  .detail-table td{padding:7px 9px;border-top:1px solid var(--creme-dark)}
+  .link-modulo{display:inline-block;margin-top:2px;margin-bottom:6px;font-size:.78rem;color:var(--marrom-dark);text-decoration:underline}
   footer{text-align:center;color:var(--marrom);font-size:.7rem;letter-spacing:.06em;padding:22px}
 
   /* MODAL */
@@ -286,6 +298,16 @@
   </div>
 </div>
 
+<!-- MODAL: Detalhe da aprovação -->
+<div class="modal-overlay" id="modalAprovacaoDetalhe">
+  <div class="modal" style="max-width:560px;width:96%;max-height:86vh;overflow:auto">
+    <h3 id="detalheTitulo">Detalhe</h3>
+    <div id="detalheConteudo" class="loading">Carregando&hellip;</div>
+    <div class="modal-actions" id="detalheAcoes"></div>
+    <button class="modal-close" onclick="fecharModal('modalAprovacaoDetalhe')">Fechar</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = 'https://pbuhwpcpdcnaheaywmdv.supabase.co';
@@ -296,6 +318,7 @@ let souMaster = false;
 let souCoordenador = false;
 let meuId = null;
 let meuNome = null;
+let sistemasCache = [];
 
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtData(d){ return d ? new Date(d+'T12:00').toLocaleDateString('pt-BR') : '—'; }
@@ -362,6 +385,7 @@ const ICONS = {
 const ICON_PADRAO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
 
 function render(sistemas){
+  sistemasCache = sistemas || [];
   if(!sistemas.length){
     $('helloSub').textContent = 'Voc\u00ea ainda n\u00e3o tem acesso a nenhum sistema.';
     $('content').innerHTML = '<div class="empty">Nenhum sistema liberado para o seu acesso.<br>Fale com o administrador para solicitar acesso.</div>';
@@ -430,6 +454,7 @@ function renderAprovacoes(dados){
     grupos.push({
       titulo: '💼 Freelancers — contratações pendentes',
       itens: dados.freelancers.map(f => ({
+        onclick: "abrirDetalheAprovacao('freelancer','"+f.id+"')",
         l1: (f.freelancers ? f.freelancers.nome_completo : 'Freelancer'),
         l2: esc(f.loja)+' · solicitado por '+esc(f.solicitado_por_nome||'—')+' · '+fmtData(f.criado_em),
         aprovar: "aprovarFreelancer('"+f.id+"')",
@@ -442,6 +467,7 @@ function renderAprovacoes(dados){
     grupos.push({
       titulo: '🏭 Pedidos para a fábrica — aguardando aprovação',
       itens: dados.pedidos.map(p => ({
+        onclick: "abrirDetalheAprovacao('pedido',"+p.id+")",
         l1: esc(p.numero_pedido)+' — '+esc(p.loja),
         l2: 'Pedido em '+fmtData(p.data_pedido)+' · entrega prevista '+fmtData(p.data_entrega_prevista)+(p.observacoes?' · '+esc(p.observacoes):''),
         aprovar: "aprovarPedido("+p.id+")",
@@ -454,6 +480,7 @@ function renderAprovacoes(dados){
     grupos.push({
       titulo: '💲 Precificação — novos preços',
       itens: dados.precos.map(p => ({
+        onclick: "abrirDetalheAprovacao('preco','"+p.id+"')",
         l1: (p.precificacao_produtos?esc(p.precificacao_produtos.nome):'Produto')+' · '+labelElo(p.elo),
         l2: 'Custo '+fmtMoeda(p.custo)+' · Venda '+fmtMoeda(p.preco_venda)+' · vigência '+fmtData(p.vigencia_inicio)+' · proposto por '+esc(p.criado_por_nome||'—'),
         aprovar: "aprovarPrecificacao('precificacao_precos','"+p.id+"')",
@@ -466,6 +493,7 @@ function renderAprovacoes(dados){
     grupos.push({
       titulo: '📑 Precificação — tributos',
       itens: dados.tributos.map(t => ({
+        onclick: "abrirDetalheAprovacao('tributo','"+t.id+"')",
         l1: esc(t.categoria)+' · '+esc(t.tipo_tributo)+' · '+labelElo(t.elo),
         l2: 'Alíquota '+Number(t.aliquota)+'% · vigência '+fmtData(t.vigencia_inicio)+' · proposto por '+esc(t.criado_por_nome||'—'),
         aprovar: "aprovarPrecificacao('precificacao_tributos','"+t.id+"')",
@@ -478,6 +506,7 @@ function renderAprovacoes(dados){
     grupos.push({
       titulo: '🎁 Precificação — combos',
       itens: dados.combos.map(c => ({
+        onclick: "abrirDetalheAprovacao('combo','"+c.id+"')",
         l1: (c.precificacao_combos?esc(c.precificacao_combos.nome):'Combo'),
         l2: 'Preço '+fmtMoeda(c.preco_combo)+' · vigência '+fmtData(c.vigencia_inicio)+' · proposto por '+esc(c.criado_por_nome||'—'),
         aprovar: "aprovarPrecificacao('precificacao_combo_precos','"+c.id+"')",
@@ -490,6 +519,7 @@ function renderAprovacoes(dados){
     grupos.push({
       titulo: '📋 Projetos — aguardando validação',
       itens: dados.projetos.map(p => ({
+        onclick: "abrirDetalheAprovacao('projeto','"+p.id+"')",
         l1: esc(p.name)+' ('+esc(p.area)+')',
         l2: 'Responsável '+esc(p.responsible||'—')+(p.planned_result?' · '+esc(p.planned_result):''),
         aprovar: "validarProjeto('"+p.id+"')",
@@ -508,7 +538,7 @@ function renderAprovacoes(dados){
       '<div class="approval-group-title">'+g.titulo+' <span class="badge-count">'+g.itens.length+'</span></div>'+
       g.itens.map(it => (
         '<div class="approval-item">'+
-          '<div class="approval-info"><div class="approval-l1">'+it.l1+'</div><div class="approval-l2">'+it.l2+'</div></div>'+
+          '<div class="approval-info" onclick="'+it.onclick+'"><div class="approval-l1">'+it.l1+'</div><div class="approval-l2">'+it.l2+'</div></div>'+
           '<div class="approval-actions">'+
             '<button class="btn-approve" onclick="'+it.aprovar+'">Aprovar</button>'+
             (it.rejeitar ? '<button class="btn-reject" onclick="'+it.rejeitar+'">Rejeitar</button>' : '')+
@@ -581,6 +611,156 @@ async function validarProjeto(id){
   const { error } = await sb.from('projects').update({ status_aprovacao: 'validado' }).eq('id', id);
   if(error){ alert('Erro ao validar: '+error.message); return; }
   carregarAprovacoes();
+}
+
+// ── DETALHE COMPLETO DE CADA APROVAÇÃO ─────────────────────
+function linha(label, valor){ return '<div class="detail-label">'+label+'</div><div class="detail-value">'+valor+'</div>'; }
+function linkModulo(slugs){
+  const lista = Array.isArray(slugs) ? slugs : [slugs];
+  let s = null;
+  for(const slug of lista){ s = sistemasCache.find(x => x.slug === slug); if(s) break; }
+  if(!s) return '';
+  return '<a class="link-modulo" href="'+s.url+'" target="_blank">Abrir módulo → '+esc(s.nome)+'</a>';
+}
+
+function abrirDetalheAprovacao(tipo, id){
+  $('modalAprovacaoDetalhe').classList.add('show');
+  $('detalheTitulo').textContent = 'Detalhe';
+  $('detalheConteudo').innerHTML = '<div class="loading">Carregando&hellip;</div>';
+  $('detalheAcoes').innerHTML = '';
+  const fns = { freelancer: detalheFreelancer, pedido: detalhePedido, preco: detalhePreco, tributo: detalheTributo, combo: detalheCombo, projeto: detalheProjeto };
+  (fns[tipo] || (() => { $('detalheConteudo').innerHTML = '<div class="empty">Tipo desconhecido.</div>'; }))(id);
+}
+
+async function detalheFreelancer(id){
+  const { data, error } = await sb.from('freelancer_solicitacoes')
+    .select('id, loja, solicitado_por_nome, criado_em, observacao, freelancers(nome_completo, cpf, banco, agencia_bancaria, conta, tipo_conta, chave_pix), freelancer_solicitacao_diarias(data_servico, carga_horaria, valor_diaria)')
+    .eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  const f = data.freelancers || {};
+  const diarias = data.freelancer_solicitacao_diarias || [];
+  $('detalheTitulo').textContent = 'Solicitação de Freelancer';
+  $('detalheConteudo').innerHTML =
+    linha('Freelancer', esc(f.nome_completo||'—')) +
+    linha('CPF', esc(f.cpf||'—')) +
+    linha('Dados bancários', esc(f.banco||'—')+' · Ag '+esc(f.agencia_bancaria||'—')+' · Conta '+esc(f.conta||'—')+(f.tipo_conta?' ('+esc(f.tipo_conta)+')':'')) +
+    linha('Chave Pix', esc(f.chave_pix||'—')) +
+    linha('Loja', esc(data.loja)) +
+    linha('Solicitado por', esc(data.solicitado_por_nome||'—')+' em '+fmtData(data.criado_em)) +
+    (data.observacao ? linha('Observação', esc(data.observacao)) : '') +
+    (diarias.length ?
+      '<div class="detail-label">Diárias solicitadas</div><table class="detail-table"><thead><tr><th>Data</th><th>Carga</th><th>Valor</th></tr></thead><tbody>'+
+        diarias.map(d=>'<tr><td>'+fmtData(d.data_servico)+'</td><td>'+esc(d.carga_horaria)+'</td><td>'+fmtMoeda(d.valor_diaria)+'</td></tr>').join('')+
+      '</tbody></table>'
+      : linha('Diárias', 'Nenhuma diária detalhada ainda.'))+
+    linkModulo('freelancers');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarFreelancer(\''+id+'\')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="reprovarFreelancer(\''+id+'\')">Reprovar</button>';
+}
+
+async function detalhePedido(id){
+  const [{ data: pedido, error }, { data: itens }] = await Promise.all([
+    sb.from('pedidos').select('*').eq('id', id).single(),
+    sb.from('pedido_itens').select('quantidade, unidade, observacao, produtos(nome)').eq('pedido_id', id).order('id')
+  ]);
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  const lista = itens || [];
+  $('detalheTitulo').textContent = 'Pedido '+esc(pedido.numero_pedido);
+  $('detalheConteudo').innerHTML =
+    linha('Loja', esc(pedido.loja)) +
+    linha('Data do pedido', fmtData(pedido.data_pedido)) +
+    linha('Entrega prevista', fmtData(pedido.data_entrega_prevista)) +
+    (pedido.observacoes ? linha('Observações', esc(pedido.observacoes)) : '') +
+    (lista.length ?
+      '<div class="detail-label">Itens do pedido</div><table class="detail-table"><thead><tr><th>Item</th><th>Qtd</th></tr></thead><tbody>'+
+        lista.map(it=>'<tr><td>'+esc(it.produtos?it.produtos.nome:(it.observacao||'—'))+'</td><td>'+Number(it.quantidade)+' '+esc(it.unidade)+'</td></tr>').join('')+
+      '</tbody></table>'
+      : linha('Itens', 'Sem itens detalhados.'))+
+    linkModulo(['pedidos_fabrica','pedidos_loja']);
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarPedido('+id+')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarPedido('+id+')">Rejeitar</button>';
+}
+
+async function detalhePreco(id){
+  const { data: p, error } = await sb.from('precificacao_precos')
+    .select('*, precificacao_produtos(nome, categoria, origem)').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  const prod = p.precificacao_produtos || {};
+  const { data: vigente } = await sb.from('precificacao_precos')
+    .select('custo, preco_venda, vigencia_inicio')
+    .eq('produto_id', p.produto_id).eq('elo', p.elo).eq('status','aprovado')
+    .lte('vigencia_inicio', new Date().toISOString().slice(0,10))
+    .order('vigencia_inicio', { ascending:false }).limit(1).maybeSingle();
+  $('detalheTitulo').textContent = 'Novo preço — '+esc(prod.nome||'');
+  $('detalheConteudo').innerHTML =
+    linha('Produto', esc(prod.nome||'—')+' · '+esc(prod.categoria||'')) +
+    linha('Elo', labelElo(p.elo)) +
+    linha('Preço vigente hoje', vigente ? ('Custo '+fmtMoeda(vigente.custo)+' · Venda '+fmtMoeda(vigente.preco_venda)+' (desde '+fmtData(vigente.vigencia_inicio)+')') : 'Nenhum preço aprovado ainda para este elo.') +
+    linha('Preço proposto', 'Custo '+fmtMoeda(p.custo)+' · Venda '+fmtMoeda(p.preco_venda)) +
+    linha('Vigência a partir de', fmtData(p.vigencia_inicio)) +
+    linha('Proposto por', esc(p.criado_por_nome||'—')) +
+    linkModulo('precificacao');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarPrecificacao(\'precificacao_precos\',\''+id+'\')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarPrecificacao(\'precificacao_precos\',\''+id+'\')">Rejeitar</button>';
+}
+
+async function detalheTributo(id){
+  const { data: t, error } = await sb.from('precificacao_tributos').select('*').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  $('detalheTitulo').textContent = 'Novo tributo — '+esc(t.categoria);
+  $('detalheConteudo').innerHTML =
+    linha('Categoria', esc(t.categoria)) +
+    linha('Elo', labelElo(t.elo)) +
+    linha('Tipo de tributo', esc(t.tipo_tributo)) +
+    linha('Alíquota (débito)', Number(t.aliquota)+'%') +
+    linha('Alíquota (crédito PIS/Cofins)', Number(t.aliquota_credito||0)+'%') +
+    linha('Vigência a partir de', fmtData(t.vigencia_inicio)) +
+    linha('Proposto por', esc(t.criado_por_nome||'—')) +
+    linkModulo('precificacao');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarPrecificacao(\'precificacao_tributos\',\''+id+'\')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarPrecificacao(\'precificacao_tributos\',\''+id+'\')">Rejeitar</button>';
+}
+
+async function detalheCombo(id){
+  const { data: c, error } = await sb.from('precificacao_combo_precos')
+    .select('*, precificacao_combos(nome, precificacao_combo_itens(quantidade, elo, precificacao_produtos(nome)))').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  const combo = c.precificacao_combos || {};
+  const itens = combo.precificacao_combo_itens || [];
+  $('detalheTitulo').textContent = 'Combo — '+esc(combo.nome||'');
+  $('detalheConteudo').innerHTML =
+    linha('Combo', esc(combo.nome||'—')) +
+    (itens.length ?
+      '<div class="detail-label">Itens do combo</div><table class="detail-table"><thead><tr><th>Produto</th><th>Qtd</th><th>Elo</th></tr></thead><tbody>'+
+        itens.map(it=>'<tr><td>'+esc(it.precificacao_produtos?it.precificacao_produtos.nome:'—')+'</td><td>'+it.quantidade+'</td><td>'+labelElo(it.elo)+'</td></tr>').join('')+
+      '</tbody></table>'
+      : linha('Itens', 'Sem itens cadastrados.'))+
+    linha('Preço do combo', fmtMoeda(c.preco_combo)) +
+    linha('Vigência a partir de', fmtData(c.vigencia_inicio)) +
+    linha('Proposto por', esc(c.criado_por_nome||'—')) +
+    linkModulo('precificacao');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarPrecificacao(\'precificacao_combo_precos\',\''+id+'\')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarPrecificacao(\'precificacao_combo_precos\',\''+id+'\')">Rejeitar</button>';
+}
+
+async function detalheProjeto(id){
+  const { data: p, error } = await sb.from('projects').select('*').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  $('detalheTitulo').textContent = 'Projeto — '+esc(p.name);
+  $('detalheConteudo').innerHTML =
+    linha('Área', esc(p.area)) +
+    linha('Responsável', esc(p.responsible||'—')) +
+    linha('Resultado planejado', esc(p.planned_result||'—')+(p.result_target?(' ('+p.result_target+' '+esc(p.result_unit||'')+')'):'')) +
+    linha('Prazo', fmtData(p.start_date)+' até '+fmtData(p.end_date)) +
+    (p.scope ? linha('Escopo', esc(p.scope)) : '') +
+    linkModulo('projetos');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');validarProjeto(\''+id+'\')">Validar</button>';
 }
 
 async function logout(){ await sb.auth.signOut(); window.location.reload(); }

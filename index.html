@@ -14,6 +14,7 @@
     --text:#2C1810; --text-light:#6B4F3A; --white:#FDFAF6;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html,body{overflow-x:hidden;max-width:100vw}
   body{font-family:'Jost',sans-serif;color:var(--text);background:var(--creme);min-height:100vh}
 
   .wordmark{line-height:1}
@@ -45,11 +46,11 @@
 
   /* PORTAL */
   #portal{display:none;min-height:100vh;flex-direction:column}
-  header{background:var(--bordo);color:var(--creme);padding:16px 26px;display:flex;align-items:center;justify-content:space-between;
+  header{background:var(--bordo);color:var(--creme);padding:16px 26px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
     box-shadow:0 2px 14px rgba(74,18,32,.25)}
   header .wordmark .brand{font-size:1.5rem;color:var(--creme)}
   header .wordmark .sub{color:var(--marrom-light)}
-  .userbox{display:flex;align-items:center;gap:16px;font-size:.85rem}
+  .userbox{display:flex;align-items:center;gap:16px;font-size:.85rem;flex-wrap:wrap}
   .userbox .greet b{font-weight:500}
   .logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:var(--creme);
     font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
@@ -122,6 +123,12 @@
     margin-top:10px;font-family:'DM Mono',monospace;font-size:.95rem;text-align:center;color:var(--bordo-dark)}
   .admin-link{background:none;border:none;color:var(--marrom-dark);font-family:'Jost',sans-serif;font-size:.78rem;
     text-decoration:underline;cursor:pointer;display:block;margin-top:8px}
+
+  @media (max-width:600px){
+    header{padding:14px 18px}
+    main{padding:32px 16px 48px}
+    .sys{width:100%;max-width:280px}
+  }
 </style>
 </head>
 <body>

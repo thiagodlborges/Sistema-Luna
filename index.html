@@ -102,6 +102,10 @@
   .detail-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:500;margin-bottom:3px}
   .detail-value{font-size:.9rem;color:var(--text);margin-bottom:14px;line-height:1.4}
   .detail-table{width:100%;border-collapse:collapse;font-size:.8rem;margin:6px 0 14px}
+  .detail-edit-row{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
+  .detail-edit-row .field{flex:1;min-width:120px}
+  .detail-edit-row .field label{margin-bottom:4px}
+  .detail-edit-row .inp{margin-bottom:0}
   .detail-table th{text-align:left;padding:7px 9px;background:var(--creme);color:var(--text-light);font-size:.66rem;text-transform:uppercase;letter-spacing:.04em}
   .detail-table td{padding:7px 9px;border-top:1px solid var(--creme-dark)}
   .link-modulo{display:inline-block;margin-top:2px;margin-bottom:6px;font-size:.78rem;color:var(--marrom-dark);text-decoration:underline}
@@ -705,13 +709,32 @@ async function detalhePreco(id){
     linha('Produto', esc(prod.nome||'—')+' · '+esc(prod.categoria||'')) +
     linha('Elo', labelElo(p.elo)) +
     linha('Preço vigente hoje', vigente ? ('Custo '+fmtMoeda(vigente.custo)+' · Venda '+fmtMoeda(vigente.preco_venda)+' (desde '+fmtData(vigente.vigencia_inicio)+')') : 'Nenhum preço aprovado ainda para este elo.') +
-    linha('Preço proposto', 'Custo '+fmtMoeda(p.custo)+' · Venda '+fmtMoeda(p.preco_venda)) +
-    linha('Vigência a partir de', fmtData(p.vigencia_inicio)) +
+    linha('Tributo', p.precificacao_tributos ? esc(p.precificacao_tributos.tipo_tributo)+' ('+Number(p.precificacao_tributos.aliquota)+'%)' : '—') +
     linha('Proposto por', esc(p.criado_por_nome||'—')) +
+    '<div class="detail-label">Custo, preço e vigência (edite se precisar antes de aprovar)</div>'+
+    '<div class="detail-edit-row">'+
+      '<div class="field"><label>Custo</label><input class="inp" id="edPrecoCusto" type="number" step="0.01" value="'+p.custo+'"></div>'+
+      '<div class="field"><label>Preço de venda</label><input class="inp" id="edPrecoVenda" type="number" step="0.01" value="'+p.preco_venda+'"></div>'+
+      '<div class="field"><label>Vigência a partir de</label><input class="inp" id="edPrecoVigencia" type="date" value="'+p.vigencia_inicio+'"></div>'+
+    '</div>'+
     linkModulo('precificacao');
   $('detalheAcoes').innerHTML =
-    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarPrecificacao(\'precificacao_precos\',\''+id+'\')">Aprovar</button>'+
+    '<button class="btn" onclick="editarEAprovarPrecoPortal(\''+id+'\',\''+(p.tributo_aplicado_id||'')+'\')">Editar e Aprovar</button>'+
     '<button class="btn-outline btn" onclick="rejeitarPrecificacao(\'precificacao_precos\',\''+id+'\')">Rejeitar</button>';
+}
+
+async function editarEAprovarPrecoPortal(id, tributoAtualId){
+  const custo = Number($('edPrecoCusto').value);
+  const preco_venda = Number($('edPrecoVenda').value);
+  const vigencia_inicio = $('edPrecoVigencia').value;
+  if(!(custo>=0) || !(preco_venda>=0) || !vigencia_inicio){ alert('Preencha custo, preço e vigência válidos.'); return; }
+  const { error } = await sb.rpc('editar_aprovar_preco', {
+    p_id: id, p_custo: custo, p_preco_venda: preco_venda,
+    p_tributo_aplicado_id: tributoAtualId || null, p_vigencia_inicio: vigencia_inicio,
+  });
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
 }
 
 async function detalheTributo(id){
@@ -746,13 +769,29 @@ async function detalheCombo(id){
         itens.map(it=>'<tr><td>'+esc(it.precificacao_produtos?it.precificacao_produtos.nome:'—')+'</td><td>'+it.quantidade+'</td><td>'+labelElo(it.elo)+'</td></tr>').join('')+
       '</tbody></table>'
       : linha('Itens', 'Sem itens cadastrados.'))+
-    linha('Preço do combo', fmtMoeda(c.preco_combo)) +
-    linha('Vigência a partir de', fmtData(c.vigencia_inicio)) +
     linha('Proposto por', esc(c.criado_por_nome||'—')) +
+    '<div class="detail-label">Preço e vigência (edite se precisar antes de aprovar)</div>'+
+    '<div class="detail-edit-row">'+
+      '<div class="field"><label>Preço do combo</label><input class="inp" id="edComboPreco" type="number" step="0.01" value="'+c.preco_combo+'"></div>'+
+      '<div class="field"><label>Vigência a partir de</label><input class="inp" id="edComboVigencia" type="date" value="'+c.vigencia_inicio+'"></div>'+
+    '</div>'+
     linkModulo('precificacao');
   $('detalheAcoes').innerHTML =
-    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarPrecificacao(\'precificacao_combo_precos\',\''+id+'\')">Aprovar</button>'+
+    '<button class="btn" onclick="editarEAprovarComboPortal(\''+id+'\',\''+(c.tributo_aplicado_id||'')+'\')">Editar e Aprovar</button>'+
     '<button class="btn-outline btn" onclick="rejeitarPrecificacao(\'precificacao_combo_precos\',\''+id+'\')">Rejeitar</button>';
+}
+
+async function editarEAprovarComboPortal(id, tributoAtualId){
+  const preco_combo = Number($('edComboPreco').value);
+  const vigencia_inicio = $('edComboVigencia').value;
+  if(!(preco_combo>=0) || !vigencia_inicio){ alert('Preencha o preço e a vigência válidos.'); return; }
+  const { error } = await sb.rpc('editar_aprovar_combo_preco', {
+    p_id: id, p_preco_combo: preco_combo,
+    p_tributo_aplicado_id: tributoAtualId || null, p_vigencia_inicio: vigencia_inicio,
+  });
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
 }
 
 async function detalheProjeto(id){

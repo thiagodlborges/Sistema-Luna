@@ -171,7 +171,7 @@
     <div class="hello" id="hello"></div>
     <div class="hello-sub" id="helloSub">Escolha um sistema para acessar.</div>
 
-    <div id="dashboardBlock" style="display:none;margin-bottom:36px">
+    <div id="dashboardBlock" style="display:none;margin-bottom:36px;width:100%">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
         <div class="hello" style="font-size:1.4rem;margin-bottom:0">Dashboard da Loja</div>
         <select class="inp" id="dashLojaSelect" style="max-width:260px;margin-bottom:0" onchange="carregarDashboard(this.value)"></select>
@@ -409,6 +409,7 @@ async function entrarPortal(user){
 }
 
 let dashChart = null;
+let dashLojasAcessiveis = [];
 
 function inicializarDashboard(lojas){
   const sel = $('dashLojaSelect');
@@ -416,57 +417,95 @@ function inicializarDashboard(lojas){
     $('dashboardBlock').style.display = 'none';
     return;
   }
+  dashLojasAcessiveis = lojas;
   $('dashboardBlock').style.display = 'block';
-  sel.innerHTML = lojas.map(l => '<option value="'+l+'">'+l+'</option>').join('');
+  const opcoes = lojas.length > 1
+    ? '<option value="__todas__">Todas as lojas (consolidado)</option>' + lojas.map(l => '<option value="'+l+'">'+l+'</option>').join('')
+    : lojas.map(l => '<option value="'+l+'">'+l+'</option>').join('');
+  sel.innerHTML = opcoes;
   sel.style.display = lojas.length > 1 ? '' : 'none';
-  carregarDashboard(lojas[0]);
+  carregarDashboard(lojas.length > 1 ? '__todas__' : lojas[0]);
 }
 
 function fmtMoedaDash(v){
   return (Number(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
 }
 
-async function carregarDashboard(loja){
-  const el = $('dashConteudo');
-  el.innerHTML = '<div class="loading">Carregando indicadores&hellip;</div>';
-
-  const hoje = new Date();
-  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
-  const dataHoje = hoje.toISOString().slice(0,10);
-
+async function buscarDadosLoja(loja, inicioMes, dataHoje){
   const [resumoR, evolucaoR, pedidosR] = await Promise.all([
     sb.rpc('dashboard_resumo_loja', { p_loja: loja, p_data_inicio: inicioMes, p_data_fim: dataHoje }),
     sb.rpc('dashboard_evolucao_avaliacao', { p_loja: loja }),
     sb.rpc('dashboard_valor_pedidos_por_categoria', { p_loja: loja, p_data_inicio: inicioMes, p_data_fim: dataHoje }),
   ]);
+  return {
+    loja,
+    resumo: (resumoR.data && resumoR.data[0]) || {},
+    evolucao: evolucaoR.data || [],
+    pedidos: pedidosR.data || [],
+    erro: resumoR.error || evolucaoR.error || pedidosR.error || null,
+  };
+}
 
-  if(resumoR.error){
-    el.innerHTML = '<div class="empty">Erro ao carregar: '+resumoR.error.message+'</div>';
+async function carregarDashboard(valor){
+  const el = $('dashConteudo');
+  el.innerHTML = '<div class="loading">Carregando indicadores\u2026</div>';
+
+  const hoje = new Date();
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  const dataHoje = hoje.toISOString().slice(0,10);
+  const consolidado = valor === '__todas__';
+  const lojasAlvo = consolidado ? dashLojasAcessiveis : [valor];
+
+  const resultados = await Promise.all(lojasAlvo.map(l => buscarDadosLoja(l, inicioMes, dataHoje)));
+  const primeiroErro = resultados.find(x => x.erro);
+  if(primeiroErro){
+    el.innerHTML = '<div class="empty">Erro ao carregar: '+primeiroErro.erro.message+'</div>';
     return;
   }
-  const r = (resumoR.data && resumoR.data[0]) || {};
-  const evolucao = evolucaoR.data || [];
-  const pedidos = pedidosR.data || [];
 
-  const totalPedidos = pedidos.reduce((s,p) => s + Number(p.valor||0), 0);
-  const semPreco = pedidos.reduce((s,p) => s + Number(p.itens_sem_preco||0), 0);
+  const r = {
+    perdas_mes: resultados.reduce((s,x) => s + Number(x.resumo.perdas_mes||0), 0),
+    freelancers_mes: resultados.reduce((s,x) => s + Number(x.resumo.freelancers_mes||0), 0),
+    uniformes_em_posse: resultados.reduce((s,x) => s + Number(x.resumo.uniformes_em_posse||0), 0),
+  };
+  const avaliadas = resultados.filter(x => x.resumo.ultima_avaliacao_pct != null);
+  if(avaliadas.length){
+    r.ultima_avaliacao_pct = avaliadas.reduce((s,x) => s + Number(x.resumo.ultima_avaliacao_pct), 0) / avaliadas.length;
+    r.ultima_avaliacao_lojas = avaliadas.length;
+  }
+
+  const evolucao = consolidado ? [] : resultados[0].evolucao;
+
+  const pedidosPorCategoria = {};
+  resultados.forEach(x => x.pedidos.forEach(p => {
+    if(!pedidosPorCategoria[p.categoria]) pedidosPorCategoria[p.categoria] = { categoria: p.categoria, valor: 0, itens_sem_preco: 0 };
+    pedidosPorCategoria[p.categoria].valor += Number(p.valor||0);
+    pedidosPorCategoria[p.categoria].itens_sem_preco += Number(p.itens_sem_preco||0);
+  }));
+  const pedidos = Object.values(pedidosPorCategoria).sort((a,b) => a.categoria.localeCompare(b.categoria));
+
+  const totalPedidos = pedidos.reduce((s,p) => s + p.valor, 0);
+  const semPreco = pedidos.reduce((s,p) => s + p.itens_sem_preco, 0);
 
   el.innerHTML =
     '<div class="dash-grid">'+
-      '<div class="dash-card"><div class="lbl">Perdas no m\u00eas</div><div class="val">'+fmtMoedaDash(r.perdas_mes)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">Perdas no m\u00eas'+(consolidado?' (todas as lojas)':'')+'</div><div class="val">'+fmtMoedaDash(r.perdas_mes)+'</div></div>'+
       '<div class="dash-card"><div class="lbl">Gasto com freelancers</div><div class="val">'+fmtMoedaDash(r.freelancers_mes)+'</div></div>'+
       '<div class="dash-card"><div class="lbl">Pedidos no m\u00eas (aprox.)</div><div class="val">'+fmtMoedaDash(totalPedidos)+'</div>'+
         (semPreco ? '<div class="sub">'+semPreco+' item(ns) sem pre\u00e7o cadastrado, n\u00e3o entraram na soma</div>' : '')+
       '</div>'+
       '<div class="dash-card"><div class="lbl">Uniformes em posse</div><div class="val">'+fmtMoedaDash(r.uniformes_em_posse)+'</div></div>'+
       '<div class="dash-card"><div class="lbl">\u00daltima avalia\u00e7\u00e3o de qualidade</div><div class="val">'+(r.ultima_avaliacao_pct!=null?Number(r.ultima_avaliacao_pct).toFixed(1)+'%':'\u2014')+'</div>'+
-        (r.ultima_avaliacao_data ? '<div class="sub">em '+fmtDataDash(r.ultima_avaliacao_data)+'</div>' : '<div class="sub">nenhuma avalia\u00e7\u00e3o registrada ainda</div>')+
+        (consolidado
+          ? (r.ultima_avaliacao_lojas ? '<div class="sub">m\u00e9dia de '+r.ultima_avaliacao_lojas+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')
+          : (resultados[0].resumo.ultima_avaliacao_data ? '<div class="sub">em '+fmtDataDash(resultados[0].resumo.ultima_avaliacao_data)+'</div>' : '<div class="sub">nenhuma avalia\u00e7\u00e3o registrada ainda</div>'))+
       '</div>'+
     '</div>'+
     '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px" id="dashLinhaBaixo">'+
       '<div class="dash-card">'+
         '<div class="lbl" style="margin-bottom:10px">Evolu\u00e7\u00e3o da avalia\u00e7\u00e3o de qualidade</div>'+
-        (evolucao.length ? '<canvas id="dashChartCanvas" height="90"></canvas>' : '<div class="empty" style="padding:20px 0">Sem avalia\u00e7\u00f5es suficientes pra montar o gr\u00e1fico ainda.</div>')+
+        (evolucao.length ? '<canvas id="dashChartCanvas" height="90"></canvas>' :
+          '<div class="empty" style="padding:20px 0">'+(consolidado ? 'Selecione uma loja espec\u00edfica pra ver a evolu\u00e7\u00e3o.' : 'Sem avalia\u00e7\u00f5es suficientes pra montar o gr\u00e1fico ainda.')+'</div>')+
       '</div>'+
       '<div class="dash-card">'+
         '<div class="lbl" style="margin-bottom:6px">Pedidos por categoria (valor aproximado)</div>'+
@@ -502,6 +541,7 @@ async function carregarDashboard(loja){
     });
   }
 }
+
 
 function fmtDataDash(iso){
   if(!iso) return '';

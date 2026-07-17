@@ -133,6 +133,14 @@
     main{padding:32px 16px 48px}
     .sys{width:100%;max-width:280px}
   }
+  .dash-card{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:18px 20px}
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px}
+  .dash-card .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:500;margin-bottom:6px}
+  .dash-card .val{font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:var(--bordo-dark);line-height:1.1}
+  .dash-card .sub{font-size:.72rem;color:var(--text-light);margin-top:4px}
+  .dash-cat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--creme-dark);font-size:.85rem}
+  .dash-cat-row:last-child{border-bottom:none}
+  .dash-cat-row .qtd{color:var(--text-light);font-size:.72rem}
 </style>
 </head>
 <body>
@@ -162,6 +170,15 @@
   <main>
     <div class="hello" id="hello"></div>
     <div class="hello-sub" id="helloSub">Escolha um sistema para acessar.</div>
+
+    <div id="dashboardBlock" style="display:none;margin-bottom:36px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+        <div class="hello" style="font-size:1.4rem;margin-bottom:0">Dashboard da Loja</div>
+        <select class="inp" id="dashLojaSelect" style="max-width:260px;margin-bottom:0" onchange="carregarDashboard(this.value)"></select>
+      </div>
+      <div class="hello-sub" style="margin-bottom:16px">Números do mês corrente, até hoje.</div>
+      <div id="dashConteudo"><div class="loading">Carregando indicadores&hellip;</div></div>
+    </div>
 
     <div id="aprovacoesBlock" style="display:none">
       <div class="hello" style="font-size:1.4rem;margin-bottom:4px">Central de Aprovações</div>
@@ -324,6 +341,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
 const SUPABASE_URL = 'https://pbuhwpcpdcnaheaywmdv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBidWh3cGNwZGNuYWhlYXl3bWR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjU5MzksImV4cCI6MjA5MTg0MTkzOX0.Mg4PVg96ZiV3C2Rn0GLQU9c7ui_41OlU6Ldqn5jcvyY';
@@ -360,17 +378,23 @@ async function entrarPortal(user){
   souMaster = false;
   souCoordenador = false;
   meuId = user.id;
+  let minhasLojas = [];
   try{
-    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador').eq('id', user.id).single();
+    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas').eq('id', user.id).single();
     if(perfil && perfil.nome) nome = perfil.nome;
     if(perfil && perfil.tipo === 'master') souMaster = true;
     if(perfil && perfil.freelancer_coordenador) souCoordenador = true;
+    if(perfil){
+      if(Array.isArray(perfil.lojas) && perfil.lojas.length) minhasLojas = perfil.lojas;
+      else if(perfil.loja) minhasLojas = [perfil.loja];
+    }
   }catch(e){}
   meuNome = nome;
   const primeiro = (nome||'').split(' ')[0];
   $('greet').innerHTML = 'Ol\u00e1, <b>'+nome+'</b>';
   $('hello').textContent = 'Bem-vindo, '+primeiro+'.';
   $('adminBlock').style.display = souMaster ? 'block' : 'none';
+  inicializarDashboard(souMaster ? LOJAS_DISPONIVEIS.slice() : minhasLojas);
   if(souMaster || souCoordenador){
     $('aprovacoesBlock').style.display = 'block';
     carregarAprovacoes();
@@ -382,6 +406,107 @@ async function entrarPortal(user){
   }catch(e){
     $('content').innerHTML = '<div class="empty">N\u00e3o foi poss\u00edvel carregar os sistemas agora. Recarregue a p\u00e1gina.</div>';
   }
+}
+
+let dashChart = null;
+
+function inicializarDashboard(lojas){
+  const sel = $('dashLojaSelect');
+  if(!lojas || !lojas.length){
+    $('dashboardBlock').style.display = 'none';
+    return;
+  }
+  $('dashboardBlock').style.display = 'block';
+  sel.innerHTML = lojas.map(l => '<option value="'+l+'">'+l+'</option>').join('');
+  sel.style.display = lojas.length > 1 ? '' : 'none';
+  carregarDashboard(lojas[0]);
+}
+
+function fmtMoedaDash(v){
+  return (Number(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+}
+
+async function carregarDashboard(loja){
+  const el = $('dashConteudo');
+  el.innerHTML = '<div class="loading">Carregando indicadores&hellip;</div>';
+
+  const hoje = new Date();
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  const dataHoje = hoje.toISOString().slice(0,10);
+
+  const [resumoR, evolucaoR, pedidosR] = await Promise.all([
+    sb.rpc('dashboard_resumo_loja', { p_loja: loja, p_data_inicio: inicioMes, p_data_fim: dataHoje }),
+    sb.rpc('dashboard_evolucao_avaliacao', { p_loja: loja }),
+    sb.rpc('dashboard_valor_pedidos_por_categoria', { p_loja: loja, p_data_inicio: inicioMes, p_data_fim: dataHoje }),
+  ]);
+
+  if(resumoR.error){
+    el.innerHTML = '<div class="empty">Erro ao carregar: '+resumoR.error.message+'</div>';
+    return;
+  }
+  const r = (resumoR.data && resumoR.data[0]) || {};
+  const evolucao = evolucaoR.data || [];
+  const pedidos = pedidosR.data || [];
+
+  const totalPedidos = pedidos.reduce((s,p) => s + Number(p.valor||0), 0);
+  const semPreco = pedidos.reduce((s,p) => s + Number(p.itens_sem_preco||0), 0);
+
+  el.innerHTML =
+    '<div class="dash-grid">'+
+      '<div class="dash-card"><div class="lbl">Perdas no m\u00eas</div><div class="val">'+fmtMoedaDash(r.perdas_mes)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">Gasto com freelancers</div><div class="val">'+fmtMoedaDash(r.freelancers_mes)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">Pedidos no m\u00eas (aprox.)</div><div class="val">'+fmtMoedaDash(totalPedidos)+'</div>'+
+        (semPreco ? '<div class="sub">'+semPreco+' item(ns) sem pre\u00e7o cadastrado, n\u00e3o entraram na soma</div>' : '')+
+      '</div>'+
+      '<div class="dash-card"><div class="lbl">Uniformes em posse</div><div class="val">'+fmtMoedaDash(r.uniformes_em_posse)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">\u00daltima avalia\u00e7\u00e3o de qualidade</div><div class="val">'+(r.ultima_avaliacao_pct!=null?Number(r.ultima_avaliacao_pct).toFixed(1)+'%':'\u2014')+'</div>'+
+        (r.ultima_avaliacao_data ? '<div class="sub">em '+fmtDataDash(r.ultima_avaliacao_data)+'</div>' : '<div class="sub">nenhuma avalia\u00e7\u00e3o registrada ainda</div>')+
+      '</div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px" id="dashLinhaBaixo">'+
+      '<div class="dash-card">'+
+        '<div class="lbl" style="margin-bottom:10px">Evolu\u00e7\u00e3o da avalia\u00e7\u00e3o de qualidade</div>'+
+        (evolucao.length ? '<canvas id="dashChartCanvas" height="90"></canvas>' : '<div class="empty" style="padding:20px 0">Sem avalia\u00e7\u00f5es suficientes pra montar o gr\u00e1fico ainda.</div>')+
+      '</div>'+
+      '<div class="dash-card">'+
+        '<div class="lbl" style="margin-bottom:6px">Pedidos por categoria (valor aproximado)</div>'+
+        (pedidos.length ? pedidos.map(p =>
+          '<div class="dash-cat-row"><span>'+p.categoria+'</span><span>'+fmtMoedaDash(p.valor)+
+            (p.itens_sem_preco ? ' <span class="qtd">('+p.itens_sem_preco+' sem pre\u00e7o)</span>' : '')+
+          '</span></div>'
+        ).join('') : '<div class="empty" style="padding:20px 0">Nenhum pedido no per\u00edodo.</div>')+
+      '</div>'+
+    '</div>';
+
+  if(evolucao.length && window.Chart){
+    if(dashChart) dashChart.destroy();
+    const ctx = $('dashChartCanvas').getContext('2d');
+    dashChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: evolucao.map(e => fmtDataDash(e.data_avaliacao)),
+        datasets: [{
+          label: 'Pontua\u00e7\u00e3o (%)',
+          data: evolucao.map(e => Number(e.pontuacao_pct)),
+          borderColor: '#6B1E2E',
+          backgroundColor: 'rgba(107,30,46,0.12)',
+          tension: 0.25,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+}
+
+function fmtDataDash(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return d+'/'+m+'/'+y;
 }
 
 const ICONS = {

@@ -390,8 +390,9 @@ async function entrarPortal(user){
   meuId = user.id;
   let minhasLojas = [];
   let souFabrica = false;
+  let souBackofficeLuna = false;
   try{
-    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas, precificacao_fabrica_backoffice').eq('id', user.id).single();
+    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas, precificacao_fabrica_backoffice, dashboard_backoffice').eq('id', user.id).single();
     if(perfil && perfil.nome) nome = perfil.nome;
     if(perfil && perfil.tipo === 'master') souMaster = true;
     if(perfil && perfil.freelancer_coordenador) souCoordenador = true;
@@ -399,6 +400,7 @@ async function entrarPortal(user){
       if(Array.isArray(perfil.lojas) && perfil.lojas.length) minhasLojas = perfil.lojas;
       else if(perfil.loja) minhasLojas = [perfil.loja];
       souFabrica = perfil.tipo === 'fabrica' || perfil.precificacao_fabrica_backoffice === true;
+      souBackofficeLuna = perfil.dashboard_backoffice === true;
     }
   }catch(e){}
   meuNome = nome;
@@ -408,6 +410,8 @@ async function entrarPortal(user){
   $('adminBlock').style.display = souMaster ? 'block' : 'none';
   if(souMaster || minhasLojas.length){
     inicializarDashboard(souMaster ? LOJAS_DISPONIVEIS.slice() : minhasLojas);
+  } else if(souBackofficeLuna){
+    inicializarDashboardBackoffice();
   } else if(souFabrica){
     inicializarRankingFabrica();
   }
@@ -476,6 +480,84 @@ function inicializarDashboard(lojas){
   sel.innerHTML = opcoes;
   sel.style.display = lojas.length > 1 ? '' : 'none';
   carregarDashboard(lojas.length > 1 ? '__todas__' : lojas[0]);
+}
+
+async function inicializarDashboardBackoffice(){
+  dashLojasAcessiveis = LOJAS_DISPONIVEIS.slice();
+  $('dashboardBlock').style.display = 'block';
+  $('dashTitulo').textContent = 'Dashboard \u2014 Vis\u00e3o Consolidada';
+  $('dashSubtitulo').textContent = 'Perdas, uniformes, avalia\u00e7\u00e3o e pedidos de gelato de toda a opera\u00e7\u00e3o. N\u00fameros do m\u00eas corrente, at\u00e9 hoje.';
+  $('dashLojaSelect').style.display = 'none';
+
+  const el = $('dashConteudo');
+  el.innerHTML = '<div class="loading">Carregando indicadores\u2026</div>';
+
+  const hoje = new Date();
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  const dataHoje = hoje.toISOString().slice(0,10);
+
+  const [resumos, evolucaoR, rankingR] = await Promise.all([
+    Promise.all(dashLojasAcessiveis.map(l => sb.rpc('dashboard_resumo_loja', { p_loja: l, p_data_inicio: inicioMes, p_data_fim: dataHoje }))),
+    sb.rpc('dashboard_evolucao_avaliacao_consolidada', { p_lojas: dashLojasAcessiveis }),
+    sb.rpc('dashboard_ranking_gelato', { p_lojas: dashLojasAcessiveis, p_data_fim: dataHoje }),
+  ]);
+
+  const erro = resumos.find(r => r.error);
+  if(erro){
+    el.innerHTML = '<div class="empty">Erro ao carregar: '+erro.error.message+'</div>';
+    return;
+  }
+
+  const dados = resumos.map(r => (r.data && r.data[0]) || {});
+  const perdasMes = dados.reduce((s,d) => s + Number(d.perdas_mes||0), 0);
+  const uniformesPosse = dados.reduce((s,d) => s + Number(d.uniformes_em_posse||0), 0);
+  const avaliadas = dados.filter(d => d.ultima_avaliacao_pct != null);
+  const mediaAvaliacao = avaliadas.length ? avaliadas.reduce((s,d) => s + Number(d.ultima_avaliacao_pct), 0) / avaliadas.length : null;
+
+  const evolucao = evolucaoR.data || [];
+  const ranking = rankingR.data || [];
+
+  el.innerHTML =
+    '<div class="dash-grid">'+
+      '<div class="dash-card"><div class="lbl">Perdas no m\u00eas (todas as lojas)</div><div class="val">'+fmtMoedaDash(perdasMes)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">Uniformes em posse (todas as lojas)</div><div class="val">'+fmtMoedaDash(uniformesPosse)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">M\u00e9dia de avalia\u00e7\u00e3o de qualidade</div><div class="val">'+(mediaAvaliacao!=null?mediaAvaliacao.toFixed(1)+'%':'\u2014')+'</div>'+
+        (avaliadas.length ? '<div class="sub">m\u00e9dia de '+avaliadas.length+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')+
+      '</div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px">'+
+      '<div class="dash-card">'+
+        '<div class="lbl" style="margin-bottom:10px">Evolu\u00e7\u00e3o da avalia\u00e7\u00e3o de qualidade \u2014 m\u00e9dia mensal, todas as lojas</div>'+
+        (evolucao.length ? '<canvas id="dashChartCanvas" height="90"></canvas>' : '<div class="empty" style="padding:20px 0">Sem avalia\u00e7\u00f5es suficientes pra montar o gr\u00e1fico ainda.</div>')+
+      '</div>'+
+      '<div class="dash-card" id="rankingCard_backoffice">'+
+        htmlCardRanking(ranking, 'backoffice', 'Ranking de sabores de gelato \u2014 \u00faltimos 30 dias (todas as lojas)')+
+      '</div>'+
+    '</div>';
+
+  if(evolucao.length && window.Chart){
+    if(dashChart) dashChart.destroy();
+    const ctx = $('dashChartCanvas').getContext('2d');
+    dashChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: evolucao.map(e => fmtMesDash(e.mes)),
+        datasets: [{
+          label: 'M\u00e9dia mensal (%)',
+          data: evolucao.map(e => Number(e.media_pct)),
+          borderColor: '#6B1E2E',
+          backgroundColor: 'rgba(107,30,46,0.12)',
+          tension: 0.25,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
 }
 
 async function inicializarRankingFabrica(){

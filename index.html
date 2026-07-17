@@ -135,21 +135,22 @@
   }
   .dash-card{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:18px 20px}
   .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px}
-  .dash-card .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:500;margin-bottom:6px}
-  .dash-card .val{font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:var(--bordo-dark);line-height:1.1}
-  .dash-card .sub{font-size:.72rem;color:var(--text-light);margin-top:4px}
-  .dash-cat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--creme-dark);font-size:.85rem}
+  .dash-card .lbl{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:700;margin-bottom:6px}
+  .dash-card .val{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--bordo-dark);line-height:1.1}
+  .dash-card .sub{font-size:.8rem;color:var(--text-light);margin-top:4px;font-weight:500}
+  .dash-cat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--creme-dark);font-size:.98rem;font-weight:600}
   .dash-cat-row:last-child{border-bottom:none}
-  .dash-cat-row .qtd{color:var(--text-light);font-size:.72rem}
-  .dash-rank-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--creme-dark);font-size:.85rem}
+  .dash-cat-row .qtd{color:var(--text-light);font-size:.8rem;font-weight:500}
+  .dash-rank-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--creme-dark);font-size:.98rem}
   .dash-rank-row:last-child{border-bottom:none}
-  .dash-rank-pos{width:22px;color:var(--text-light);font-size:.78rem;text-align:right;flex-shrink:0}
-  .dash-rank-nome{flex:1}
-  .dash-rank-qtd{color:var(--text-light);font-size:.78rem;white-space:nowrap}
-  .dash-rank-seta{width:20px;text-align:center;flex-shrink:0;font-size:.85rem}
+  .dash-rank-pos{width:24px;color:var(--text-light);font-size:.88rem;font-weight:700;text-align:right;flex-shrink:0}
+  .dash-rank-nome{flex:1;font-weight:700}
+  .dash-rank-qtd{color:var(--text-light);font-size:.85rem;font-weight:600;white-space:nowrap}
+  .dash-rank-seta{width:22px;text-align:center;flex-shrink:0;font-size:1rem;font-weight:700}
   .dash-rank-seta.up{color:#2e7d32}
   .dash-rank-seta.down{color:var(--bordo)}
-  .dash-rank-seta.new{color:#b8860b;font-size:.65rem;font-weight:600}
+  .dash-rank-seta.new{color:#b8860b;font-size:.68rem;font-weight:700}
+  .dash-rank-toggle{margin-top:10px}
 </style>
 </head>
 <body>
@@ -182,10 +183,10 @@
 
     <div id="dashboardBlock" style="display:none;margin-bottom:36px;width:100%">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
-        <div class="hello" style="font-size:1.4rem;margin-bottom:0">Dashboard da Loja</div>
+        <div class="hello" id="dashTitulo" style="font-size:1.4rem;margin-bottom:0">Dashboard da Loja</div>
         <select class="inp" id="dashLojaSelect" style="max-width:260px;margin-bottom:0" onchange="carregarDashboard(this.value)"></select>
       </div>
-      <div class="hello-sub" style="margin-bottom:16px">Números do mês corrente, até hoje.</div>
+      <div class="hello-sub" id="dashSubtitulo" style="margin-bottom:16px">Números do mês corrente, até hoje.</div>
       <div id="dashConteudo"><div class="loading">Carregando indicadores&hellip;</div></div>
     </div>
 
@@ -388,14 +389,16 @@ async function entrarPortal(user){
   souCoordenador = false;
   meuId = user.id;
   let minhasLojas = [];
+  let souFabrica = false;
   try{
-    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas').eq('id', user.id).single();
+    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas, precificacao_fabrica_backoffice').eq('id', user.id).single();
     if(perfil && perfil.nome) nome = perfil.nome;
     if(perfil && perfil.tipo === 'master') souMaster = true;
     if(perfil && perfil.freelancer_coordenador) souCoordenador = true;
     if(perfil){
       if(Array.isArray(perfil.lojas) && perfil.lojas.length) minhasLojas = perfil.lojas;
       else if(perfil.loja) minhasLojas = [perfil.loja];
+      souFabrica = perfil.tipo === 'fabrica' || perfil.precificacao_fabrica_backoffice === true;
     }
   }catch(e){}
   meuNome = nome;
@@ -403,7 +406,11 @@ async function entrarPortal(user){
   $('greet').innerHTML = 'Ol\u00e1, <b>'+nome+'</b>';
   $('hello').textContent = 'Bem-vindo, '+primeiro+'.';
   $('adminBlock').style.display = souMaster ? 'block' : 'none';
-  inicializarDashboard(souMaster ? LOJAS_DISPONIVEIS.slice() : minhasLojas);
+  if(souMaster || minhasLojas.length){
+    inicializarDashboard(souMaster ? LOJAS_DISPONIVEIS.slice() : minhasLojas);
+  } else if(souFabrica){
+    inicializarRankingFabrica();
+  }
   if(souMaster || souCoordenador){
     $('aprovacoesBlock').style.display = 'block';
     carregarAprovacoes();
@@ -417,6 +424,39 @@ async function entrarPortal(user){
   }
 }
 
+let dashRankingCache = {};
+let dashRankingExpandido = {};
+
+function htmlCardRanking(ranking, chave, titulo){
+  dashRankingCache[chave] = { ranking, titulo };
+  const expandido = !!dashRankingExpandido[chave];
+  const visiveis = expandido ? ranking : ranking.slice(0, 5);
+  const linhas = visiveis.map(x => {
+    const seta = x.variacao === 'subiu' ? '<span class="dash-rank-seta up">\u25b2</span>'
+      : x.variacao === 'desceu' ? '<span class="dash-rank-seta down">\u25bc</span>'
+      : x.variacao === 'novo' ? '<span class="dash-rank-seta new">NOVO</span>'
+      : '<span class="dash-rank-seta">\u2014</span>';
+    return '<div class="dash-rank-row"><span class="dash-rank-pos">'+x.posicao_atual+'\u00ba</span>'+seta+
+      '<span class="dash-rank-nome">'+x.sabor+'</span>'+
+      '<span class="dash-rank-qtd">'+Number(x.quantidade_atual).toLocaleString('pt-BR')+' un.'+
+        (x.posicao_anterior ? ' <span style="opacity:.6">(era '+x.posicao_anterior+'\u00ba)</span>' : '')+
+      '</span></div>';
+  }).join('');
+  const botao = ranking.length > 5
+    ? '<button class="btn-outline btn btn-sm dash-rank-toggle" onclick="toggleRankingGelato(\''+chave+'\')">'+(expandido ? 'Ver menos \u25b2' : 'Ver todos os '+ranking.length+' \u25bc')+'</button>'
+    : '';
+  return '<div class="lbl" style="margin-bottom:2px">'+titulo+'</div>'+
+    '<div class="sub" style="margin-bottom:10px">Compara com os 30 dias anteriores. \u25b2 subiu \u00b7 \u25bc desceu \u00b7 NOVO n\u00e3o aparecia no per\u00edodo anterior.</div>'+
+    (ranking.length ? linhas + botao : '<div class="empty" style="padding:20px 0">Nenhum pedido de gelato nos \u00faltimos 30 dias.</div>');
+}
+
+function toggleRankingGelato(chave){
+  dashRankingExpandido[chave] = !dashRankingExpandido[chave];
+  const cached = dashRankingCache[chave];
+  const container = $('rankingCard_'+chave);
+  if(container && cached) container.innerHTML = htmlCardRanking(cached.ranking, chave, cached.titulo);
+}
+
 let dashChart = null;
 let dashLojasAcessiveis = [];
 
@@ -428,12 +468,37 @@ function inicializarDashboard(lojas){
   }
   dashLojasAcessiveis = lojas;
   $('dashboardBlock').style.display = 'block';
+  $('dashTitulo').textContent = 'Dashboard da Loja';
+  $('dashSubtitulo').textContent = 'N\u00fameros do m\u00eas corrente, at\u00e9 hoje.';
   const opcoes = lojas.length > 1
     ? '<option value="__todas__">Todas as lojas (consolidado)</option>' + lojas.map(l => '<option value="'+l+'">'+l+'</option>').join('')
     : lojas.map(l => '<option value="'+l+'">'+l+'</option>').join('');
   sel.innerHTML = opcoes;
   sel.style.display = lojas.length > 1 ? '' : 'none';
   carregarDashboard(lojas.length > 1 ? '__todas__' : lojas[0]);
+}
+
+async function inicializarRankingFabrica(){
+  dashLojasAcessiveis = LOJAS_DISPONIVEIS.slice();
+  $('dashboardBlock').style.display = 'block';
+  $('dashTitulo').textContent = 'Ranking de Sabores \u2014 Toda a Opera\u00e7\u00e3o';
+  $('dashSubtitulo').textContent = 'Vis\u00e3o consolidada de todas as lojas, pra ajudar no planejamento de produ\u00e7\u00e3o.';
+  $('dashLojaSelect').style.display = 'none';
+
+  const el = $('dashConteudo');
+  el.innerHTML = '<div class="loading">Carregando ranking\u2026</div>';
+
+  const { data: rankingData, error } = await sb.rpc('dashboard_ranking_gelato', { p_lojas: dashLojasAcessiveis, p_data_fim: new Date().toISOString().slice(0,10) });
+  if(error){
+    el.innerHTML = '<div class="empty">Erro ao carregar: '+error.message+'</div>';
+    return;
+  }
+  const ranking = rankingData || [];
+
+  el.innerHTML =
+    '<div class="dash-card" id="rankingCard_fabrica">'+
+      htmlCardRanking(ranking, 'fabrica', 'Sabores de gelato mais pedidos \u2014 \u00faltimos 30 dias')+
+    '</div>';
 }
 
 function fmtMoedaDash(v){
@@ -534,20 +599,8 @@ async function carregarDashboard(valor){
         ).join('') : '<div class="empty" style="padding:20px 0">Nenhum pedido no per\u00edodo.</div>')+
       '</div>'+
     '</div>'+
-    '<div class="dash-card" style="margin-top:14px">'+
-      '<div class="lbl" style="margin-bottom:2px">Ranking de sabores de gelato \u2014 \u00faltimos 30 dias'+(consolidado?' (todas as lojas)':'')+'</div>'+
-      '<div class="sub" style="margin-bottom:10px">Compara com os 30 dias anteriores. \u25b2 subiu \u00b7 \u25bc desceu \u00b7 NOVO n\u00e3o aparecia no per\u00edodo anterior.</div>'+
-      (ranking.length ? ranking.map(x => {
-        const seta = x.variacao === 'subiu' ? '<span class="dash-rank-seta up">\u25b2</span>'
-          : x.variacao === 'desceu' ? '<span class="dash-rank-seta down">\u25bc</span>'
-          : x.variacao === 'novo' ? '<span class="dash-rank-seta new">NOVO</span>'
-          : '<span class="dash-rank-seta">\u2014</span>';
-        return '<div class="dash-rank-row"><span class="dash-rank-pos">'+x.posicao_atual+'\u00ba</span>'+seta+
-          '<span class="dash-rank-nome">'+x.sabor+'</span>'+
-          '<span class="dash-rank-qtd">'+Number(x.quantidade_atual).toLocaleString('pt-BR')+' un.'+
-            (x.posicao_anterior ? ' <span style="opacity:.6">(era '+x.posicao_anterior+'\u00ba)</span>' : '')+
-          '</span></div>';
-      }).join('') : '<div class="empty" style="padding:20px 0">Nenhum pedido de gelato nos \u00faltimos 30 dias.</div>')+
+    '<div class="dash-card" style="margin-top:14px" id="rankingCard_principal">'+
+      htmlCardRanking(ranking, 'principal', 'Ranking de sabores de gelato \u2014 \u00faltimos 30 dias'+(consolidado?' (todas as lojas)':''))+
     '</div>';
 
   if(evolucao.length && window.Chart){

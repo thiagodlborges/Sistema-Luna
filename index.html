@@ -474,7 +474,14 @@ async function carregarDashboard(valor){
     r.ultima_avaliacao_lojas = avaliadas.length;
   }
 
-  const evolucao = consolidado ? [] : resultados[0].evolucao;
+  let evolucao = [];
+  let evolucaoConsolidada = false;
+  if(consolidado){
+    const { data: evoCons, error: evoErr } = await sb.rpc('dashboard_evolucao_avaliacao_consolidada', { p_lojas: lojasAlvo });
+    if(!evoErr && evoCons && evoCons.length){ evolucao = evoCons; evolucaoConsolidada = true; }
+  } else {
+    evolucao = resultados[0].evolucao;
+  }
 
   const pedidosPorCategoria = {};
   resultados.forEach(x => x.pedidos.forEach(p => {
@@ -503,9 +510,9 @@ async function carregarDashboard(valor){
     '</div>'+
     '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px" id="dashLinhaBaixo">'+
       '<div class="dash-card">'+
-        '<div class="lbl" style="margin-bottom:10px">Evolu\u00e7\u00e3o da avalia\u00e7\u00e3o de qualidade</div>'+
+        '<div class="lbl" style="margin-bottom:10px">Evolu\u00e7\u00e3o da avalia\u00e7\u00e3o de qualidade'+(consolidado?' \u2014 m\u00e9dia mensal, todas as lojas':'')+'</div>'+
         (evolucao.length ? '<canvas id="dashChartCanvas" height="90"></canvas>' :
-          '<div class="empty" style="padding:20px 0">'+(consolidado ? 'Selecione uma loja espec\u00edfica pra ver a evolu\u00e7\u00e3o.' : 'Sem avalia\u00e7\u00f5es suficientes pra montar o gr\u00e1fico ainda.')+'</div>')+
+          '<div class="empty" style="padding:20px 0">Sem avalia\u00e7\u00f5es suficientes pra montar o gr\u00e1fico ainda.</div>')+
       '</div>'+
       '<div class="dash-card">'+
         '<div class="lbl" style="margin-bottom:6px">Pedidos por categoria (valor aproximado)</div>'+
@@ -523,10 +530,10 @@ async function carregarDashboard(valor){
     dashChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: evolucao.map(e => fmtDataDash(e.data_avaliacao)),
+        labels: evolucao.map(e => evolucaoConsolidada ? fmtMesDash(e.mes) : fmtDataDash(e.data_avaliacao)),
         datasets: [{
-          label: 'Pontua\u00e7\u00e3o (%)',
-          data: evolucao.map(e => Number(e.pontuacao_pct)),
+          label: evolucaoConsolidada ? 'M\u00e9dia mensal (%)' : 'Pontua\u00e7\u00e3o (%)',
+          data: evolucao.map(e => Number(evolucaoConsolidada ? e.media_pct : e.pontuacao_pct)),
           borderColor: '#6B1E2E',
           backgroundColor: 'rgba(107,30,46,0.12)',
           tension: 0.25,
@@ -542,6 +549,13 @@ async function carregarDashboard(valor){
   }
 }
 
+
+function fmtMesDash(iso){
+  if(!iso) return '';
+  const [y,m] = iso.split('-');
+  const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return MESES[Number(m)-1]+'/'+y.slice(2);
+}
 
 function fmtDataDash(iso){
   if(!iso) return '';

@@ -291,6 +291,7 @@
       <option value="fabrica">Fábrica</option>
       <option value="master_loja">Master de loja (gerente)</option>
       <option value="externo">Externo</option>
+      <option value="repositor">Fábrica (Repositor)</option>
       <option value="master">Master (acesso total)</option>
     </select>
     <div id="novoLojaWrap">
@@ -391,8 +392,9 @@ async function entrarPortal(user){
   let minhasLojas = [];
   let souFabrica = false;
   let souBackofficeLuna = false;
+  let souRepositor = false;
   try{
-    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas, precificacao_fabrica_backoffice, dashboard_backoffice').eq('id', user.id).single();
+    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas, precificacao_fabrica_backoffice, dashboard_backoffice, freezers_repositor').eq('id', user.id).single();
     if(perfil && perfil.nome) nome = perfil.nome;
     if(perfil && perfil.tipo === 'master') souMaster = true;
     if(perfil && perfil.freelancer_coordenador) souCoordenador = true;
@@ -401,6 +403,7 @@ async function entrarPortal(user){
       else if(perfil.loja) minhasLojas = [perfil.loja];
       souFabrica = perfil.tipo === 'fabrica' || perfil.precificacao_fabrica_backoffice === true;
       souBackofficeLuna = perfil.dashboard_backoffice === true;
+      souRepositor = perfil.tipo === 'repositor' || perfil.freezers_repositor === true;
     }
   }catch(e){}
   meuNome = nome;
@@ -412,6 +415,8 @@ async function entrarPortal(user){
     inicializarDashboard(souMaster ? LOJAS_DISPONIVEIS.slice() : minhasLojas);
   } else if(souBackofficeLuna){
     inicializarDashboardBackoffice();
+  } else if(souRepositor){
+    inicializarDashboardRepositor();
   } else if(souFabrica){
     inicializarRankingFabrica();
   }
@@ -581,6 +586,62 @@ async function inicializarRankingFabrica(){
     '<div class="dash-card" id="rankingCard_fabrica">'+
       htmlCardRanking(ranking, 'fabrica', 'Sabores de gelato mais pedidos \u2014 \u00faltimos 30 dias')+
     '</div>';
+}
+
+async function inicializarDashboardRepositor(){
+  $('dashboardBlock').style.display = 'block';
+  $('dashTitulo').textContent = 'Minha Carteira de Freezers';
+  $('dashSubtitulo').textContent = 'Resumo da opera\u00e7\u00e3o de freezers sob sua responsabilidade.';
+  $('dashLojaSelect').style.display = 'none';
+
+  const el = $('dashConteudo');
+  el.innerHTML = '<div class="loading">Carregando\u2026</div>';
+
+  const hoje = new Date();
+  const inicio30 = new Date(hoje.getTime() - 30*86400000).toISOString().slice(0,10);
+
+  const { data: meusFreezers, error } = await sb.from('freezers').select('id, ponto_venda, rede, status').eq('status','ativo');
+  if(error){ el.innerHTML = '<div class="empty">Erro ao carregar: '+error.message+'</div>'; return; }
+  const freezerIds = (meusFreezers||[]).map(f => f.id);
+
+  if(!freezerIds.length){
+    el.innerHTML = '<div class="dash-card"><div class="lbl">Freezers</div><div class="val">0</div><div class="sub">Voc\u00ea ainda n\u00e3o tem freezers na carteira.</div></div>';
+    return;
+  }
+
+  const { data: visitas } = await sb.from('freezer_visitas').select('freezer_id, data_visita, falha_led, risco_falha_geral').in('freezer_id', freezerIds);
+
+  const visitas30d = (visitas||[]).filter(v => v.data_visita >= inicio30);
+  const ultimaPorFreezer = {};
+  (visitas||[]).forEach(v => {
+    if(!ultimaPorFreezer[v.freezer_id] || v.data_visita > ultimaPorFreezer[v.freezer_id].data_visita) ultimaPorFreezer[v.freezer_id] = v;
+  });
+
+  const semVisita = meusFreezers.map(f => {
+    const ultima = ultimaPorFreezer[f.id];
+    const dias = ultima ? Math.floor((hoje - new Date(ultima.data_visita+'T12:00')) / 86400000) : null;
+    return { ...f, ultima_visita: ultima ? ultima.data_visita : null, dias };
+  }).sort((a,b) => (b.dias ?? 9999) - (a.dias ?? 9999)).slice(0, 5);
+
+  const comRisco = meusFreezers.filter(f => {
+    const u = ultimaPorFreezer[f.id];
+    return u && (u.falha_led || u.risco_falha_geral);
+  });
+
+  el.innerHTML =
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px">'+
+      '<div class="dash-card" style="flex:1;min-width:160px"><div class="lbl">Freezers ativos</div><div class="val">'+freezerIds.length+'</div></div>'+
+      '<div class="dash-card" style="flex:1;min-width:160px"><div class="lbl">Visitas (30 dias)</div><div class="val">'+visitas30d.length+'</div></div>'+
+      '<div class="dash-card" style="flex:1;min-width:160px"><div class="lbl">Risco de falha</div><div class="val" style="color:'+(comRisco.length?'#B43C3C':'inherit')+'">'+comRisco.length+'</div></div>'+
+    '</div>'+
+    '<div class="dash-card" style="margin-bottom:16px">'+
+      '<div class="lbl">Freezers h\u00e1 mais tempo sem visita</div>'+
+      (semVisita.length ? semVisita.map(f => '<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--creme-dark);font-size:.85rem"><span>'+f.ponto_venda+(f.rede?' \u2014 '+f.rede:'')+'</span><span style="font-weight:600;color:'+(f.dias===null?'inherit':f.dias>30?'#B43C3C':f.dias>14?'#B8860B':'inherit')+'">'+(f.dias===null?'Nunca visitado':f.dias+' dias')+'</span></div>').join('') : '<div class="sub">Nenhum freezer ativo.</div>')+
+    '</div>'+
+    (comRisco.length ? '<div class="dash-card"><div class="lbl" style="color:#B43C3C">\u26a0\ufe0f Freezers com risco sinalizado</div>'+
+      comRisco.map(f => '<div style="padding:6px 0;border-top:1px solid var(--creme-dark);font-size:.85rem">'+f.ponto_venda+(f.rede?' \u2014 '+f.rede:'')+'</div>').join('')+
+    '</div>' : '')+
+    '<p class="hello-sub" style="margin-top:14px"><a href="https://thiagodlborges.github.io/freezers-luna/">Abrir m\u00f3dulo de Freezers \u2192</a></p>';
 }
 
 function fmtMoedaDash(v){

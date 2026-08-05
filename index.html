@@ -60,24 +60,39 @@
     font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.04em;
     padding:7px 12px;border-radius:6px;cursor:pointer;transition:background .2s}
   .icon-btn:hover{background:rgba(255,255,255,.22)}
-  main{flex:1;max-width:1160px;width:100%;margin:0 auto;padding:56px 26px 64px;display:flex;flex-direction:column;align-items:center}
+  main{flex:1;width:100%;margin:0 auto;padding:40px 26px 64px;display:flex;flex-direction:column;align-items:center;max-width:900px}
   .hello{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--bordo-dark);margin-bottom:4px;width:100%}
   .hello-sub{color:var(--text-light);font-size:.9rem;margin-bottom:32px;width:100%}
-  .grid{display:flex;flex-wrap:wrap;justify-content:center;gap:26px;width:100%;margin-top:8px}
-  .sys{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;
-    background:var(--white);border:1px solid var(--creme-dark);border-radius:16px;
-    padding:36px 28px;cursor:pointer;text-decoration:none;color:inherit;width:220px;
-    transition:transform .18s, box-shadow .18s, border-color .18s}
-  .sys:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(74,18,32,.14);border-color:var(--marrom-light)}
-  .sys .ic-badge{width:68px;height:68px;border-radius:50%;background:var(--bordo);
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .18s}
-  .sys:hover .ic-badge{background:var(--bordo-dark)}
-  .sys .ic-badge svg{width:32px;height:32px;color:var(--creme)}
-  .sys .nm{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo-dark);font-weight:600;line-height:1.25}
-  .sys .go{color:var(--marrom-light);font-size:1rem}
   .empty{background:var(--white);border:1px dashed var(--creme-dark);border-radius:12px;padding:40px;text-align:center;color:var(--text-light);width:100%}
   .loading{text-align:center;color:var(--text-light);padding:40px;font-size:.9rem;width:100%}
-  #content{width:100%}
+
+  /* LAYOUT: cabeçalho fixo em cima, menu lateral + conteúdo lado a lado embaixo */
+  .layout{display:flex;flex:1;width:100%;position:relative}
+  .hamburger{display:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+    color:var(--creme);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:1.15rem;
+    align-items:center;justify-content:center;flex-shrink:0}
+  #sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(44,24,16,.45);z-index:39}
+  #sidebarOverlay.show{display:block}
+  #sidebar{width:258px;flex-shrink:0;background:var(--white);border-right:1px solid var(--creme-dark);
+    padding:22px 0 30px;overflow-y:auto;transition:transform .25s ease}
+  #sidebar .side-title{font-family:'Cormorant Garamond',serif;font-size:.92rem;color:var(--text-light);
+    text-transform:uppercase;letter-spacing:.1em;padding:0 22px 14px;font-weight:600}
+  .side-item{display:flex;align-items:center;gap:12px;padding:10px 22px;color:var(--text);
+    text-decoration:none;font-size:.87rem;font-weight:500;border-left:3px solid transparent;
+    transition:background .15s,border-color .15s}
+  .side-item:hover{background:var(--creme);border-left-color:var(--marrom-light)}
+  .side-item .ic{width:34px;height:34px;border-radius:50%;background:var(--bordo);display:flex;
+    align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+  .side-item:hover .ic{background:var(--bordo-dark)}
+  .side-item .ic svg{width:17px;height:17px;color:var(--creme)}
+  .side-item .nm{font-family:'Jost',sans-serif;line-height:1.25}
+
+  @media (max-width:880px){
+    .hamburger{display:flex}
+    #sidebar{position:fixed;top:0;left:0;height:100vh;z-index:40;transform:translateX(-100%);
+      box-shadow:0 0 40px rgba(0,0,0,.25);padding-top:70px}
+    #sidebar.open{transform:translateX(0)}
+  }
 
   /* CENTRAL DE APROVAÇÕES */
   #aprovacoesBlock{width:100%;margin-bottom:40px}
@@ -130,8 +145,7 @@
 
   @media (max-width:600px){
     header{padding:14px 18px}
-    main{padding:32px 16px 48px}
-    .sys{width:100%;max-width:280px}
+    main{padding:28px 16px 48px}
   }
   .dash-card{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:18px 20px}
   .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px}
@@ -170,6 +184,7 @@
 
 <div id="portal">
   <header>
+    <button class="hamburger" onclick="toggleSidebar()" title="Menu">☰</button>
     <div class="wordmark"><div class="brand">LUNA</div><div class="sub">Sistema Luna</div></div>
     <div class="userbox">
       <span class="greet" id="greet"></span>
@@ -177,36 +192,44 @@
       <button class="logout" onclick="logout()">Sair</button>
     </div>
   </header>
-  <main>
-    <div class="hello" id="hello"></div>
-    <div class="hello-sub" id="helloSub">Escolha um sistema para acessar.</div>
 
-    <div id="dashboardBlock" style="display:none;margin-bottom:36px;width:100%">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
-        <div class="hello" id="dashTitulo" style="font-size:1.4rem;margin-bottom:0">Dashboard da Loja</div>
-        <select class="inp" id="dashLojaSelect" style="max-width:260px;margin-bottom:0" onchange="carregarDashboard(this.value)"></select>
+  <div class="layout">
+    <div id="sidebarOverlay" onclick="fecharSidebar()"></div>
+    <nav id="sidebar">
+      <div class="side-title">Meus Sistemas</div>
+      <div id="sidebarNav"><div class="loading">Carregando…</div></div>
+    </nav>
+
+    <main>
+      <div class="hello" id="hello"></div>
+      <div class="hello-sub" id="helloSub">Escolha um sistema no menu ao lado.</div>
+
+      <div id="dashboardBlock" style="display:none;margin-bottom:36px;width:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+          <div class="hello" id="dashTitulo" style="font-size:1.4rem;margin-bottom:0">Dashboard da Loja</div>
+          <select class="inp" id="dashLojaSelect" style="max-width:260px;margin-bottom:0" onchange="carregarDashboard(this.value)"></select>
+        </div>
+        <div class="hello-sub" id="dashSubtitulo" style="margin-bottom:16px">Números do mês corrente, até hoje.</div>
+        <div id="dashConteudo"><div class="loading">Carregando indicadores&hellip;</div></div>
       </div>
-      <div class="hello-sub" id="dashSubtitulo" style="margin-bottom:16px">Números do mês corrente, até hoje.</div>
-      <div id="dashConteudo"><div class="loading">Carregando indicadores&hellip;</div></div>
-    </div>
 
-    <div id="aprovacoesBlock" style="display:none">
-      <div class="hello" style="font-size:1.4rem;margin-bottom:4px">Central de Aprovações</div>
-      <div class="hello-sub" style="margin-bottom:16px">Pendências que dependem da sua aprovação, direto por aqui — sem precisar entrar em cada módulo.</div>
-      <div id="aprovacoesConteudo"><div class="loading">Carregando pendências&hellip;</div></div>
-    </div>
-
-    <div id="content"><div class="loading">Carregando seus sistemas&hellip;</div></div>
-
-    <div id="adminBlock" style="display:none;margin-top:40px;padding-top:28px;border-top:1px solid var(--creme-dark);width:100%">
-      <div class="hello" style="font-size:1.4rem">Administração</div>
-      <div class="hello-sub" style="margin-bottom:18px">Gerencie usuários, acessos e senhas sem precisar pedir ajuda.</div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <button class="btn-outline btn" style="max-width:260px" onclick="abrirGerenciarUsuarios()">👥 Gerenciar usuários e acessos</button>
-        <button class="btn-outline btn" style="max-width:260px" onclick="abrirResetAdmin()">🔧 Resetar senha de usuário</button>
+      <div id="aprovacoesBlock" style="display:none">
+        <div class="hello" style="font-size:1.4rem;margin-bottom:4px">Central de Aprovações</div>
+        <div class="hello-sub" style="margin-bottom:16px">Pendências que dependem da sua aprovação, direto por aqui — sem precisar entrar em cada módulo.</div>
+        <div id="aprovacoesConteudo"><div class="loading">Carregando pendências&hellip;</div></div>
       </div>
-    </div>
-  </main>
+
+      <div id="adminBlock" style="display:none;margin-top:40px;padding-top:28px;border-top:1px solid var(--creme-dark);width:100%">
+        <div class="hello" style="font-size:1.4rem">Administração</div>
+        <div class="hello-sub" style="margin-bottom:18px">Gerencie usuários, acessos e senhas sem precisar pedir ajuda.</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn-outline btn" style="max-width:260px" onclick="abrirGerenciarUsuarios()">👥 Gerenciar usuários e acessos</button>
+          <button class="btn-outline btn" style="max-width:260px" onclick="abrirResetAdmin()">🔧 Resetar senha de usuário</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
   <footer>LUNA GELATO &amp; CAFFÈ &mdash; acesso interno</footer>
 </div>
 
@@ -433,7 +456,7 @@ async function entrarPortal(user){
     if(error) throw error;
     render(sistemas||[]);
   }catch(e){
-    $('content').innerHTML = '<div class="empty">N\u00e3o foi poss\u00edvel carregar os sistemas agora. Recarregue a p\u00e1gina.</div>';
+    $('sidebarNav').innerHTML = '<div style="padding:0 22px;color:var(--text-light);font-size:.8rem">Não foi possível carregar os sistemas agora. Recarregue a página.</div>';
   }
 }
 
@@ -495,7 +518,7 @@ async function inicializarDashboardBackoffice(){
   dashLojasAcessiveis = LOJAS_DISPONIVEIS.slice();
   $('dashboardBlock').style.display = 'block';
   $('dashTitulo').textContent = 'Dashboard \u2014 Vis\u00e3o Consolidada';
-  $('dashSubtitulo').textContent = 'Perdas, uniformes, avalia\u00e7\u00e3o e pedidos de gelato de toda a opera\u00e7\u00e3o. N\u00fameros do m\u00eas corrente, at\u00e9 hoje.';
+  $('dashSubtitulo').textContent = 'Venda de freezers, perdas, uniformes, avalia\u00e7\u00e3o e pedidos de gelato de toda a opera\u00e7\u00e3o. N\u00fameros do m\u00eas corrente, at\u00e9 hoje.';
   $('dashLojaSelect').style.display = 'none';
 
   const el = $('dashConteudo');
@@ -505,10 +528,11 @@ async function inicializarDashboardBackoffice(){
   const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
   const dataHoje = hoje.toISOString().slice(0,10);
 
-  const [resumos, evolucaoR, rankingR] = await Promise.all([
+  const [resumos, evolucaoR, rankingR, freezersR] = await Promise.all([
     Promise.all(dashLojasAcessiveis.map(l => sb.rpc('dashboard_resumo_loja', { p_loja: l, p_data_inicio: inicioMes, p_data_fim: dataHoje }))),
     sb.rpc('dashboard_evolucao_avaliacao_consolidada', { p_lojas: dashLojasAcessiveis }),
     sb.rpc('dashboard_ranking_gelato', { p_lojas: dashLojasAcessiveis, p_data_fim: dataHoje }),
+    sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }),
   ]);
 
   const erro = resumos.find(r => r.error);
@@ -522,12 +546,19 @@ async function inicializarDashboardBackoffice(){
   const uniformesPosse = dados.reduce((s,d) => s + Number(d.uniformes_em_posse||0), 0);
   const avaliadas = dados.filter(d => d.ultima_avaliacao_pct != null);
   const mediaAvaliacao = avaliadas.length ? avaliadas.reduce((s,d) => s + Number(d.ultima_avaliacao_pct), 0) / avaliadas.length : null;
+  const freezersDados = (freezersR.data && freezersR.data[0]) || {};
+  const freezersValor = Number(freezersDados.valor_total||0);
+  const freezersQtd = Number(freezersDados.quantidade_itens||0);
+  const freezersPontos = Number(freezersDados.freezers_com_venda||0);
 
   const evolucao = evolucaoR.data || [];
   const ranking = rankingR.data || [];
 
   el.innerHTML =
     '<div class="dash-grid">'+
+      '<div class="dash-card"><div class="lbl">Venda de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezersValor)+'</div>'+
+        '<div class="sub">'+freezersQtd.toLocaleString('pt-BR')+' un/kg vendidos em '+freezersPontos+' freezer(s)</div>'+
+      '</div>'+
       '<div class="dash-card"><div class="lbl">Perdas no m\u00eas (todas as lojas)</div><div class="val">'+fmtMoedaDash(perdasMes)+'</div></div>'+
       '<div class="dash-card"><div class="lbl">Uniformes em posse (todas as lojas)</div><div class="val">'+fmtMoedaDash(uniformesPosse)+'</div></div>'+
       '<div class="dash-card"><div class="lbl">M\u00e9dia de avalia\u00e7\u00e3o de qualidade</div><div class="val">'+(mediaAvaliacao!=null?mediaAvaliacao.toFixed(1)+'%':'\u2014')+'</div>'+
@@ -810,20 +841,26 @@ const ICON_PADRAO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 
 function render(sistemas){
   sistemasCache = sistemas || [];
+  const nav = $('sidebarNav');
   if(!sistemas.length){
-    $('helloSub').textContent = 'Voc\u00ea ainda n\u00e3o tem acesso a nenhum sistema.';
-    $('content').innerHTML = '<div class="empty">Nenhum sistema liberado para o seu acesso.<br>Fale com o administrador para solicitar acesso.</div>';
+    nav.innerHTML = '<div style="padding:0 22px;color:var(--text-light);font-size:.8rem">Nenhum sistema liberado para o seu acesso.<br>Fale com o administrador.</div>';
     return;
   }
-  $('helloSub').textContent = 'Escolha um sistema para acessar.';
-  const html = sistemas.map(s => (
-    '<a class="sys" href="'+s.url+'">'+
-      '<span class="ic-badge">'+(ICONS[s.slug]||ICON_PADRAO)+'</span>'+
+  nav.innerHTML = sistemas.map(s => (
+    '<a class="side-item" href="'+s.url+'">'+
+      '<span class="ic">'+(ICONS[s.slug]||ICON_PADRAO)+'</span>'+
       '<span class="nm">'+s.nome+'</span>'+
-      '<span class="go">\u2192</span>'+
     '</a>'
   )).join('');
-  $('content').innerHTML = '<div class="grid">'+html+'</div>';
+}
+
+function toggleSidebar(){
+  $('sidebar').classList.toggle('open');
+  $('sidebarOverlay').classList.toggle('show');
+}
+function fecharSidebar(){
+  $('sidebar').classList.remove('open');
+  $('sidebarOverlay').classList.remove('show');
 }
 
 // ── CENTRAL DE APROVAÇÕES ──────────────────────────────────

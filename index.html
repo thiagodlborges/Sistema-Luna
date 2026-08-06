@@ -315,8 +315,10 @@
       <option value="master_loja">Master de loja (gerente)</option>
       <option value="externo">Externo</option>
       <option value="repositor">Fábrica (Repositor)</option>
+      <option value="backoffice">Backoffice (leitura + relatórios)</option>
       <option value="master">Master (acesso total)</option>
     </select>
+    <p class="hint" id="novoTipoBackofficeHint" style="display:none;margin:-8px 0 12px">Enxerga todas as lojas nos módulos liberados abaixo, mas não pode criar, editar ou excluir nada.</p>
     <div id="novoLojaWrap">
       <label for="novoLoja">Loja</label>
       <select class="inp" id="novoLoja"></select>
@@ -1473,8 +1475,9 @@ async function excluirUsuario(perfil_id, nome){
 
 function onNovoTipoChange(){
   const tipo = $('novoTipo').value;
-  if(usuarioEditandoId){ $('novoLojaWrap').style.display = 'none'; return; }
-  $('novoLojaWrap').style.display = (tipo === 'loja' || tipo === 'master_loja') ? 'block' : 'none';
+  if(usuarioEditandoId){ $('novoLojaWrap').style.display = 'none'; }
+  else { $('novoLojaWrap').style.display = (tipo === 'loja' || tipo === 'master_loja') ? 'block' : 'none'; }
+  $('novoTipoBackofficeHint').style.display = (tipo === 'backoffice') ? '' : 'none';
 }
 
 let usuarioEditandoId = null;
@@ -1547,7 +1550,7 @@ async function criarUsuario(){
   const nome = $('novoNome').value.trim();
   const email = $('novoEmail').value.trim();
   const tipo = $('novoTipo').value;
-  const loja = $('novoLoja').value.trim();
+  const loja = (tipo === 'loja' || tipo === 'master_loja') ? $('novoLoja').value.trim() : null;
   const uniformes_backoffice = $('novoBackoffice').checked;
   const freelancer_coordenador = $('novoFreelancerCoordenador').checked;
   const freelancer_agencia = $('novoFreelancerAgencia').checked;

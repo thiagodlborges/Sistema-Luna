@@ -152,6 +152,23 @@
   .dash-card .lbl{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:700;margin-bottom:6px}
   .dash-card .val{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--bordo-dark);line-height:1.1}
   .dash-card .sub{font-size:.8rem;color:var(--text-light);margin-top:4px;font-weight:500}
+
+  /* ---- Comunicados ---- */
+  #overlayComunicado{display:none;position:fixed;inset:0;background:rgba(30,16,10,.72);z-index:200;
+    align-items:center;justify-content:center;padding:20px}
+  #overlayComunicado.show{display:flex}
+  .com-modal{width:100%;max-width:520px;max-height:82vh;overflow-y:auto;background:var(--white);
+    border-radius:16px;padding:32px 30px;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+  .com-contador{font-family:'Jost',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--marrom-light);margin-bottom:10px}
+  .com-modal h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--bordo-dark);margin-bottom:4px}
+  .com-data{font-size:.78rem;color:var(--text-light);margin-bottom:18px}
+  .com-mensagem{font-size:.92rem;line-height:1.6;color:var(--text);white-space:pre-wrap;margin-bottom:26px}
+  .badge-lido{background:#DCEAD9;color:#3B6B3B;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
+  .badge-pendente{background:#FDF3E3;color:#8A6A16;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
+  .comunicado-item{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:18px 20px;margin-bottom:12px}
+  .destinatario-linha{display:flex;align-items:center;gap:8px;padding:6px 2px;font-size:.85rem;cursor:pointer}
+  .destinatario-linha:hover{background:var(--creme)}
   .dash-cat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--creme-dark);font-size:.98rem;font-weight:600}
   .dash-cat-row:last-child{border-bottom:none}
   .dash-cat-row .qtd{color:var(--text-light);font-size:.8rem;font-weight:500}
@@ -196,7 +213,12 @@
   <div class="layout">
     <div id="sidebarOverlay" onclick="fecharSidebar()"></div>
     <nav id="sidebar">
-      <div class="side-title">Meus Sistemas</div>
+      <div class="side-title">Comunicados</div>
+      <a class="side-item" href="#comunicadosBlock" onclick="fecharSidebar()">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 0 0 1 1h2l3.5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M17 8a5 5 0 0 1 0 8"/><path d="M20 5a9 9 0 0 1 0 14"/></svg></span>
+        <span class="nm">Ver comunicados</span>
+      </a>
+      <div class="side-title" style="margin-top:18px">Meus Sistemas</div>
       <div id="sidebarNav"><div class="loading">Carregando…</div></div>
     </nav>
 
@@ -211,6 +233,15 @@
         </div>
         <div class="hello-sub" id="dashSubtitulo" style="margin-bottom:16px">Números do mês corrente, até hoje.</div>
         <div id="dashConteudo"><div class="loading">Carregando indicadores&hellip;</div></div>
+      </div>
+
+      <div id="comunicadosBlock" style="margin-bottom:36px;width:100%;scroll-margin-top:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+          <div class="hello" style="font-size:1.4rem;margin-bottom:0">📢 Comunicados</div>
+          <button class="btn-outline btn" id="btnNovoComunicado" style="display:none;width:auto;padding:10px 18px" onclick="abrirNovoComunicado()">+ Novo Comunicado</button>
+        </div>
+        <div class="hello-sub" style="margin-bottom:16px">Histórico de comunicados recebidos por você.</div>
+        <div id="comunicadosLista"><div class="loading">Carregando…</div></div>
       </div>
 
       <div id="aprovacoesBlock" style="display:none">
@@ -380,6 +411,44 @@
   </div>
 </div>
 
+<!-- MODAL: Novo comunicado -->
+<div class="modal-overlay" id="modalNovoComunicado">
+  <div class="modal" style="max-width:520px;width:96%;max-height:88vh;overflow:auto">
+    <h3>Novo Comunicado</h3>
+    <p class="sub">Vai aparecer em tela cheia para os destinatários assim que entrarem no sistema — eles precisam confirmar a leitura antes de continuar.</p>
+    <label for="comNovoTitulo">Título</label>
+    <input class="inp" id="comNovoTitulo" placeholder="Ex: Nova política de descarte de insumos">
+    <label for="comNovaMensagem">Mensagem</label>
+    <textarea class="inp" id="comNovaMensagem" rows="6" style="resize:vertical"></textarea>
+    <label for="comNovoDestino">Destino</label>
+    <select class="inp" id="comNovoDestino" onchange="onDestinoComunicadoChange()">
+      <option value="todos">Todos os usuários</option>
+      <option value="especifico">Pessoas específicas</option>
+    </select>
+    <div id="comDestinatariosWrap" style="display:none">
+      <label for="comFiltroDestinatarios">Filtrar por nome</label>
+      <input class="inp" id="comFiltroDestinatarios" placeholder="Digite para filtrar..." oninput="filtrarDestinatariosComunicado()">
+      <div id="comListaDestinatarios" style="max-height:220px;overflow-y:auto;border:1.5px solid var(--creme-dark);border-radius:8px;padding:8px 12px;margin-bottom:16px"></div>
+    </div>
+    <div class="msg" id="comNovoMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnPublicarComunicado" onclick="salvarNovoComunicado()">Publicar</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalNovoComunicado')">Cancelar</button>
+  </div>
+</div>
+
+<!-- OVERLAY BLOQUEANTE: comunicado pendente de leitura -->
+<div id="overlayComunicado">
+  <div class="com-modal">
+    <div class="com-contador" id="comContador"></div>
+    <h2 id="comTitulo"></h2>
+    <div class="com-data" id="comData"></div>
+    <div class="com-mensagem" id="comMensagem"></div>
+    <button class="btn" id="btnConfirmarComunicado" onclick="confirmarLeituraComunicado()">✓ Confirmar leitura</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
@@ -389,6 +458,12 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 let souMaster = false;
 let souCoordenador = false;
+let souBackofficeTipo = false;
+let podeCriarComunicado = false;
+let comunicadosPendentes = [];
+let indiceComunicadoAtual = 0;
+let todosPerfisCache = null;
+let destinatariosSelecionados = new Set();
 let meuId = null;
 let meuNome = null;
 let sistemasCache = [];
@@ -417,6 +492,7 @@ async function entrarPortal(user){
   let nome = user.email;
   souMaster = false;
   souCoordenador = false;
+  souBackofficeTipo = false;
   meuId = user.id;
   let minhasLojas = [];
   let souFabrica = false;
@@ -426,6 +502,7 @@ async function entrarPortal(user){
     const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas, precificacao_fabrica_backoffice, dashboard_backoffice, freezers_repositor').eq('id', user.id).single();
     if(perfil && perfil.nome) nome = perfil.nome;
     if(perfil && perfil.tipo === 'master') souMaster = true;
+    if(perfil && perfil.tipo === 'backoffice') souBackofficeTipo = true;
     if(perfil && perfil.freelancer_coordenador) souCoordenador = true;
     if(perfil){
       if(Array.isArray(perfil.lojas) && perfil.lojas.length) minhasLojas = perfil.lojas;
@@ -436,10 +513,12 @@ async function entrarPortal(user){
     }
   }catch(e){}
   meuNome = nome;
+  podeCriarComunicado = souMaster || souBackofficeTipo;
   const primeiro = (nome||'').split(' ')[0];
   $('greet').innerHTML = 'Ol\u00e1, <b>'+nome+'</b>';
   $('hello').textContent = 'Bem-vindo, '+primeiro+'.';
   $('adminBlock').style.display = souMaster ? 'block' : 'none';
+  $('btnNovoComunicado').style.display = podeCriarComunicado ? '' : 'none';
   if(souMaster || minhasLojas.length){
     inicializarDashboard(souMaster ? LOJAS_DISPONIVEIS.slice() : minhasLojas);
   } else if(souBackofficeLuna){
@@ -453,6 +532,8 @@ async function entrarPortal(user){
     $('aprovacoesBlock').style.display = 'block';
     carregarAprovacoes();
   }
+  renderComunicadosHistorico();
+  verificarComunicadosPendentes();
   try{
     const { data: sistemas, error } = await sb.rpc('meus_sistemas');
     if(error) throw error;
@@ -1571,6 +1652,169 @@ async function criarUsuario(){
     btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';
     showMsg('novoUsuarioMsg', e.message || 'Erro de conex\u00e3o.', 'err');
   }
+}
+
+// ══════════════════════════════════════════════════════════
+// COMUNICADOS
+// ══════════════════════════════════════════════════════════
+
+async function verificarComunicadosPendentes(){
+  const { data: todos, error } = await sb.from('comunicados').select('*').eq('ativo', true).order('criado_em', { ascending:true });
+  if(error || !todos || !todos.length) return;
+  const { data: lidos } = await sb.from('comunicado_leituras').select('comunicado_id').eq('perfil_id', meuId);
+  const idsLidos = new Set((lidos||[]).map(l => l.comunicado_id));
+  comunicadosPendentes = todos.filter(c => !idsLidos.has(c.id));
+  if(comunicadosPendentes.length){
+    indiceComunicadoAtual = 0;
+    mostrarComunicadoAtual();
+  }
+}
+
+function mostrarComunicadoAtual(){
+  const c = comunicadosPendentes[indiceComunicadoAtual];
+  $('comContador').textContent = comunicadosPendentes.length > 1
+    ? 'Comunicado '+(indiceComunicadoAtual+1)+' de '+comunicadosPendentes.length
+    : 'Comunicado';
+  $('comTitulo').textContent = c.titulo;
+  $('comData').textContent = new Date(c.criado_em).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' }) + (c.criado_por_nome ? ' — '+c.criado_por_nome : '');
+  $('comMensagem').textContent = c.mensagem;
+  $('overlayComunicado').classList.add('show');
+}
+
+async function confirmarLeituraComunicado(){
+  const c = comunicadosPendentes[indiceComunicadoAtual];
+  const btn = $('btnConfirmarComunicado');
+  btn.disabled = true; btn.textContent = 'Confirmando…';
+  const { error } = await sb.from('comunicado_leituras').insert({ comunicado_id: c.id, perfil_id: meuId });
+  btn.disabled = false; btn.textContent = '✓ Confirmar leitura';
+  if(error && !error.message.includes('duplicate')){
+    alert('Erro ao confirmar leitura: '+error.message);
+    return;
+  }
+  indiceComunicadoAtual++;
+  if(indiceComunicadoAtual < comunicadosPendentes.length){
+    mostrarComunicadoAtual();
+  } else {
+    $('overlayComunicado').classList.remove('show');
+    renderComunicadosHistorico();
+  }
+}
+
+async function renderComunicadosHistorico(){
+  const el = $('comunicadosLista');
+  const { data: todos, error } = await sb.from('comunicados').select('*').order('criado_em', { ascending:false });
+  if(error){ el.innerHTML = '<div class="empty">Não foi possível carregar os comunicados.</div>'; return; }
+  if(!todos || !todos.length){ el.innerHTML = '<div class="empty">Nenhum comunicado por aqui ainda.</div>'; return; }
+
+  const { data: lidos } = await sb.from('comunicado_leituras').select('comunicado_id, lido_em').eq('perfil_id', meuId);
+  const mapaLidos = {};
+  (lidos||[]).forEach(l => { mapaLidos[l.comunicado_id] = l.lido_em; });
+
+  el.innerHTML = todos.map(c => {
+    const lidoEm = mapaLidos[c.id];
+    const dataFmt = new Date(c.criado_em).toLocaleDateString('pt-BR');
+    return `<div class="comunicado-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <div>
+          <h3 style="margin:0 0 4px;font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--bordo-dark)">${esc(c.titulo)}</h3>
+          <div style="font-size:.78rem;color:var(--text-light)">${dataFmt} — ${esc(c.criado_por_nome||'')}${c.destino==='especifico'?' · destinatários específicos':' · todos os usuários'}</div>
+        </div>
+        ${lidoEm ? '<span class="badge-lido">✓ Lido</span>' : '<span class="badge-pendente">Pendente</span>'}
+      </div>
+      <p style="margin:12px 0 0;font-size:.88rem;line-height:1.5;white-space:pre-wrap">${esc(c.mensagem)}</p>
+      ${podeCriarComunicado ? '<div id="recibo-'+c.id+'" style="font-size:.76rem;color:var(--text-light);margin-top:10px">Carregando confirmações…</div>' : ''}
+    </div>`;
+  }).join('');
+
+  if(podeCriarComunicado){
+    todos.forEach(c => carregarReciboComunicado(c));
+  }
+}
+
+async function carregarReciboComunicado(c){
+  const el = $('recibo-'+c.id);
+  if(!el) return;
+  let totalDestinatarios;
+  if(c.destino === 'todos'){
+    const { count } = await sb.from('perfis').select('id', { count:'exact', head:true });
+    totalDestinatarios = count || 0;
+  } else {
+    const { count } = await sb.from('comunicado_destinatarios').select('id', { count:'exact', head:true }).eq('comunicado_id', c.id);
+    totalDestinatarios = count || 0;
+  }
+  const { count: totalLidos } = await sb.from('comunicado_leituras').select('id', { count:'exact', head:true }).eq('comunicado_id', c.id);
+  el.textContent = (totalLidos||0)+' de '+totalDestinatarios+' confirmaram a leitura';
+}
+
+async function abrirNovoComunicado(){
+  $('comNovoTitulo').value = '';
+  $('comNovaMensagem').value = '';
+  $('comNovoDestino').value = 'todos';
+  $('comDestinatariosWrap').style.display = 'none';
+  destinatariosSelecionados = new Set();
+  showMsg('comNovoMsg','','');
+  $('modalNovoComunicado').classList.add('show');
+}
+
+function onDestinoComunicadoChange(){
+  const especifico = $('comNovoDestino').value === 'especifico';
+  $('comDestinatariosWrap').style.display = especifico ? 'block' : 'none';
+  if(especifico && !todosPerfisCache) carregarPerfisParaDestinatarios();
+}
+
+async function carregarPerfisParaDestinatarios(){
+  $('comListaDestinatarios').innerHTML = '<div class="loading" style="padding:16px">Carregando…</div>';
+  const { data, error } = await sb.from('perfis').select('id, nome, email, loja').order('nome');
+  if(error){ $('comListaDestinatarios').innerHTML = '<div class="empty">Erro ao carregar pessoas.</div>'; return; }
+  todosPerfisCache = data || [];
+  renderListaDestinatarios(todosPerfisCache);
+}
+
+function renderListaDestinatarios(lista){
+  $('comListaDestinatarios').innerHTML = lista.map(p => (
+    '<label class="destinatario-linha">'+
+      '<input type="checkbox" '+(destinatariosSelecionados.has(p.id)?'checked':'')+' onchange="toggleDestinatarioComunicado(\''+p.id+'\',this.checked)">'+
+      '<span>'+esc(p.nome)+(p.loja?' <span style="color:var(--text-light);font-size:.78rem">— '+esc(p.loja)+'</span>':'')+'</span>'+
+    '</label>'
+  )).join('') || '<div class="empty">Nenhuma pessoa encontrada.</div>';
+}
+
+function toggleDestinatarioComunicado(id, marcado){
+  if(marcado) destinatariosSelecionados.add(id); else destinatariosSelecionados.delete(id);
+}
+
+function filtrarDestinatariosComunicado(){
+  const termo = $('comFiltroDestinatarios').value.trim().toLowerCase();
+  if(!todosPerfisCache) return;
+  const filtrado = termo ? todosPerfisCache.filter(p => (p.nome||'').toLowerCase().includes(termo)) : todosPerfisCache;
+  renderListaDestinatarios(filtrado);
+}
+
+async function salvarNovoComunicado(){
+  const titulo = $('comNovoTitulo').value.trim();
+  const mensagem = $('comNovaMensagem').value.trim();
+  const destino = $('comNovoDestino').value;
+  if(!titulo || !mensagem){ showMsg('comNovoMsg','Preencha título e mensagem.','err'); return; }
+  if(destino === 'especifico' && destinatariosSelecionados.size === 0){ showMsg('comNovoMsg','Selecione pelo menos uma pessoa.','err'); return; }
+
+  const btn = $('btnPublicarComunicado');
+  btn.disabled = true; btn.textContent = 'Publicando…';
+
+  const { data: novo, error } = await sb.from('comunicados').insert({
+    titulo, mensagem, destino, criado_por: meuId, criado_por_nome: meuNome,
+  }).select('id').single();
+
+  if(error){ showMsg('comNovoMsg','Erro: '+error.message,'err'); btn.disabled=false; btn.textContent='Publicar'; return; }
+
+  if(destino === 'especifico'){
+    const linhas = Array.from(destinatariosSelecionados).map(pid => ({ comunicado_id: novo.id, perfil_id: pid }));
+    const { error: errDest } = await sb.from('comunicado_destinatarios').insert(linhas);
+    if(errDest){ showMsg('comNovoMsg','Comunicado criado, mas houve erro ao definir os destinatários: '+errDest.message,'err'); btn.disabled=false; btn.textContent='Publicar'; return; }
+  }
+
+  btn.disabled = false; btn.textContent = 'Publicar';
+  fecharModal('modalNovoComunicado');
+  renderComunicadosHistorico();
 }
 
 sb.auth.getSession().then(({ data }) => { if(data && data.session) entrarPortal(data.session.user); });

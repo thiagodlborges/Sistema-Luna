@@ -245,8 +245,8 @@
       </div>
 
       <div id="fabricaResumoBlock" style="display:none;margin-bottom:36px;width:100%">
-        <div class="hello" style="font-size:1.4rem;margin-bottom:0">Fábrica &mdash; Ranking &amp; Freezers</div>
-        <div class="hello-sub" style="margin-bottom:16px">Ranking de sabores mais pedidos e faturamento da operação de freezers.</div>
+        <div class="hello" style="font-size:1.4rem;margin-bottom:0">Fábrica &mdash; Freezers</div>
+        <div class="hello-sub" style="margin-bottom:16px">Faturamento da operação de freezers.</div>
         <div id="fabricaResumoConteudo"><div class="loading">Carregando&hellip;</div></div>
       </div>
 
@@ -785,25 +785,18 @@ async function carregarResumoFabricaExtra(){
   const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
   const dataHoje = hoje.toISOString().slice(0,10);
 
-  const [{ data: rankingData, error }, { data: freezersData }] = await Promise.all([
-    sb.rpc('dashboard_ranking_gelato', { p_lojas: LOJAS_DISPONIVEIS.slice(), p_data_fim: dataHoje }),
-    sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }),
-  ]);
+  const { data: freezersData, error } = await sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje });
   if(error){
     el.innerHTML = '<div class="empty">Erro ao carregar: '+error.message+'</div>';
     return;
   }
-  const ranking = rankingData || [];
   const freezers = (freezersData && freezersData[0]) || {};
 
   el.innerHTML =
-    '<div class="dash-grid" style="margin-bottom:14px">'+
+    '<div class="dash-grid">'+
       '<div class="dash-card"><div class="lbl">Faturamento de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezers.valor_total)+'</div>'+
         '<div class="sub">'+Number(freezers.quantidade_itens||0).toLocaleString('pt-BR')+' un/kg vendidos em '+Number(freezers.freezers_com_venda||0)+' freezer(s)</div>'+
       '</div>'+
-    '</div>'+
-    '<div class="dash-card" id="rankingCard_fabricaExtra">'+
-      htmlCardRanking(ranking, 'fabricaExtra', 'Ranking de pedidos \u2014 sabores de gelato mais pedidos \u2014 \u00faltimos 30 dias')+
     '</div>';
 }
 

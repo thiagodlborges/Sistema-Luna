@@ -167,6 +167,12 @@
   .badge-lido{background:#DCEAD9;color:#3B6B3B;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
   .badge-pendente{background:#FDF3E3;color:#8A6A16;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
   .badge-rejeitado{background:#FBE2E2;color:#B43C3C;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
+  .alert-banner{border-radius:12px;padding:16px 18px;margin-bottom:14px;font-size:.85rem;line-height:1.5;border:1px solid}
+  .alert-banner.warn{background:#FEF6E7;border-color:#F0D9A0;color:#8A6A16}
+  .alert-banner.info{background:#EAF2FB;border-color:#BFD8F0;color:#2E6DA4}
+  .alert-banner h4{font-family:'Cormorant Garamond',serif;font-size:1.05rem;margin-bottom:6px;font-weight:600}
+  .alert-banner ul{margin:6px 0 0 20px}
+  .alert-banner li{margin-bottom:2px}
   .comunicado-item{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:18px 20px;margin-bottom:12px}
   .destinatario-linha{display:flex;align-items:center;gap:8px;padding:6px 2px;font-size:.85rem;cursor:pointer}
   .destinatario-linha:hover{background:var(--creme)}
@@ -226,6 +232,8 @@
     <main>
       <div class="hello" id="hello"></div>
       <div class="hello-sub" id="helloSub">Escolha um sistema no menu ao lado.</div>
+
+      <div id="alertaVitrineFaltante" style="display:none;margin-bottom:24px;width:100%"></div>
 
       <div id="dashboardBlock" style="display:none;margin-bottom:36px;width:100%">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
@@ -549,6 +557,9 @@ async function entrarPortal(user){
     carregarResumoFabricaExtra();
   }
 
+  // ── Relatório diário: lojas que não enviaram fotos da vitrine ontem ──
+  carregarAlertaVitrineFaltante(minhasLojas, souMaster || souCoordenadorComercial);
+
   if(souMaster || souCoordenador){
     $('aprovacoesBlock').style.display = 'block';
     carregarAprovacoes();
@@ -794,6 +805,38 @@ async function carregarResumoFabricaExtra(){
     '<div class="dash-card" id="rankingCard_fabricaExtra">'+
       htmlCardRanking(ranking, 'fabricaExtra', 'Ranking de pedidos \u2014 sabores de gelato mais pedidos \u2014 \u00faltimos 30 dias')+
     '</div>';
+}
+
+function ontemISO(){ const d = new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+
+async function carregarAlertaVitrineFaltante(minhasLojas, verTudo){
+  const el = $('alertaVitrineFaltante');
+  if(!el) return;
+  const ontem = ontemISO();
+  const { data, error } = await sb.rpc('qualidade_vitrine_faltantes', { p_lojas: LOJAS_DISPONIVEIS.slice(), p_data: ontem });
+  if(error || !data){ el.style.display = 'none'; return; }
+  const faltantes = data.map(d => d.loja);
+  if(!faltantes.length){ el.style.display = 'none'; return; }
+  const dataFmt = new Date(ontem+'T12:00').toLocaleDateString('pt-BR');
+  let html = '';
+  const minhasFaltando = (minhasLojas||[]).filter(l => faltantes.includes(l));
+  if(minhasFaltando.length){
+    html += '<div class="alert-banner warn"><h4>\u26a0\ufe0f Fotos da vitrine pendentes</h4>'+
+      (minhasFaltando.length>1
+        ? 'Suas lojas <strong>'+minhasFaltando.map(esc).join(', ')+'</strong> ainda n\u00e3o enviaram as fotos da vitrine de ontem ('+dataFmt+').'
+        : '<strong>'+esc(minhasFaltando[0])+'</strong> ainda n\u00e3o enviou as fotos da vitrine de ontem ('+dataFmt+').')+
+      ' Envie pelo m\u00f3dulo de Qualidade, aba Vitrine.'+
+    '</div>';
+  }
+  if(verTudo){
+    html += '<div class="alert-banner info"><h4>\ud83d\udccb Relat\u00f3rio di\u00e1rio \u2014 vitrines n\u00e3o enviadas ('+dataFmt+')</h4>'+
+      faltantes.length+' loja(s) n\u00e3o enviaram fotos da vitrine ontem:'+
+      '<ul>'+faltantes.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ul>'+
+    '</div>';
+  }
+  if(!html){ el.style.display = 'none'; return; }
+  el.innerHTML = html;
+  el.style.display = '';
 }
 
 async function inicializarDashboardRepositor(){

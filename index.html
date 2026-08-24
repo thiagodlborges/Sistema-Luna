@@ -166,6 +166,7 @@
   .com-mensagem{font-size:.92rem;line-height:1.6;color:var(--text);white-space:pre-wrap;margin-bottom:26px}
   .badge-lido{background:#DCEAD9;color:#3B6B3B;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
   .badge-pendente{background:#FDF3E3;color:#8A6A16;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
+  .badge-rejeitado{background:#FBE2E2;color:#B43C3C;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
   .comunicado-item{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:18px 20px;margin-bottom:12px}
   .destinatario-linha{display:flex;align-items:center;gap:8px;padding:6px 2px;font-size:.85rem;cursor:pointer}
   .destinatario-linha:hover{background:var(--creme)}
@@ -233,6 +234,12 @@
         </div>
         <div class="hello-sub" id="dashSubtitulo" style="margin-bottom:16px">Números do mês corrente, até hoje.</div>
         <div id="dashConteudo"><div class="loading">Carregando indicadores&hellip;</div></div>
+      </div>
+
+      <div id="fabricaResumoBlock" style="display:none;margin-bottom:36px;width:100%">
+        <div class="hello" style="font-size:1.4rem;margin-bottom:0">Fábrica &mdash; Ranking &amp; Freezers</div>
+        <div class="hello-sub" style="margin-bottom:16px">Ranking de sabores mais pedidos e faturamento da operação de freezers.</div>
+        <div id="fabricaResumoConteudo"><div class="loading">Carregando&hellip;</div></div>
       </div>
 
       <div id="comunicadosBlock" style="margin-bottom:36px;width:100%;scroll-margin-top:20px">
@@ -415,7 +422,7 @@
 <div class="modal-overlay" id="modalNovoComunicado">
   <div class="modal" style="max-width:520px;width:96%;max-height:88vh;overflow:auto">
     <h3>Novo Comunicado</h3>
-    <p class="sub">Vai aparecer em tela cheia para os destinatários assim que entrarem no sistema — eles precisam confirmar a leitura antes de continuar.</p>
+    <p class="sub">Depois de enviado, seu comunicado passa por aprovação antes de aparecer para os destinatários. Depois de aprovado, ele vai aparecer em tela cheia para os destinatários assim que entrarem no sistema — eles precisam confirmar a leitura antes de continuar.</p>
     <label for="comNovoTitulo">Título</label>
     <input class="inp" id="comNovoTitulo" placeholder="Ex: Nova política de descarte de insumos">
     <label for="comNovaMensagem">Mensagem</label>
@@ -432,7 +439,7 @@
     </div>
     <div class="msg" id="comNovoMsg"></div>
     <div class="modal-actions">
-      <button class="btn" id="btnPublicarComunicado" onclick="salvarNovoComunicado()">Publicar</button>
+      <button class="btn" id="btnPublicarComunicado" onclick="salvarNovoComunicado()">Enviar para aprovação</button>
     </div>
     <button class="modal-close" onclick="fecharModal('modalNovoComunicado')">Cancelar</button>
   </div>
@@ -459,6 +466,8 @@ const $ = id => document.getElementById(id);
 let souMaster = false;
 let souCoordenador = false;
 let souBackofficeTipo = false;
+let souCoordenadorComercial = false;
+let souFreezersBackofficeFlag = false;
 let podeCriarComunicado = false;
 let comunicadosPendentes = [];
 let indiceComunicadoAtual = 0;
@@ -498,8 +507,10 @@ async function entrarPortal(user){
   let souFabrica = false;
   let souBackofficeLuna = false;
   let souRepositor = false;
+  souCoordenadorComercial = false;
+  souFreezersBackofficeFlag = false;
   try{
-    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas, precificacao_fabrica_backoffice, dashboard_backoffice, freezers_repositor').eq('id', user.id).single();
+    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas, precificacao_fabrica_backoffice, dashboard_backoffice, freezers_repositor, coordenador_comercial, freezers_backoffice').eq('id', user.id).single();
     if(perfil && perfil.nome) nome = perfil.nome;
     if(perfil && perfil.tipo === 'master') souMaster = true;
     if(perfil && perfil.tipo === 'backoffice') souBackofficeTipo = true;
@@ -510,24 +521,34 @@ async function entrarPortal(user){
       souFabrica = perfil.tipo === 'fabrica' || perfil.precificacao_fabrica_backoffice === true;
       souBackofficeLuna = perfil.dashboard_backoffice === true;
       souRepositor = perfil.tipo === 'repositor' || perfil.freezers_repositor === true;
+      souCoordenadorComercial = perfil.coordenador_comercial === true;
+      souFreezersBackofficeFlag = perfil.freezers_backoffice === true;
     }
   }catch(e){}
   meuNome = nome;
-  podeCriarComunicado = souMaster || souBackofficeTipo;
+  podeCriarComunicado = true; // todos podem enviar comunicados (entram pendentes de aprovação)
   const primeiro = (nome||'').split(' ')[0];
   $('greet').innerHTML = 'Ol\u00e1, <b>'+nome+'</b>';
   $('hello').textContent = 'Bem-vindo, '+primeiro+'.';
   $('adminBlock').style.display = souMaster ? 'block' : 'none';
-  $('btnNovoComunicado').style.display = podeCriarComunicado ? '' : 'none';
+  $('btnNovoComunicado').style.display = '';
+
+  // ── Dashboard principal (um por papel) ──
   if(souMaster || minhasLojas.length){
     inicializarDashboard(souMaster ? LOJAS_DISPONIVEIS.slice() : minhasLojas);
-  } else if(souBackofficeLuna){
-    inicializarDashboardBackoffice();
+  } else if(souCoordenadorComercial || souBackofficeLuna){
+    inicializarDashboardBackoffice(souCoordenadorComercial);
   } else if(souRepositor){
     inicializarDashboardRepositor();
   } else if(souFabrica){
     inicializarRankingFabrica();
   }
+
+  // ── Bloco extra da fábrica (ranking de pedidos + faturamento de freezers) para quem vê tudo ──
+  if(souMaster){
+    carregarResumoFabricaExtra();
+  }
+
   if(souMaster || souCoordenador){
     $('aprovacoesBlock').style.display = 'block';
     carregarAprovacoes();
@@ -597,11 +618,13 @@ function inicializarDashboard(lojas){
   carregarDashboard(lojas.length > 1 ? '__todas__' : lojas[0]);
 }
 
-async function inicializarDashboardBackoffice(){
+async function inicializarDashboardBackoffice(tierFull){
   dashLojasAcessiveis = LOJAS_DISPONIVEIS.slice();
   $('dashboardBlock').style.display = 'block';
-  $('dashTitulo').textContent = 'Dashboard \u2014 Vis\u00e3o Consolidada';
-  $('dashSubtitulo').textContent = 'Venda de freezers, perdas, uniformes, avalia\u00e7\u00e3o e pedidos de gelato de toda a opera\u00e7\u00e3o. N\u00fameros do m\u00eas corrente, at\u00e9 hoje.';
+  $('dashTitulo').textContent = tierFull ? 'Dashboard \u2014 Vis\u00e3o Consolidada' : 'Ranking & Qualidade \u2014 Vis\u00e3o Consolidada';
+  $('dashSubtitulo').textContent = tierFull
+    ? 'Venda de freezers, perdas, uniformes, compras de gelato, avalia\u00e7\u00e3o e vitrine de toda a opera\u00e7\u00e3o. N\u00fameros do m\u00eas corrente, at\u00e9 hoje.'
+    : 'Ranking de sabores e compilado de qualidade (nota e vitrine) de todas as lojas.';
   $('dashLojaSelect').style.display = 'none';
 
   const el = $('dashConteudo');
@@ -611,12 +634,16 @@ async function inicializarDashboardBackoffice(){
   const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
   const dataHoje = hoje.toISOString().slice(0,10);
 
-  const [resumos, evolucaoR, rankingR, freezersR] = await Promise.all([
+  const promises = [
     Promise.all(dashLojasAcessiveis.map(l => sb.rpc('dashboard_resumo_loja', { p_loja: l, p_data_inicio: inicioMes, p_data_fim: dataHoje }))),
     sb.rpc('dashboard_evolucao_avaliacao_consolidada', { p_lojas: dashLojasAcessiveis }),
     sb.rpc('dashboard_ranking_gelato', { p_lojas: dashLojasAcessiveis, p_data_fim: dataHoje }),
-    sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }),
-  ]);
+  ];
+  if(tierFull){
+    promises.push(sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }));
+    promises.push(Promise.all(dashLojasAcessiveis.map(l => sb.rpc('dashboard_valor_pedidos_por_categoria', { p_loja: l, p_data_inicio: inicioMes, p_data_fim: dataHoje }))));
+  }
+  const [resumos, evolucaoR, rankingR, freezersR, pedidosPorLojaR] = await Promise.all(promises);
 
   const erro = resumos.find(r => r.error);
   if(erro){
@@ -626,26 +653,44 @@ async function inicializarDashboardBackoffice(){
 
   const dados = resumos.map(r => (r.data && r.data[0]) || {});
   const perdasMes = dados.reduce((s,d) => s + Number(d.perdas_mes||0), 0);
+  const freelancersMes = dados.reduce((s,d) => s + Number(d.freelancers_mes||0), 0);
   const uniformesPosse = dados.reduce((s,d) => s + Number(d.uniformes_em_posse||0), 0);
   const avaliadas = dados.filter(d => d.ultima_avaliacao_pct != null);
   const mediaAvaliacao = avaliadas.length ? avaliadas.reduce((s,d) => s + Number(d.ultima_avaliacao_pct), 0) / avaliadas.length : null;
-  const freezersDados = (freezersR.data && freezersR.data[0]) || {};
-  const freezersValor = Number(freezersDados.valor_total||0);
-  const freezersQtd = Number(freezersDados.quantidade_itens||0);
-  const freezersPontos = Number(freezersDados.freezers_com_venda||0);
+  const vitrinesAvaliadas = dados.filter(d => d.vitrine_estrelas != null);
+  const mediaVitrine = vitrinesAvaliadas.length ? vitrinesAvaliadas.reduce((s,d) => s + Number(d.vitrine_estrelas), 0) / vitrinesAvaliadas.length : null;
+
+  let freezersValor = 0, freezersQtd = 0, freezersPontos = 0, comprasGelatoMes = 0;
+  if(tierFull){
+    const freezersDados = (freezersR.data && freezersR.data[0]) || {};
+    freezersValor = Number(freezersDados.valor_total||0);
+    freezersQtd = Number(freezersDados.quantidade_itens||0);
+    freezersPontos = Number(freezersDados.freezers_com_venda||0);
+    (pedidosPorLojaR||[]).forEach(r => {
+      const gelato = (r.data||[]).find(c => c.categoria === 'Gelato');
+      if(gelato) comprasGelatoMes += Number(gelato.valor||0);
+    });
+  }
 
   const evolucao = evolucaoR.data || [];
   const ranking = rankingR.data || [];
 
   el.innerHTML =
     '<div class="dash-grid">'+
-      '<div class="dash-card"><div class="lbl">Venda de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezersValor)+'</div>'+
-        '<div class="sub">'+freezersQtd.toLocaleString('pt-BR')+' un/kg vendidos em '+freezersPontos+' freezer(s)</div>'+
-      '</div>'+
-      '<div class="dash-card"><div class="lbl">Perdas no m\u00eas (todas as lojas)</div><div class="val">'+fmtMoedaDash(perdasMes)+'</div></div>'+
-      '<div class="dash-card"><div class="lbl">Uniformes em posse (todas as lojas)</div><div class="val">'+fmtMoedaDash(uniformesPosse)+'</div></div>'+
+      (tierFull ? (
+        '<div class="dash-card"><div class="lbl">Venda de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezersValor)+'</div>'+
+          '<div class="sub">'+freezersQtd.toLocaleString('pt-BR')+' un/kg vendidos em '+freezersPontos+' freezer(s)</div>'+
+        '</div>'+
+        '<div class="dash-card"><div class="lbl">Perdas no m\u00eas (todas as lojas)</div><div class="val">'+fmtMoedaDash(perdasMes)+'</div></div>'+
+        '<div class="dash-card"><div class="lbl">Gasto com freelancers (todas as lojas)</div><div class="val">'+fmtMoedaDash(freelancersMes)+'</div></div>'+
+        '<div class="dash-card"><div class="lbl">Compras de gelato no m\u00eas (todas as lojas)</div><div class="val">'+fmtMoedaDash(comprasGelatoMes)+'</div></div>'+
+        '<div class="dash-card"><div class="lbl">Uniformes em posse (todas as lojas)</div><div class="val">'+fmtMoedaDash(uniformesPosse)+'</div></div>'
+      ) : '')+
       '<div class="dash-card"><div class="lbl">M\u00e9dia de avalia\u00e7\u00e3o de qualidade</div><div class="val">'+(mediaAvaliacao!=null?mediaAvaliacao.toFixed(1)+'%':'\u2014')+'</div>'+
         (avaliadas.length ? '<div class="sub">m\u00e9dia de '+avaliadas.length+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')+
+      '</div>'+
+      '<div class="dash-card"><div class="lbl">M\u00e9dia de pontua\u00e7\u00e3o de vitrine</div><div class="val">'+(mediaVitrine!=null?mediaVitrine.toFixed(1)+' \u2605':'\u2014')+'</div>'+
+        (vitrinesAvaliadas.length ? '<div class="sub">m\u00e9dia de '+vitrinesAvaliadas.length+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')+
       '</div>'+
     '</div>'+
     '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px">'+
@@ -686,30 +731,75 @@ async function inicializarDashboardBackoffice(){
 async function inicializarRankingFabrica(){
   dashLojasAcessiveis = LOJAS_DISPONIVEIS.slice();
   $('dashboardBlock').style.display = 'block';
-  $('dashTitulo').textContent = 'Ranking de Sabores \u2014 Toda a Opera\u00e7\u00e3o';
+  $('dashTitulo').textContent = 'Ranking de Pedidos \u2014 Toda a Opera\u00e7\u00e3o';
   $('dashSubtitulo').textContent = 'Vis\u00e3o consolidada de todas as lojas, pra ajudar no planejamento de produ\u00e7\u00e3o.';
   $('dashLojaSelect').style.display = 'none';
 
   const el = $('dashConteudo');
   el.innerHTML = '<div class="loading">Carregando ranking\u2026</div>';
 
-  const { data: rankingData, error } = await sb.rpc('dashboard_ranking_gelato', { p_lojas: dashLojasAcessiveis, p_data_fim: new Date().toISOString().slice(0,10) });
+  const dataHoje = new Date().toISOString().slice(0,10);
+  const hoje = new Date();
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+
+  const promRanking = sb.rpc('dashboard_ranking_gelato', { p_lojas: dashLojasAcessiveis, p_data_fim: dataHoje });
+  const promFreezers = souFreezersBackofficeFlag ? sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }) : Promise.resolve({ data:null, error:null });
+
+  const [{ data: rankingData, error }, { data: freezersData }] = await Promise.all([promRanking, promFreezers]);
   if(error){
     el.innerHTML = '<div class="empty">Erro ao carregar: '+error.message+'</div>';
     return;
   }
   const ranking = rankingData || [];
+  const freezers = (freezersData && freezersData[0]) || null;
 
   el.innerHTML =
+    (freezers ?
+      '<div class="dash-grid" style="margin-bottom:14px">'+
+        '<div class="dash-card"><div class="lbl">Faturamento de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezers.valor_total)+'</div>'+
+          '<div class="sub">'+Number(freezers.quantidade_itens||0).toLocaleString('pt-BR')+' un/kg vendidos em '+Number(freezers.freezers_com_venda||0)+' freezer(s)</div>'+
+        '</div>'+
+      '</div>' : '') +
     '<div class="dash-card" id="rankingCard_fabrica">'+
       htmlCardRanking(ranking, 'fabrica', 'Sabores de gelato mais pedidos \u2014 \u00faltimos 30 dias')+
+    '</div>';
+}
+
+async function carregarResumoFabricaExtra(){
+  $('fabricaResumoBlock').style.display = 'block';
+  const el = $('fabricaResumoConteudo');
+  el.innerHTML = '<div class="loading">Carregando\u2026</div>';
+
+  const hoje = new Date();
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  const dataHoje = hoje.toISOString().slice(0,10);
+
+  const [{ data: rankingData, error }, { data: freezersData }] = await Promise.all([
+    sb.rpc('dashboard_ranking_gelato', { p_lojas: LOJAS_DISPONIVEIS.slice(), p_data_fim: dataHoje }),
+    sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }),
+  ]);
+  if(error){
+    el.innerHTML = '<div class="empty">Erro ao carregar: '+error.message+'</div>';
+    return;
+  }
+  const ranking = rankingData || [];
+  const freezers = (freezersData && freezersData[0]) || {};
+
+  el.innerHTML =
+    '<div class="dash-grid" style="margin-bottom:14px">'+
+      '<div class="dash-card"><div class="lbl">Faturamento de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezers.valor_total)+'</div>'+
+        '<div class="sub">'+Number(freezers.quantidade_itens||0).toLocaleString('pt-BR')+' un/kg vendidos em '+Number(freezers.freezers_com_venda||0)+' freezer(s)</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="dash-card" id="rankingCard_fabricaExtra">'+
+      htmlCardRanking(ranking, 'fabricaExtra', 'Ranking de pedidos \u2014 sabores de gelato mais pedidos \u2014 \u00faltimos 30 dias')+
     '</div>';
 }
 
 async function inicializarDashboardRepositor(){
   $('dashboardBlock').style.display = 'block';
   $('dashTitulo').textContent = 'Minha Carteira de Freezers';
-  $('dashSubtitulo').textContent = 'Resumo da opera\u00e7\u00e3o de freezers sob sua responsabilidade.';
+  $('dashSubtitulo').textContent = 'Resumo da opera\u00e7\u00e3o de freezers sob sua responsabilidade, ranking de pedidos e faturamento do m\u00eas.';
   $('dashLojaSelect').style.display = 'none';
 
   const el = $('dashConteudo');
@@ -717,13 +807,30 @@ async function inicializarDashboardRepositor(){
 
   const hoje = new Date();
   const inicio30 = new Date(hoje.getTime() - 30*86400000).toISOString().slice(0,10);
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  const dataHoje = hoje.toISOString().slice(0,10);
 
-  const { data: meusFreezers, error } = await sb.from('freezers').select('id, ponto_venda, rede, status').eq('status','ativo');
+  const [{ data: meusFreezers, error }, { data: rankingData }, { data: freezersFatData }] = await Promise.all([
+    sb.from('freezers').select('id, ponto_venda, rede, status').eq('status','ativo'),
+    sb.rpc('dashboard_ranking_gelato', { p_lojas: LOJAS_DISPONIVEIS.slice(), p_data_fim: dataHoje }),
+    sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }),
+  ]);
   if(error){ el.innerHTML = '<div class="empty">Erro ao carregar: '+error.message+'</div>'; return; }
+  const ranking = rankingData || [];
+  const freezersFat = (freezersFatData && freezersFatData[0]) || {};
+  const blocoTopo =
+    '<div class="dash-grid" style="margin-bottom:14px">'+
+      '<div class="dash-card"><div class="lbl">Faturamento de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezersFat.valor_total)+'</div>'+
+        '<div class="sub">'+Number(freezersFat.quantidade_itens||0).toLocaleString('pt-BR')+' un/kg vendidos em '+Number(freezersFat.freezers_com_venda||0)+' freezer(s)</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="dash-card" id="rankingCard_repositor" style="margin-bottom:16px">'+
+      htmlCardRanking(ranking, 'repositor', 'Ranking de pedidos \u2014 sabores de gelato mais pedidos \u2014 \u00faltimos 30 dias')+
+    '</div>';
   const freezerIds = (meusFreezers||[]).map(f => f.id);
 
   if(!freezerIds.length){
-    el.innerHTML = '<div class="dash-card"><div class="lbl">Freezers</div><div class="val">0</div><div class="sub">Voc\u00ea ainda n\u00e3o tem freezers na carteira.</div></div>';
+    el.innerHTML = blocoTopo + '<div class="dash-card"><div class="lbl">Freezers</div><div class="val">0</div><div class="sub">Voc\u00ea ainda n\u00e3o tem freezers na carteira.</div></div>';
     return;
   }
 
@@ -746,7 +853,7 @@ async function inicializarDashboardRepositor(){
     return u && (u.falha_led || u.risco_falha_geral);
   });
 
-  el.innerHTML =
+  el.innerHTML = blocoTopo +
     '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px">'+
       '<div class="dash-card" style="flex:1;min-width:160px"><div class="lbl">Freezers ativos</div><div class="val">'+freezerIds.length+'</div></div>'+
       '<div class="dash-card" style="flex:1;min-width:160px"><div class="lbl">Visitas (30 dias)</div><div class="val">'+visitas30d.length+'</div></div>'+
@@ -810,6 +917,11 @@ async function carregarDashboard(valor){
     r.ultima_avaliacao_pct = avaliadas.reduce((s,x) => s + Number(x.resumo.ultima_avaliacao_pct), 0) / avaliadas.length;
     r.ultima_avaliacao_lojas = avaliadas.length;
   }
+  const vitrinesAvaliadas = resultados.filter(x => x.resumo.vitrine_estrelas != null);
+  if(vitrinesAvaliadas.length){
+    r.vitrine_estrelas = vitrinesAvaliadas.reduce((s,x) => s + Number(x.resumo.vitrine_estrelas), 0) / vitrinesAvaliadas.length;
+    r.vitrine_lojas = vitrinesAvaliadas.length;
+  }
 
   let evolucao = [];
   let evolucaoConsolidada = false;
@@ -827,6 +939,7 @@ async function carregarDashboard(valor){
     pedidosPorCategoria[p.categoria].itens_sem_preco += Number(p.itens_sem_preco||0);
   }));
   const pedidos = Object.values(pedidosPorCategoria).sort((a,b) => a.categoria.localeCompare(b.categoria));
+  const comprasGelato = pedidosPorCategoria['Gelato'] ? pedidosPorCategoria['Gelato'].valor : 0;
 
   const totalPedidos = pedidos.reduce((s,p) => s + p.valor, 0);
   const semPreco = pedidos.reduce((s,p) => s + p.itens_sem_preco, 0);
@@ -835,14 +948,20 @@ async function carregarDashboard(valor){
     '<div class="dash-grid">'+
       '<div class="dash-card"><div class="lbl">Perdas no m\u00eas'+(consolidado?' (todas as lojas)':'')+'</div><div class="val">'+fmtMoedaDash(r.perdas_mes)+'</div></div>'+
       '<div class="dash-card"><div class="lbl">Gasto com freelancers</div><div class="val">'+fmtMoedaDash(r.freelancers_mes)+'</div></div>'+
-      '<div class="dash-card"><div class="lbl">Pedidos no m\u00eas (aprox.)</div><div class="val">'+fmtMoedaDash(totalPedidos)+'</div>'+
-        (semPreco ? '<div class="sub">'+semPreco+' item(ns) sem pre\u00e7o cadastrado, n\u00e3o entraram na soma</div>' : '')+
-      '</div>'+
+      '<div class="dash-card"><div class="lbl">Compras de gelato no m\u00eas</div><div class="val">'+fmtMoedaDash(comprasGelato)+'</div></div>'+
       '<div class="dash-card"><div class="lbl">Uniformes em posse</div><div class="val">'+fmtMoedaDash(r.uniformes_em_posse)+'</div></div>'+
       '<div class="dash-card"><div class="lbl">\u00daltima avalia\u00e7\u00e3o de qualidade</div><div class="val">'+(r.ultima_avaliacao_pct!=null?Number(r.ultima_avaliacao_pct).toFixed(1)+'%':'\u2014')+'</div>'+
         (consolidado
           ? (r.ultima_avaliacao_lojas ? '<div class="sub">m\u00e9dia de '+r.ultima_avaliacao_lojas+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')
           : (resultados[0].resumo.ultima_avaliacao_data ? '<div class="sub">em '+fmtDataDash(resultados[0].resumo.ultima_avaliacao_data)+'</div>' : '<div class="sub">nenhuma avalia\u00e7\u00e3o registrada ainda</div>'))+
+      '</div>'+
+      '<div class="dash-card"><div class="lbl">Pontua\u00e7\u00e3o de vitrine</div><div class="val">'+(r.vitrine_estrelas!=null?Number(r.vitrine_estrelas).toFixed(1)+' \u2605':'\u2014')+'</div>'+
+        (consolidado
+          ? (r.vitrine_lojas ? '<div class="sub">m\u00e9dia de '+r.vitrine_lojas+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')
+          : (resultados[0].resumo.vitrine_data ? '<div class="sub">em '+fmtDataDash(resultados[0].resumo.vitrine_data)+'</div>' : '<div class="sub">nenhuma avalia\u00e7\u00e3o registrada ainda</div>'))+
+      '</div>'+
+      '<div class="dash-card"><div class="lbl">Pedidos no m\u00eas (aprox., todas categorias)</div><div class="val">'+fmtMoedaDash(totalPedidos)+'</div>'+
+        (semPreco ? '<div class="sub">'+semPreco+' item(ns) sem pre\u00e7o cadastrado, n\u00e3o entraram na soma</div>' : '')+
       '</div>'+
     '</div>'+
     '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px" id="dashLinhaBaixo">'+
@@ -990,6 +1109,11 @@ async function carregarAprovacoes(){
     promises.push(sb.from('projects')
       .select('id, name, area, responsible, planned_result')
       .eq('status_aprovacao','proposta').order('start_date'));
+
+    tarefas.push('comunicados');
+    promises.push(sb.from('comunicados')
+      .select('id, titulo, mensagem, destino, criado_por_nome, criado_em')
+      .eq('status','pendente').order('criado_em'));
   }
 
   const resultados = await Promise.all(promises);
@@ -1000,6 +1124,19 @@ async function carregarAprovacoes(){
 
 function renderAprovacoes(dados){
   const grupos = [];
+
+  if(dados.comunicados && dados.comunicados.length){
+    grupos.push({
+      titulo: '📢 Comunicados — aguardando aprovação',
+      itens: dados.comunicados.map(c => ({
+        onclick: "abrirDetalheAprovacao('comunicado','"+c.id+"')",
+        l1: esc(c.titulo),
+        l2: 'Por '+esc(c.criado_por_nome||'—')+' · '+fmtData(c.criado_em)+' · '+(c.destino==='especifico'?'destinatários específicos':'todos os usuários'),
+        aprovar: "aprovarComunicado('"+c.id+"')",
+        rejeitar: "rejeitarComunicado('"+c.id+"')",
+      }))
+    });
+  }
 
   if(dados.freelancers && dados.freelancers.length){
     grupos.push({
@@ -1193,6 +1330,29 @@ async function validarProjeto(id){
   carregarAprovacoes();
 }
 
+async function aprovarComunicado(id){
+  if(!confirm('Aprovar este comunicado? Ele vai aparecer em tela cheia para os destinatários assim que entrarem no sistema.')) return;
+  const { error } = await sb.from('comunicados').update({
+    status: 'aprovado', aprovado_por: meuId, aprovado_por_nome: meuNome, aprovado_em: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
+  renderComunicadosHistorico();
+}
+
+async function rejeitarComunicado(id){
+  const motivo = prompt('Motivo da rejeição (opcional):');
+  if(motivo === null) return; // cancelou o prompt
+  const { error } = await sb.from('comunicados').update({
+    status: 'rejeitado', motivo_rejeicao: motivo || null, aprovado_por: meuId, aprovado_por_nome: meuNome, aprovado_em: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ alert('Erro ao rejeitar: '+error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
+  renderComunicadosHistorico();
+}
+
 // ── DETALHE COMPLETO DE CADA APROVAÇÃO ─────────────────────
 function linha(label, valor){ return '<div class="detail-label">'+label+'</div><div class="detail-value">'+valor+'</div>'; }
 function linkModulo(slugs){
@@ -1203,12 +1363,31 @@ function linkModulo(slugs){
   return '<a class="link-modulo" href="'+s.url+'" target="_blank">Abrir módulo → '+esc(s.nome)+'</a>';
 }
 
+async function detalheComunicado(id){
+  const { data: c, error } = await sb.from('comunicados').select('*').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  $('detalheTitulo').textContent = 'Comunicado — '+esc(c.titulo);
+  let destinatariosHtml = '';
+  if(c.destino === 'especifico'){
+    const { data: dests } = await sb.from('comunicado_destinatarios').select('perfis(nome)').eq('comunicado_id', id);
+    destinatariosHtml = linha('Destinatários', (dests||[]).map(d => esc(d.perfis ? d.perfis.nome : '—')).join(', ') || '—');
+  }
+  $('detalheConteudo').innerHTML =
+    linha('Enviado por', esc(c.criado_por_nome||'—')+' em '+fmtData(c.criado_em.slice(0,10))) +
+    linha('Destino', c.destino === 'especifico' ? 'Pessoas específicas' : 'Todos os usuários') +
+    destinatariosHtml +
+    '<div class="detail-label">Mensagem</div><div class="detail-value" style="white-space:pre-wrap">'+esc(c.mensagem)+'</div>';
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="aprovarComunicado(\''+id+'\')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarComunicado(\''+id+'\')">Rejeitar</button>';
+}
+
 function abrirDetalheAprovacao(tipo, id){
   $('modalAprovacaoDetalhe').classList.add('show');
   $('detalheTitulo').textContent = 'Detalhe';
   $('detalheConteudo').innerHTML = '<div class="loading">Carregando&hellip;</div>';
   $('detalheAcoes').innerHTML = '';
-  const fns = { freelancer: detalheFreelancer, pedido: detalhePedido, substituicao: detalheSubstituicao, preco: detalhePreco, tributo: detalheTributo, combo: detalheCombo, projeto: detalheProjeto };
+  const fns = { freelancer: detalheFreelancer, pedido: detalhePedido, substituicao: detalheSubstituicao, preco: detalhePreco, tributo: detalheTributo, combo: detalheCombo, projeto: detalheProjeto, comunicado: detalheComunicado };
   (fns[tipo] || (() => { $('detalheConteudo').innerHTML = '<div class="empty">Tipo desconhecido.</div>'; }))(id);
 }
 
@@ -1711,11 +1890,11 @@ async function criarUsuario(){
 // ══════════════════════════════════════════════════════════
 
 async function verificarComunicadosPendentes(){
-  const { data: todos, error } = await sb.from('comunicados').select('*').eq('ativo', true).order('criado_em', { ascending:true });
+  const { data: todos, error } = await sb.from('comunicados').select('*').eq('ativo', true).eq('status','aprovado').order('criado_em', { ascending:true });
   if(error || !todos || !todos.length) return;
   const { data: lidos } = await sb.from('comunicado_leituras').select('comunicado_id').eq('perfil_id', meuId);
   const idsLidos = new Set((lidos||[]).map(l => l.comunicado_id));
-  comunicadosPendentes = todos.filter(c => !idsLidos.has(c.id));
+  comunicadosPendentes = todos.filter(c => !idsLidos.has(c.id) && c.criado_por !== meuId);
   if(comunicadosPendentes.length){
     indiceComunicadoAtual = 0;
     mostrarComunicadoAtual();
@@ -1765,22 +1944,30 @@ async function renderComunicadosHistorico(){
   el.innerHTML = todos.map(c => {
     const lidoEm = mapaLidos[c.id];
     const dataFmt = new Date(c.criado_em).toLocaleDateString('pt-BR');
+    const souDono = c.criado_por === meuId;
+    let badgeStatus = '';
+    if(c.status === 'pendente') badgeStatus = '<span class="badge-pendente">⏳ Aguardando aprovação</span>';
+    else if(c.status === 'rejeitado') badgeStatus = '<span class="badge-rejeitado">✕ Rejeitado</span>' + (c.motivo_rejeicao ? '' : '');
+    else badgeStatus = (lidoEm ? '<span class="badge-lido">✓ Lido</span>' : '<span class="badge-pendente">Pendente de leitura</span>');
+    const podeVerRecibo = (souDono || souMaster) && c.status === 'aprovado';
     return `<div class="comunicado-item">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
         <div>
           <h3 style="margin:0 0 4px;font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--bordo-dark)">${esc(c.titulo)}</h3>
-          <div style="font-size:.78rem;color:var(--text-light)">${dataFmt} — ${esc(c.criado_por_nome||'')}${c.destino==='especifico'?' · destinatários específicos':' · todos os usuários'}</div>
+          <div style="font-size:.78rem;color:var(--text-light)">${dataFmt} — ${esc(c.criado_por_nome||'')}${c.destino==='especifico'?' · destinatários específicos':' · todos os usuários'}${souDono?' · <em>seu comunicado</em>':''}</div>
         </div>
-        ${lidoEm ? '<span class="badge-lido">✓ Lido</span>' : '<span class="badge-pendente">Pendente</span>'}
+        ${badgeStatus}
       </div>
       <p style="margin:12px 0 0;font-size:.88rem;line-height:1.5;white-space:pre-wrap">${esc(c.mensagem)}</p>
-      ${podeCriarComunicado ? '<div id="recibo-'+c.id+'" style="font-size:.76rem;color:var(--text-light);margin-top:10px">Carregando confirmações…</div>' : ''}
+      ${c.status === 'rejeitado' && c.motivo_rejeicao ? '<p style="margin:8px 0 0;font-size:.8rem;color:#B43C3C"><strong>Motivo da rejeição:</strong> '+esc(c.motivo_rejeicao)+'</p>' : ''}
+      ${podeVerRecibo ? '<div id="recibo-'+c.id+'" style="font-size:.76rem;color:var(--text-light);margin-top:10px">Carregando confirmações…</div>' : ''}
     </div>`;
   }).join('');
 
-  if(podeCriarComunicado){
-    todos.forEach(c => carregarReciboComunicado(c));
-  }
+  todos.forEach(c => {
+    const souDono = c.criado_por === meuId;
+    if((souDono || souMaster) && c.status === 'aprovado') carregarReciboComunicado(c);
+  });
 }
 
 async function carregarReciboComunicado(c){
@@ -1850,23 +2037,25 @@ async function salvarNovoComunicado(){
   if(destino === 'especifico' && destinatariosSelecionados.size === 0){ showMsg('comNovoMsg','Selecione pelo menos uma pessoa.','err'); return; }
 
   const btn = $('btnPublicarComunicado');
-  btn.disabled = true; btn.textContent = 'Publicando…';
+  btn.disabled = true; btn.textContent = 'Enviando…';
 
   const { data: novo, error } = await sb.from('comunicados').insert({
     titulo, mensagem, destino, criado_por: meuId, criado_por_nome: meuNome,
   }).select('id').single();
 
-  if(error){ showMsg('comNovoMsg','Erro: '+error.message,'err'); btn.disabled=false; btn.textContent='Publicar'; return; }
+  if(error){ showMsg('comNovoMsg','Erro: '+error.message,'err'); btn.disabled=false; btn.textContent='Enviar para aprovação'; return; }
 
   if(destino === 'especifico'){
     const linhas = Array.from(destinatariosSelecionados).map(pid => ({ comunicado_id: novo.id, perfil_id: pid }));
     const { error: errDest } = await sb.from('comunicado_destinatarios').insert(linhas);
-    if(errDest){ showMsg('comNovoMsg','Comunicado criado, mas houve erro ao definir os destinatários: '+errDest.message,'err'); btn.disabled=false; btn.textContent='Publicar'; return; }
+    if(errDest){ showMsg('comNovoMsg','Comunicado criado, mas houve erro ao definir os destinatários: '+errDest.message,'err'); btn.disabled=false; btn.textContent='Enviar para aprovação'; return; }
   }
 
-  btn.disabled = false; btn.textContent = 'Publicar';
+  btn.disabled = false; btn.textContent = 'Enviar para aprovação';
   fecharModal('modalNovoComunicado');
+  alert('Comunicado enviado! Ele vai aparecer para os destinatários assim que for aprovado.');
   renderComunicadosHistorico();
+  if(souMaster) carregarAprovacoes();
 }
 
 sb.auth.getSession().then(({ data }) => { if(data && data.session) entrarPortal(data.session.user); });

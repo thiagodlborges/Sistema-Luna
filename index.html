@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Luna — Inventário de Loja</title>
+<title>Sistema Luna</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -15,784 +15,2090 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{overflow-x:hidden;max-width:100vw}
-  body{font-family:'Jost',sans-serif;background:var(--creme);color:var(--text);min-height:100vh}
-  a{color:inherit}
+  body{font-family:'Jost',sans-serif;color:var(--text);background:var(--creme);min-height:100vh}
 
-  #carregandoOverlay{position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#4A1220 0%,#2C0A14 60%,#1A0008 100%);display:flex;align-items:center;justify-content:center;color:#C4A882;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;text-align:center;padding:20px}
+  .wordmark{line-height:1}
+  .wordmark .brand{font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:.18em;color:var(--bordo)}
+  .wordmark .sub{font-family:'Jost',sans-serif;font-weight:400;letter-spacing:.32em;font-size:.52em;color:var(--marrom);text-transform:uppercase;margin-top:.15em}
 
-  #appRoot{display:none}
-  .app-shell{display:flex;align-items:stretch;min-height:100vh}
-  .sidebar{width:250px;flex-shrink:0;background:linear-gradient(180deg,var(--bordo-dark),var(--bordo) 60%,var(--marrom-dark));display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:150;box-shadow:0 8px 32px rgba(44,24,16,.18)}
-  .side-header{padding:24px 20px 16px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.12)}
-  .side-header .brand{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.3rem;color:var(--creme)}
-  .side-header .brand-sub{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--marrom-light);margin-top:-2px}
-  .side-header .field{margin-top:14px;margin-bottom:0}
-  .side-header .field label{color:var(--marrom-light)}
-  .side-header select.inp{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:var(--creme)}
-  .side-header select.inp option{color:var(--text)}
-  .side-links{padding:14px 16px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0}
-  .hbtn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:var(--creme);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:.76rem;text-decoration:none;display:flex;align-items:center;gap:6px;transition:background .15s;width:100%;text-align:left}
-  .hbtn:hover{background:rgba(255,255,255,.2)}
-  nav.tabs{display:flex;flex-direction:column;gap:2px;background:none;border:none;padding:10px 12px;overflow-y:auto;flex:1}
-  .tab{padding:11px 14px;font-size:.82rem;font-weight:500;color:var(--marrom-light);cursor:pointer;border-left:3px solid transparent;border-radius:8px;white-space:normal;line-height:1.3;transition:all .15s}
-  .tab:hover{color:var(--creme);background:rgba(255,255,255,.08)}
-  .tab.active{color:var(--creme);border-left-color:var(--creme);background:rgba(255,255,255,.14);font-weight:600}
-  .sidebar-close{display:none}
-  .content-wrap{flex:1;min-width:0;display:flex;flex-direction:column}
-  .mobile-topbar{display:none}
-  main{max-width:1180px;margin:0 auto;padding:28px 26px 60px;width:100%}
-  .card{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:22px;margin-bottom:18px}
-  .card h2{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo-dark);margin-bottom:14px}
-  .card h3{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--bordo-dark);margin:18px 0 10px}
-  .card p.hint{font-size:.82rem;color:var(--text-light);margin-bottom:14px}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
-  .field{display:flex;flex-direction:column;gap:4px}
-  .field label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:500}
-  .inp,select.inp,textarea.inp{padding:9px 12px;border:1.5px solid var(--creme-dark);border-radius:7px;font-family:'Jost',sans-serif;font-size:.85rem;color:var(--text);background:var(--white)}
+  /* LOGIN */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(120% 120% at 50% 0%, #fff8ec 0%, var(--creme) 55%, var(--creme-dark) 100%)}
+  .card{width:100%;max-width:380px;background:var(--white);border:1px solid var(--creme-dark);
+    border-radius:16px;box-shadow:0 18px 50px rgba(74,18,32,.10);padding:38px 30px}
+  .card .wordmark{text-align:center;margin-bottom:6px}
+  .card .wordmark .brand{font-size:2.5rem}
+  .login-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--bordo-dark);text-align:center;margin-bottom:26px}
+  label{display:block;font-size:.72rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:6px}
+  .inp{width:100%;padding:12px 14px;border:1.5px solid var(--creme-dark);border-radius:8px;
+    font-family:'Jost',sans-serif;font-size:.93rem;color:var(--text);background:var(--white);transition:border-color .2s;margin-bottom:16px}
   .inp:focus{outline:none;border-color:var(--marrom)}
-  .btn{background:var(--bordo);color:var(--creme);border:none;padding:10px 18px;border-radius:7px;font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:background .15s}
-  .btn:hover{background:var(--bordo-dark)}
-  .btn:disabled{opacity:.5;cursor:default}
+  .btn{width:100%;padding:13px;background:var(--bordo);border:none;border-radius:8px;
+    font-family:'Jost',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--creme);cursor:pointer;transition:background .2s}
+  .btn:hover{background:var(--bordo-dark)} .btn:disabled{opacity:.6;cursor:default}
   .btn-outline{background:none;border:1.5px solid var(--bordo);color:var(--bordo)}
   .btn-outline:hover{background:var(--bordo);color:var(--creme)}
-  .btn-danger{background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem}
-  .btn-sm{padding:6px 12px;font-size:.72rem}
+  .forgot{display:block;width:100%;background:none;border:none;color:var(--marrom);font-family:'Jost',sans-serif;
+    font-size:.72rem;text-decoration:underline;text-align:center;margin-top:14px;cursor:pointer}
+  .msg{font-size:.78rem;text-align:center;margin-top:14px;display:none}
+  .msg.err{color:#B43C3C;display:block} .msg.ok{color:var(--marrom-dark);display:block}
 
-  .table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table{width:100%;min-width:520px;border-collapse:collapse;font-size:.82rem}
-  th{text-align:left;padding:9px 10px;background:var(--creme);color:var(--text-light);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em}
-  td{padding:9px 10px;border-top:1px solid var(--creme-dark);vertical-align:middle}
-  tr.inativo td{color:var(--text-light);opacity:.6}
-  tr:hover td{background:#faf8f5}
+  /* PORTAL */
+  #portal{display:none;min-height:100vh;flex-direction:column}
+  header{background:var(--bordo);color:var(--creme);padding:16px 26px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    box-shadow:0 2px 14px rgba(74,18,32,.25)}
+  header .wordmark .brand{font-size:1.5rem;color:var(--creme)}
+  header .wordmark .sub{color:var(--marrom-light)}
+  .userbox{display:flex;align-items:center;gap:16px;font-size:.85rem;flex-wrap:wrap}
+  .userbox .greet b{font-weight:500}
+  .logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:var(--creme);
+    font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+    padding:7px 14px;border-radius:6px;cursor:pointer;transition:background .2s}
+  .logout:hover{background:rgba(255,255,255,.22)}
+  .icon-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:var(--creme);
+    font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.04em;
+    padding:7px 12px;border-radius:6px;cursor:pointer;transition:background .2s}
+  .icon-btn:hover{background:rgba(255,255,255,.22)}
+  main{flex:1;width:100%;margin:0 auto;padding:40px 26px 64px;display:flex;flex-direction:column;align-items:center;max-width:900px}
+  .hello{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--bordo-dark);margin-bottom:4px;width:100%}
+  .hello-sub{color:var(--text-light);font-size:.9rem;margin-bottom:32px;width:100%}
+  .empty{background:var(--white);border:1px dashed var(--creme-dark);border-radius:12px;padding:40px;text-align:center;color:var(--text-light);width:100%}
+  .loading{text-align:center;color:var(--text-light);padding:40px;font-size:.9rem;width:100%}
 
-  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:600;white-space:nowrap}
-  .badge-andamento{background:#EAF2FB;color:#2E6DA4}
-  .badge-concluido{background:#E8F8F0;color:#27AE60}
-  .badge-semanal{background:var(--creme);color:var(--text-light)}
-  .badge-mensal{background:#FEF6E7;color:#B8860B}
+  /* LAYOUT: cabeçalho fixo em cima, menu lateral + conteúdo lado a lado embaixo */
+  .layout{display:flex;flex:1;width:100%;position:relative}
+  .hamburger{display:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+    color:var(--creme);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:1.15rem;
+    align-items:center;justify-content:center;flex-shrink:0}
+  #sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(44,24,16,.45);z-index:39}
+  #sidebarOverlay.show{display:block}
+  #sidebar{width:258px;flex-shrink:0;background:var(--white);border-right:1px solid var(--creme-dark);
+    padding:22px 0 30px;overflow-y:auto;transition:transform .25s ease}
+  #sidebar .side-title{font-family:'Cormorant Garamond',serif;font-size:.92rem;color:var(--text-light);
+    text-transform:uppercase;letter-spacing:.1em;padding:0 22px 14px;font-weight:600}
+  .side-item{display:flex;align-items:center;gap:12px;padding:10px 22px;color:var(--text);
+    text-decoration:none;font-size:.87rem;font-weight:500;border-left:3px solid transparent;
+    transition:background .15s,border-color .15s}
+  .side-item:hover{background:var(--creme);border-left-color:var(--marrom-light)}
+  .side-item .ic{width:34px;height:34px;border-radius:50%;background:var(--bordo);display:flex;
+    align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+  .side-item:hover .ic{background:var(--bordo-dark)}
+  .side-item .ic svg{width:17px;height:17px;color:var(--creme)}
+  .side-item .nm{font-family:'Jost',sans-serif;line-height:1.25}
 
-  .alert-banner{border-radius:12px;padding:16px 18px;margin-bottom:18px;font-size:.85rem;line-height:1.5;border:1px solid}
+  @media (max-width:880px){
+    .hamburger{display:flex}
+    #sidebar{position:fixed;top:0;left:0;height:100vh;z-index:40;transform:translateX(-100%);
+      box-shadow:0 0 40px rgba(0,0,0,.25);padding-top:70px}
+    #sidebar.open{transform:translateX(0)}
+  }
+
+  /* CENTRAL DE APROVAÇÕES */
+  #aprovacoesBlock{width:100%;margin-bottom:40px}
+  .approval-group{background:var(--white);border:1px solid var(--creme-dark);border-radius:14px;padding:20px 22px;margin-bottom:14px;width:100%}
+  .approval-group-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--bordo-dark);margin-bottom:10px;display:flex;align-items:center;gap:9px}
+  .badge-count{background:var(--bordo);color:var(--creme);font-family:'Jost',sans-serif;font-size:.68rem;font-weight:600;padding:2px 9px;border-radius:20px;line-height:1.6}
+  .approval-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--creme-dark);flex-wrap:wrap}
+  .approval-item:first-of-type{border-top:none;padding-top:2px}
+  .approval-info{cursor:pointer;border-radius:8px;padding:4px 8px;margin:-4px -8px;transition:background .15s}
+  .approval-info:hover{background:var(--creme)}
+  .approval-l1{font-size:.9rem;font-weight:500;color:var(--text)}
+  .approval-l1::after{content:' →';color:var(--marrom-light);opacity:0;transition:opacity .15s}
+  .approval-info:hover .approval-l1::after{opacity:1}
+  .approval-l2{font-size:.76rem;color:var(--text-light);margin-top:2px}
+  .approval-actions{display:flex;gap:8px;flex-shrink:0}
+  .btn-approve{background:#27AE60;color:#fff;border:none;padding:8px 16px;border-radius:7px;font-family:'Jost',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:background .15s}
+  .btn-approve:hover{background:#1e8449}
+  .btn-reject{background:none;border:1.5px solid #B43C3C;color:#B43C3C;padding:6.5px 14px;border-radius:7px;font-family:'Jost',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:.15s}
+  .btn-reject:hover{background:#B43C3C;color:#fff}
+
+  /* MODAL DE DETALHE DA APROVAÇÃO */
+  .detail-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:500;margin-bottom:3px}
+  .detail-value{font-size:.9rem;color:var(--text);margin-bottom:14px;line-height:1.4}
+  .detail-table{width:100%;border-collapse:collapse;font-size:.8rem;margin:6px 0 14px}
+  .detail-edit-row{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
+  .detail-edit-row .field{flex:1;min-width:120px}
+  .detail-edit-row .field label{margin-bottom:4px}
+  .detail-edit-row .inp{margin-bottom:0}
+  .detail-table th{text-align:left;padding:7px 9px;background:var(--creme);color:var(--text-light);font-size:.66rem;text-transform:uppercase;letter-spacing:.04em}
+  .detail-table td{padding:7px 9px;border-top:1px solid var(--creme-dark)}
+  .link-modulo{display:inline-block;margin-top:2px;margin-bottom:6px;font-size:.78rem;color:var(--marrom-dark);text-decoration:underline}
+  footer{text-align:center;color:var(--marrom);font-size:.7rem;letter-spacing:.06em;padding:22px}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,24,16,.45);z-index:50;
+    align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.show{display:flex}
+  .modal{width:100%;max-width:420px;max-height:90vh;overflow-y:auto;background:var(--white);border-radius:14px;padding:28px 26px;
+    box-shadow:0 24px 60px rgba(0,0,0,.25)}
+  .modal h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo-dark);margin-bottom:6px}
+  .modal p.sub{color:var(--text-light);font-size:.82rem;margin-bottom:18px}
+  .modal-actions{display:flex;gap:10px;margin-top:6px}
+  .modal-actions .btn, .modal-actions .btn-outline{flex:1}
+  .modal-close{background:none;border:none;color:var(--marrom);font-size:.78rem;text-decoration:underline;cursor:pointer;
+    display:block;margin:14px auto 0}
+  .result-box{background:var(--creme);border:1px dashed var(--marrom-light);border-radius:8px;padding:14px 16px;
+    margin-top:10px;font-family:'DM Mono',monospace;font-size:.95rem;text-align:center;color:var(--bordo-dark)}
+  .admin-link{background:none;border:none;color:var(--marrom-dark);font-family:'Jost',sans-serif;font-size:.78rem;
+    text-decoration:underline;cursor:pointer;display:block;margin-top:8px}
+
+  @media (max-width:600px){
+    header{padding:14px 18px}
+    main{padding:28px 16px 48px}
+  }
+  .dash-card{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:18px 20px}
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px}
+  .dash-card .lbl{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);font-weight:700;margin-bottom:6px}
+  .dash-card .val{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--bordo-dark);line-height:1.1}
+  .dash-card .sub{font-size:.8rem;color:var(--text-light);margin-top:4px;font-weight:500}
+
+  /* ---- Comunicados ---- */
+  #overlayComunicado{display:none;position:fixed;inset:0;background:rgba(30,16,10,.72);z-index:200;
+    align-items:center;justify-content:center;padding:20px}
+  #overlayComunicado.show{display:flex}
+  .com-modal{width:100%;max-width:520px;max-height:82vh;overflow-y:auto;background:var(--white);
+    border-radius:16px;padding:32px 30px;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+  .com-contador{font-family:'Jost',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--marrom-light);margin-bottom:10px}
+  .com-modal h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--bordo-dark);margin-bottom:4px}
+  .com-data{font-size:.78rem;color:var(--text-light);margin-bottom:18px}
+  .com-mensagem{font-size:.92rem;line-height:1.6;color:var(--text);white-space:pre-wrap;margin-bottom:26px}
+  .badge-lido{background:#DCEAD9;color:#3B6B3B;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
+  .badge-pendente{background:#FDF3E3;color:#8A6A16;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
+  .badge-rejeitado{background:#FBE2E2;color:#B43C3C;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px}
+  .alert-banner{border-radius:12px;padding:16px 18px;margin-bottom:14px;font-size:.85rem;line-height:1.5;border:1px solid}
   .alert-banner.warn{background:#FEF6E7;border-color:#F0D9A0;color:#8A6A16}
   .alert-banner.info{background:#EAF2FB;border-color:#BFD8F0;color:#2E6DA4}
-  .alert-banner.ok{background:#E8F8F0;border-color:#B7E4C7;color:#2D6A4F}
   .alert-banner h4{font-family:'Cormorant Garamond',serif;font-size:1.05rem;margin-bottom:6px;font-weight:600}
-
-  .empty{text-align:center;padding:40px;color:var(--text-light);font-size:.85rem}
-  .loading{text-align:center;padding:30px;color:var(--text-light)}
-
-  .categoria-titulo{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--bordo-dark);margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--creme-dark);display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .categoria-titulo:first-child{margin-top:0}
-  .categoria-titulo .cat-repetir{font-size:.68rem;font-weight:600;color:var(--marrom-dark);cursor:pointer;text-transform:uppercase;letter-spacing:.04em;background:none;border:none}
-  .categoria-titulo .cat-repetir:hover{color:var(--bordo)}
-
-  .item-row{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--creme-dark)}
-  .item-row:last-child{border-bottom:none}
-  .item-row .item-nome{flex:1;font-size:.85rem}
-  .item-row .item-nome .item-inativo-tag{font-size:.65rem;color:#B8860B;background:#FEF6E7;padding:1px 7px;border-radius:10px;margin-left:6px;text-transform:uppercase;letter-spacing:.03em}
-  .item-row .item-anterior{font-size:.68rem;color:var(--text-light);min-width:90px;text-align:right}
-  .item-row input.item-qtd{width:90px;padding:7px 8px;border:1.5px solid var(--creme-dark);border-radius:6px;font-size:.85rem;text-align:right}
-  .item-row input.item-qtd.replicado{background:#EAF2FB;border-color:#BFD8F0}
-  .item-row .item-unid{font-size:.72rem;color:var(--text-light);min-width:44px}
-  .item-row .item-repetir{background:none;border:none;color:var(--marrom-dark);cursor:pointer;font-size:.85rem;padding:2px 4px}
-  .item-row .item-repetir:disabled{opacity:.25;cursor:default}
-
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,24,16,.5);z-index:500;align-items:center;justify-content:center;padding:20px}
-  .modal-overlay.show{display:flex}
-  .modal{width:100%;max-width:560px;max-height:88vh;overflow:auto;background:var(--white);border-radius:14px;padding:26px}
-  .modal h3{font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--bordo-dark);margin-bottom:14px}
-  .modal-actions{display:flex;gap:10px;margin-top:16px}
-  .modal-close{background:none;border:none;color:var(--marrom-dark);text-decoration:underline;cursor:pointer;font-size:.78rem;display:block;margin:14px auto 0}
-  .msg{font-size:.78rem;margin-top:8px;display:none}
-  .msg.show{display:block}
-  .msg.err{color:#B43C3C}
-  .msg.ok{color:#27AE60}
-
-  @media(max-width:900px){
-    .app-shell{display:block}
-    .sidebar{position:fixed;left:-270px;top:0;height:100vh;transition:left .25s ease;width:260px}
-    .sidebar.open{left:0}
-    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:140}
-    .sidebar-overlay.show{display:block}
-    .sidebar-close{display:flex;align-items:center;justify-content:center;position:absolute;top:14px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.14);color:var(--creme);border:none;cursor:pointer;font-size:1rem;z-index:2}
-    .mobile-topbar{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--bordo-dark),var(--bordo));padding:0 16px;height:54px;position:sticky;top:0;z-index:120;box-shadow:0 2px 14px rgba(74,18,32,.25)}
-    .mobile-topbar .hamb{background:rgba(255,255,255,.12);border:none;color:var(--creme);width:34px;height:34px;border-radius:8px;font-size:1.1rem;cursor:pointer;flex-shrink:0}
-    .mobile-topbar .brand{font-size:1.05rem;color:var(--creme)}
-  }
-  @media (max-width:600px){
-    main{padding:20px 16px 50px}
-    .card{padding:16px}
-    .item-row{flex-wrap:wrap}
-    .item-row .item-anterior{min-width:auto;order:3;flex-basis:100%;text-align:left}
-  }
+  .alert-banner ul{margin:6px 0 0 20px}
+  .alert-banner li{margin-bottom:2px}
+  .comunicado-item{background:var(--white);border:1px solid var(--creme-dark);border-radius:12px;padding:18px 20px;margin-bottom:12px}
+  .destinatario-linha{display:flex;align-items:center;gap:8px;padding:6px 2px;font-size:.85rem;cursor:pointer}
+  .destinatario-linha:hover{background:var(--creme)}
+  .dash-cat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--creme-dark);font-size:.98rem;font-weight:600}
+  .dash-cat-row:last-child{border-bottom:none}
+  .dash-cat-row .qtd{color:var(--text-light);font-size:.8rem;font-weight:500}
+  .dash-rank-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--creme-dark);font-size:.98rem}
+  .dash-rank-row:last-child{border-bottom:none}
+  .dash-rank-pos{width:24px;color:var(--text-light);font-size:.88rem;font-weight:700;text-align:right;flex-shrink:0}
+  .dash-rank-nome{flex:1;font-weight:700}
+  .dash-rank-qtd{color:var(--text-light);font-size:.85rem;font-weight:600;white-space:nowrap}
+  .dash-rank-seta{width:22px;text-align:center;flex-shrink:0;font-size:1rem;font-weight:700}
+  .dash-rank-seta.up{color:#2e7d32}
+  .dash-rank-seta.down{color:var(--bordo)}
+  .dash-rank-seta.new{color:#b8860b;font-size:.68rem;font-weight:700}
+  .dash-rank-toggle{margin-top:10px}
 </style>
 </head>
 <body>
 
-<div id="carregandoOverlay">Carregando…</div>
-
-<div id="appRoot">
-<div class="mobile-topbar">
-  <button class="hamb" onclick="toggleSidebar()">☰</button>
-  <div class="brand">LUNA <span style="font-size:.7em;font-weight:400">Inventário</span></div>
-</div>
-<div class="app-shell">
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="fecharSidebar()"></div>
-  <aside class="sidebar" id="sidebar">
-    <button class="sidebar-close" onclick="fecharSidebar()">✕</button>
-    <div class="side-header">
-      <div class="brand">LUNA <span style="font-size:.7em;font-weight:400">Inventário</span></div>
-      <div class="brand-sub">Inventário de Loja</div>
-      <div class="field" id="seletorLojaWrap" style="display:none">
-        <label>Loja</label>
-        <select id="seletorLoja" class="inp" onchange="onTrocarLoja()"></select>
-      </div>
-    </div>
-    <div class="side-links">
-      <a href="https://thiagodlborges.github.io/Sistema-Luna/" class="hbtn">← Sistema Luna</a>
-      <button class="hbtn" onclick="sairApp()">Sair</button>
-    </div>
-    <nav class="tabs">
-      <div class="tab" id="tabContagem" data-tab="contagem" onclick="mudarTab('contagem')" style="display:none">📋 Nova Contagem</div>
-      <div class="tab" id="tabHistorico" data-tab="historico" onclick="mudarTab('historico')" style="display:none">📜 Histórico</div>
-      <div class="tab" id="tabRelatorio" data-tab="relatorio" onclick="mudarTab('relatorio')" style="display:none">📊 Relatório Consolidado</div>
-      <div class="tab" id="tabInsumos" data-tab="insumos" onclick="mudarTab('insumos')" style="display:none">🧾 Itens de Insumo</div>
-    </nav>
-  </aside>
-  <div class="content-wrap">
-    <main id="mainContent"><div class="loading">Carregando…</div></main>
+<div id="login">
+  <div class="card">
+    <div class="wordmark"><div class="brand">LUNA</div><div class="sub">Gelato &amp; Caffè</div></div>
+    <div class="login-title">Sistema Luna</div>
+    <label for="email">E-mail</label>
+    <input class="inp" id="email" type="email" autocomplete="username" placeholder="voce@lunagelato.com.br">
+    <label for="senha">Senha</label>
+    <input class="inp" id="senha" type="password" autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+    <button class="btn" id="btnLogin" onclick="login()">Entrar</button>
+    <div class="msg" id="loginMsg"></div>
   </div>
 </div>
+
+<div id="portal">
+  <header>
+    <button class="hamburger" onclick="toggleSidebar()" title="Menu">☰</button>
+    <div class="wordmark"><div class="brand">LUNA</div><div class="sub">Sistema Luna</div></div>
+    <div class="userbox">
+      <span class="greet" id="greet"></span>
+      <button class="icon-btn" onclick="abrirTrocarSenha()">🔑 Trocar senha</button>
+      <button class="logout" onclick="logout()">Sair</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div id="sidebarOverlay" onclick="fecharSidebar()"></div>
+    <nav id="sidebar">
+      <div class="side-title">Comunicados</div>
+      <a class="side-item" href="#comunicadosBlock" onclick="fecharSidebar()">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 0 0 1 1h2l3.5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M17 8a5 5 0 0 1 0 8"/><path d="M20 5a9 9 0 0 1 0 14"/></svg></span>
+        <span class="nm">Ver comunicados</span>
+      </a>
+      <div class="side-title" style="margin-top:18px">Meus Sistemas</div>
+      <div id="sidebarNav"><div class="loading">Carregando…</div></div>
+    </nav>
+
+    <main>
+      <div class="hello" id="hello"></div>
+      <div class="hello-sub" id="helloSub">Escolha um sistema no menu ao lado.</div>
+
+      <div id="alertaVitrineFaltante" style="display:none;margin-bottom:24px;width:100%"></div>
+
+      <div id="dashboardBlock" style="display:none;margin-bottom:36px;width:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+          <div class="hello" id="dashTitulo" style="font-size:1.4rem;margin-bottom:0">Dashboard da Loja</div>
+          <select class="inp" id="dashLojaSelect" style="max-width:260px;margin-bottom:0" onchange="carregarDashboard(this.value)"></select>
+        </div>
+        <div class="hello-sub" id="dashSubtitulo" style="margin-bottom:16px">Números do mês corrente, até hoje.</div>
+        <div id="dashConteudo"><div class="loading">Carregando indicadores&hellip;</div></div>
+      </div>
+
+      <div id="fabricaResumoBlock" style="display:none;margin-bottom:36px;width:100%">
+        <div class="hello" style="font-size:1.4rem;margin-bottom:0">Fábrica &mdash; Freezers</div>
+        <div class="hello-sub" style="margin-bottom:16px">Faturamento da operação de freezers.</div>
+        <div id="fabricaResumoConteudo"><div class="loading">Carregando&hellip;</div></div>
+      </div>
+
+      <div id="comunicadosBlock" style="margin-bottom:36px;width:100%;scroll-margin-top:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+          <div class="hello" style="font-size:1.4rem;margin-bottom:0">📢 Comunicados</div>
+          <button class="btn-outline btn" id="btnNovoComunicado" style="display:none;width:auto;padding:10px 18px" onclick="abrirNovoComunicado()">+ Novo Comunicado</button>
+        </div>
+        <div class="hello-sub" style="margin-bottom:16px">Histórico de comunicados recebidos por você.</div>
+        <div id="comunicadosLista"><div class="loading">Carregando…</div></div>
+      </div>
+
+      <div id="aprovacoesBlock" style="display:none">
+        <div class="hello" style="font-size:1.4rem;margin-bottom:4px">Central de Aprovações</div>
+        <div class="hello-sub" style="margin-bottom:16px">Pendências que dependem da sua aprovação, direto por aqui — sem precisar entrar em cada módulo.</div>
+        <div id="aprovacoesConteudo"><div class="loading">Carregando pendências&hellip;</div></div>
+      </div>
+
+      <div id="adminBlock" style="display:none;margin-top:40px;padding-top:28px;border-top:1px solid var(--creme-dark);width:100%">
+        <div class="hello" style="font-size:1.4rem">Administração</div>
+        <div class="hello-sub" style="margin-bottom:18px">Gerencie usuários, acessos e senhas sem precisar pedir ajuda.</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn-outline btn" style="max-width:260px" onclick="abrirGerenciarUsuarios()">👥 Gerenciar usuários e acessos</button>
+          <button class="btn-outline btn" style="max-width:260px" onclick="abrirResetAdmin()">🔧 Resetar senha de usuário</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer>LUNA GELATO &amp; CAFFÈ &mdash; acesso interno</footer>
 </div>
 
-<!-- Modal genérico de confirmação simples -->
-<div class="modal-overlay" id="modalConfirm">
+<!-- MODAL: Trocar minha senha -->
+<div class="modal-overlay" id="modalTrocar">
   <div class="modal">
-    <h3 id="modalConfirmTitulo">Confirmar</h3>
-    <p id="modalConfirmTexto" style="font-size:.88rem;color:var(--text-light);line-height:1.5"></p>
+    <h3>Trocar minha senha</h3>
+    <p class="sub">Defina a nova senha que você vai usar a partir de agora.</p>
+    <label for="novaSenha1">Nova senha</label>
+    <input class="inp" id="novaSenha1" type="password" placeholder="Mínimo 6 caracteres">
+    <label for="novaSenha2">Confirmar nova senha</label>
+    <input class="inp" id="novaSenha2" type="password" placeholder="Repita a senha">
+    <div class="msg" id="trocarMsg"></div>
     <div class="modal-actions">
-      <button class="btn" id="modalConfirmBtnOk">Confirmar</button>
-      <button class="btn-outline btn" onclick="fecharModal('modalConfirm')">Cancelar</button>
+      <button class="btn" id="btnTrocar" onclick="trocarMinhaSenha()">Salvar</button>
     </div>
+    <button class="modal-close" onclick="fecharModal('modalTrocar')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL: Reset admin -->
+<div class="modal-overlay" id="modalReset">
+  <div class="modal">
+    <h3>Resetar senha de usuário</h3>
+    <p class="sub">Gera uma senha temporária na hora — sem enviar e-mail. Compartilhe com a pessoa por WhatsApp ou pessoalmente; ela pode trocar depois em "Trocar senha".</p>
+    <label for="resetEmail">E-mail do usuário</label>
+    <input class="inp" id="resetEmail" type="email" placeholder="pessoa@lunagelato.com.br">
+    <div class="msg" id="resetMsg"></div>
+    <div id="resetResultado"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnReset" onclick="resetarSenhaUsuario()">Gerar senha temporária</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalReset')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL: Gerenciar usuários e acessos -->
+<div class="modal-overlay" id="modalUsuarios">
+  <div class="modal" style="max-width:960px;width:96%;max-height:88vh;display:flex;flex-direction:column">
+    <h3>Usuários e acessos</h3>
+    <p class="sub">Marque ou desmarque os sistemas que cada pessoa pode acessar. As mudanças salvam na hora.</p>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <input class="inp" id="filtroUsuarios" placeholder="Buscar por nome ou e-mail..." style="margin-bottom:0;max-width:280px" oninput="renderTabelaUsuarios()">
+      <button class="btn" style="width:auto;padding:10px 18px" onclick="abrirNovoUsuario()">+ Novo usuário</button>
+    </div>
+
+    <div id="usuariosMsg" class="msg"></div>
+
+    <div style="overflow:auto;border:1px solid var(--creme-dark);border-radius:8px;flex:1">
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem" id="tabelaUsuarios">
+        <thead>
+          <tr style="background:var(--creme);position:sticky;top:0" id="linhaCabecalhoUsuarios">
+            <th style="text-align:left;padding:10px 12px;white-space:nowrap">Nome</th>
+            <th style="text-align:left;padding:10px 12px;white-space:nowrap">Tipo</th>
+            <th style="text-align:left;padding:10px 12px;white-space:nowrap">Loja(s)</th>
+            <th style="padding:10px 12px" id="thExcluir"></th>
+          </tr>
+        </thead>
+        <tbody id="corpoTabelaUsuarios">
+          <tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="modal-close" onclick="fecharModal('modalUsuarios')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL: Novo usuário -->
+<div class="modal-overlay" id="modalNovoUsuario">
+  <div class="modal">
+    <h3 id="tituloNovoUsuario">Novo usuário</h3>
+    <p class="sub" id="subNovoUsuario">Cria o login e já mostra uma senha temporária para você repassar.</p>
+    <label for="novoNome">Nome</label>
+    <input class="inp" id="novoNome" placeholder="Nome completo">
+    <label for="novoEmail">E-mail</label>
+    <input class="inp" id="novoEmail" type="email" placeholder="pessoa@lunagelato.com.br">
+    <label for="novoTipo">Tipo de acesso</label>
+    <select class="inp" id="novoTipo" onchange="onNovoTipoChange()">
+      <option value="loja">Loja</option>
+      <option value="fabrica">Fábrica</option>
+      <option value="master_loja">Master de loja (gerente)</option>
+      <option value="externo">Externo</option>
+      <option value="repositor">Fábrica (Repositor)</option>
+      <option value="backoffice">Backoffice (leitura + relatórios)</option>
+      <option value="master">Master (acesso total)</option>
+    </select>
+    <p class="hint" id="novoTipoBackofficeHint" style="display:none;margin:-8px 0 12px">Enxerga todas as lojas nos módulos liberados abaixo, mas não pode criar, editar ou excluir nada.</p>
+    <div id="novoLojaWrap">
+      <label for="novoLoja">Loja</label>
+      <select class="inp" id="novoLoja"></select>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;letter-spacing:0;margin-top:10px;cursor:pointer">
+      <input type="checkbox" id="novoBackoffice" style="width:16px;height:16px">
+      Backoffice de Uniformes (permissão adicional — pode combinar com qualquer tipo acima)
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;letter-spacing:0;margin-top:10px;cursor:pointer">
+      <input type="checkbox" id="novoFreelancerCoordenador" style="width:16px;height:16px">
+      Coordenador de Freelancers (aprovador — permissão adicional)
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;letter-spacing:0;margin-top:10px;cursor:pointer">
+      <input type="checkbox" id="novoFreelancerAgencia" style="width:16px;height:16px">
+      Agência de Freelancers (vê aprovados de todas as lojas — permissão adicional)
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;letter-spacing:0;margin-top:10px;cursor:pointer">
+      <input type="checkbox" id="novoPrecificacaoFabricaBackoffice" style="width:16px;height:16px">
+      Backoffice de Precificação — Fábrica (permissão adicional — pode combinar com qualquer tipo acima)
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;letter-spacing:0;margin-top:10px;cursor:pointer">
+      <input type="checkbox" id="novoPrecificacaoLojaBackoffice" style="width:16px;height:16px">
+      Backoffice de Precificação — Loja (permissão adicional — pode combinar com qualquer tipo acima)
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;letter-spacing:0;margin-top:10px;cursor:pointer">
+      <input type="checkbox" id="novoMarketingBackoffice" style="width:16px;height:16px">
+      Coordenadora de Marketing (vê Demandas de Marketing de todas as lojas — permissão adicional)
+    </label>
+    <div class="msg" id="novoUsuarioMsg"></div>
+    <div id="novoUsuarioResultado"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnNovoUsuario" onclick="salvarUsuario()">Criar usuário</button>
+    </div>
+    <button class="modal-close" id="btnFecharNovoUsuario" onclick="fecharModal('modalNovoUsuario')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL: Editar lojas -->
+<div class="modal-overlay" id="modalLojas">
+  <div class="modal">
+    <h3>Loja(s) de <span id="lojasNomeUsuario"></span></h3>
+    <p class="sub">Marque uma ou mais lojas. Se marcar mais de uma, a pessoa poderá escolher entre elas ao fazer um pedido.</p>
+    <div id="lojasCheckboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:280px;overflow:auto;margin-bottom:16px"></div>
+    <div class="msg" id="lojasMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnSalvarLojas" onclick="salvarLojas()">Salvar</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalLojas')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL: Detalhe da aprovação -->
+<div class="modal-overlay" id="modalAprovacaoDetalhe">
+  <div class="modal" style="max-width:560px;width:96%;max-height:86vh;overflow:auto">
+    <h3 id="detalheTitulo">Detalhe</h3>
+    <div id="detalheConteudo" class="loading">Carregando&hellip;</div>
+    <div class="modal-actions" id="detalheAcoes"></div>
+    <button class="modal-close" onclick="fecharModal('modalAprovacaoDetalhe')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL: Novo comunicado -->
+<div class="modal-overlay" id="modalNovoComunicado">
+  <div class="modal" style="max-width:520px;width:96%;max-height:88vh;overflow:auto">
+    <h3>Novo Comunicado</h3>
+    <p class="sub">Depois de enviado, seu comunicado passa por aprovação antes de aparecer para os destinatários. Depois de aprovado, ele vai aparecer em tela cheia para os destinatários assim que entrarem no sistema — eles precisam confirmar a leitura antes de continuar.</p>
+    <label for="comNovoTitulo">Título</label>
+    <input class="inp" id="comNovoTitulo" placeholder="Ex: Nova política de descarte de insumos">
+    <label for="comNovaMensagem">Mensagem</label>
+    <textarea class="inp" id="comNovaMensagem" rows="6" style="resize:vertical"></textarea>
+    <label for="comNovoDestino">Destino</label>
+    <select class="inp" id="comNovoDestino" onchange="onDestinoComunicadoChange()">
+      <option value="todos">Todos os usuários</option>
+      <option value="especifico">Pessoas específicas</option>
+    </select>
+    <div id="comDestinatariosWrap" style="display:none">
+      <label for="comFiltroDestinatarios">Filtrar por nome</label>
+      <input class="inp" id="comFiltroDestinatarios" placeholder="Digite para filtrar..." oninput="filtrarDestinatariosComunicado()">
+      <div id="comListaDestinatarios" style="max-height:220px;overflow-y:auto;border:1.5px solid var(--creme-dark);border-radius:8px;padding:8px 12px;margin-bottom:16px"></div>
+    </div>
+    <div class="msg" id="comNovoMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnPublicarComunicado" onclick="salvarNovoComunicado()">Enviar para aprovação</button>
+    </div>
+    <button class="modal-close" onclick="fecharModal('modalNovoComunicado')">Cancelar</button>
+  </div>
+</div>
+
+<!-- OVERLAY BLOQUEANTE: comunicado pendente de leitura -->
+<div id="overlayComunicado">
+  <div class="com-modal">
+    <div class="com-contador" id="comContador"></div>
+    <h2 id="comTitulo"></h2>
+    <div class="com-data" id="comData"></div>
+    <div class="com-mensagem" id="comMensagem"></div>
+    <button class="btn" id="btnConfirmarComunicado" onclick="confirmarLeituraComunicado()">✓ Confirmar leitura</button>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
 const SUPABASE_URL = 'https://pbuhwpcpdcnaheaywmdv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBidWh3cGNwZGNuYWhlYXl3bWR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjU5MzksImV4cCI6MjA5MTg0MTkzOX0.Mg4PVg96ZiV3C2Rn0GLQU9c7ui_41OlU6Ldqn5jcvyY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const PORTAL_URL = 'https://thiagodlborges.github.io/Sistema-Luna/';
 const $ = id => document.getElementById(id);
-
-const TODAS_LOJAS = ['Esplanada','Cianê','Tucuruvi','Indaiatuba','Jundiaí','Praça da Moça - Diadema','Buriti Mogi Guaçu','SP Market','Iguatemi Campinas','Shopping Itaquera','Atrium'];
-const CATEGORIAS_PRECIFICACAO = ['Gelato','Potes','Confeitaria','Picolés'];
-const ORDEM_CATEGORIAS = ['Gelato','Potes','Confeitaria','Picolés','Insumo'];
-
-let meuPerfil = null;
-let minhasLojas = [];
-let lojaAtual = null;
-let currentTab = null;
 let souMaster = false;
-let souBackoffice = false;
-let souGerencial = false;
-let temPapelDeLoja = false;
-
-let catalogoCache = null; // { 'Gelato':[{id,nome,ativo}], ..., 'Insumo':[...] }
-let contagemAtiva = null; // registro de inventario_contagens em edição
-let itensAtuais = {}; // chave -> {quantidade, replicado}
-let itensAnteriores = {}; // chave -> quantidade (última contagem finalizada)
+let souCoordenador = false;
+let souBackofficeTipo = false;
+let souCoordenadorComercial = false;
+let souFreezersBackofficeFlag = false;
+let podeCriarComunicado = false;
+let comunicadosPendentes = [];
+let indiceComunicadoAtual = 0;
+let todosPerfisCache = null;
+let destinatariosSelecionados = new Set();
+let meuId = null;
+let meuNome = null;
+let sistemasCache = [];
 
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtData(d){ return d ? new Date(d+'T12:00').toLocaleDateString('pt-BR') : '—'; }
-function fmtDataHora(dt){ return dt ? new Date(dt).toLocaleString('pt-BR') : '—'; }
-function hojeISO(){ return new Date().toISOString().slice(0,10); }
-function fecharModal(id){ $(id).classList.remove('show'); }
-function showMsg(id, txt, tipo){ const m=$(id); if(!m) return; m.textContent=txt; m.className='msg'+(txt?' show '+(tipo||''):''); }
-function ultimoDiaDoMes(d){ const x = new Date(d.getFullYear(), d.getMonth()+1, 0); return x.getDate() === d.getDate(); }
-function chaveItem(categoria, id){ return categoria + ':' + id; }
+function fmtMoeda(v){ return (Number(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }); }
+function labelElo(elo){ return { fabrica_loja:'Fábrica → Loja', loja_consumidor:'Loja → Consumidor', loja_delivery:'Loja → Delivery', compra_revenda:'Compra Revenda' }[elo] || elo; }
 
-async function sairApp(){
-  await sb.auth.signOut();
-  window.location.href = PORTAL_URL;
-}
-function toggleSidebar(){ $('sidebar').classList.toggle('open'); $('sidebarOverlay').classList.toggle('show'); }
-function fecharSidebar(){ $('sidebar').classList.remove('open'); $('sidebarOverlay').classList.remove('show'); }
+function showMsg(id, txt, tipo){ const m=$(id); m.textContent=txt; m.className='msg '+(tipo||''); }
 
-function abrirModalConfirm(titulo, texto, onOk){
-  $('modalConfirmTitulo').textContent = titulo;
-  $('modalConfirmTexto').textContent = texto;
-  const btn = $('modalConfirmBtnOk');
-  const novoBtn = btn.cloneNode(true);
-  btn.parentNode.replaceChild(novoBtn, btn);
-  novoBtn.onclick = () => { fecharModal('modalConfirm'); onOk(); };
-  $('modalConfirm').classList.add('show');
+async function login(){
+  const email=$('email').value.trim(), senha=$('senha').value;
+  const btn=$('btnLogin');
+  if(!email||!senha){ showMsg('loginMsg','Preencha e-mail e senha.','err'); return; }
+  btn.disabled=true; btn.textContent='Entrando\u2026'; showMsg('loginMsg','','');
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+  btn.disabled=false; btn.textContent='Entrar';
+  if(error){ showMsg('loginMsg','E-mail ou senha incorretos.','err'); return; }
+  entrarPortal(data.user);
 }
 
-async function verificarAcessoEIniciar(){
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = PORTAL_URL; return; }
+async function entrarPortal(user){
+  $('login').style.display='none';
+  $('portal').style.display='flex';
+  let nome = user.email;
+  souMaster = false;
+  souCoordenador = false;
+  souBackofficeTipo = false;
+  meuId = user.id;
+  let minhasLojas = [];
+  let souFabrica = false;
+  let souBackofficeLuna = false;
+  let souRepositor = false;
+  souCoordenadorComercial = false;
+  souFreezersBackofficeFlag = false;
+  try{
+    const { data: perfil } = await sb.from('perfis').select('nome, tipo, freelancer_coordenador, loja, lojas, precificacao_fabrica_backoffice, dashboard_backoffice, freezers_repositor, coordenador_comercial, freezers_backoffice').eq('id', user.id).single();
+    if(perfil && perfil.nome) nome = perfil.nome;
+    if(perfil && perfil.tipo === 'master') souMaster = true;
+    if(perfil && perfil.tipo === 'backoffice') souBackofficeTipo = true;
+    if(perfil && perfil.freelancer_coordenador) souCoordenador = true;
+    if(perfil){
+      if(Array.isArray(perfil.lojas) && perfil.lojas.length) minhasLojas = perfil.lojas;
+      else if(perfil.loja) minhasLojas = [perfil.loja];
+      souFabrica = perfil.tipo === 'fabrica' || perfil.precificacao_fabrica_backoffice === true;
+      souBackofficeLuna = perfil.dashboard_backoffice === true;
+      souRepositor = perfil.tipo === 'repositor' || perfil.freezers_repositor === true;
+      souCoordenadorComercial = perfil.coordenador_comercial === true;
+      souFreezersBackofficeFlag = perfil.freezers_backoffice === true;
+    }
+  }catch(e){}
+  meuNome = nome;
+  podeCriarComunicado = true; // todos podem enviar comunicados (entram pendentes de aprovação)
+  const primeiro = (nome||'').split(' ')[0];
+  $('greet').innerHTML = 'Ol\u00e1, <b>'+nome+'</b>';
+  $('hello').textContent = 'Bem-vindo, '+primeiro+'.';
+  $('adminBlock').style.display = souMaster ? 'block' : 'none';
+  $('btnNovoComunicado').style.display = '';
 
-  const { data: ok, error } = await sb.rpc('tem_acesso', { p_slug: 'cmv' });
-  if (error || !ok) { await sb.auth.signOut(); window.location.href = PORTAL_URL; return; }
-
-  const { data: perfil } = await sb.from('perfis').select('*').eq('id', session.user.id).single();
-  if (!perfil) { window.location.href = PORTAL_URL; return; }
-  meuPerfil = perfil;
-
-  souMaster = perfil.tipo === 'master';
-  souBackoffice = souMaster || perfil.cmv_backoffice === true;
-  souGerencial = souBackoffice || perfil.tipo === 'backoffice';
-  temPapelDeLoja = ['loja','master_loja','master'].includes(perfil.tipo);
-
-  if (perfil.tipo === 'master' || perfil.tipo === 'master_loja') minhasLojas = [...TODAS_LOJAS];
-  else if (perfil.lojas && perfil.lojas.length) minhasLojas = perfil.lojas;
-  else if (perfil.loja) minhasLojas = [perfil.loja];
-  else minhasLojas = [];
-
-  if (temPapelDeLoja && minhasLojas.length) {
-    const sel = $('seletorLoja');
-    sel.innerHTML = minhasLojas.map(l => '<option value="'+esc(l)+'">'+esc(l)+'</option>').join('');
-    lojaAtual = minhasLojas[0];
-    $('seletorLojaWrap').style.display = '';
-  } else {
-    temPapelDeLoja = false;
+  // ── Dashboard principal (um por papel) ──
+  if(souMaster || minhasLojas.length){
+    inicializarDashboard(souMaster ? LOJAS_DISPONIVEIS.slice() : minhasLojas);
+  } else if(souCoordenadorComercial || souBackofficeLuna){
+    inicializarDashboardBackoffice(souCoordenadorComercial);
+  } else if(souRepositor){
+    inicializarDashboardRepositor();
+  } else if(souFabrica){
+    inicializarRankingFabrica();
   }
 
-  if (temPapelDeLoja) {
-    $('tabContagem').style.display = '';
-    $('tabHistorico').style.display = '';
-  }
-  if (souGerencial) {
-    $('tabHistorico').style.display = '';
-    $('tabRelatorio').style.display = '';
-    $('tabInsumos').style.display = '';
+  // ── Bloco extra da fábrica (ranking de pedidos + faturamento de freezers) para quem vê tudo ──
+  if(souMaster){
+    carregarResumoFabricaExtra();
   }
 
-  currentTab = temPapelDeLoja ? 'contagem' : (souGerencial ? 'relatorio' : 'historico');
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===currentTab));
+  // ── Relatório diário: lojas que não enviaram fotos da vitrine ontem ──
+  carregarAlertaVitrineFaltante(minhasLojas, souMaster || souCoordenadorComercial);
 
-  await carregarCatalogo();
-
-  document.getElementById('appRoot').style.display = 'block';
-  document.getElementById('carregandoOverlay').remove();
-  renderTab();
+  if(souMaster || souCoordenador){
+    $('aprovacoesBlock').style.display = 'block';
+    carregarAprovacoes();
+  }
+  renderComunicadosHistorico();
+  verificarComunicadosPendentes();
+  try{
+    const { data: sistemas, error } = await sb.rpc('meus_sistemas');
+    if(error) throw error;
+    render(sistemas||[]);
+  }catch(e){
+    $('sidebarNav').innerHTML = '<div style="padding:0 22px;color:var(--text-light);font-size:.8rem">Não foi possível carregar os sistemas agora. Recarregue a página.</div>';
+  }
 }
 
-function onTrocarLoja(){
-  lojaAtual = $('seletorLoja').value;
-  contagemAtiva = null;
-  renderTab();
+let dashRankingCache = {};
+let dashRankingExpandido = {};
+
+function htmlCardRanking(ranking, chave, titulo){
+  dashRankingCache[chave] = { ranking, titulo };
+  const expandido = !!dashRankingExpandido[chave];
+  const visiveis = expandido ? ranking : ranking.slice(0, 5);
+  const linhas = visiveis.map(x => {
+    const seta = x.variacao === 'subiu' ? '<span class="dash-rank-seta up">\u25b2</span>'
+      : x.variacao === 'desceu' ? '<span class="dash-rank-seta down">\u25bc</span>'
+      : x.variacao === 'novo' ? '<span class="dash-rank-seta new">NOVO</span>'
+      : '<span class="dash-rank-seta">\u2014</span>';
+    return '<div class="dash-rank-row"><span class="dash-rank-pos">'+x.posicao_atual+'\u00ba</span>'+seta+
+      '<span class="dash-rank-nome">'+x.sabor+'</span>'+
+      '<span class="dash-rank-qtd">'+Number(x.quantidade_atual).toLocaleString('pt-BR')+' un.'+
+        (x.posicao_anterior ? ' <span style="opacity:.6">(era '+x.posicao_anterior+'\u00ba)</span>' : '')+
+      '</span></div>';
+  }).join('');
+  const botao = ranking.length > 5
+    ? '<button class="btn-outline btn btn-sm dash-rank-toggle" onclick="toggleRankingGelato(\''+chave+'\')">'+(expandido ? 'Ver menos \u25b2' : 'Ver todos os '+ranking.length+' \u25bc')+'</button>'
+    : '';
+  return '<div class="lbl" style="margin-bottom:2px">'+titulo+'</div>'+
+    '<div class="sub" style="margin-bottom:10px">Compara com os 30 dias anteriores. \u25b2 subiu \u00b7 \u25bc desceu \u00b7 NOVO n\u00e3o aparecia no per\u00edodo anterior.</div>'+
+    (ranking.length ? linhas + botao : '<div class="empty" style="padding:20px 0">Nenhum pedido de gelato nos \u00faltimos 30 dias.</div>');
 }
 
-function mudarTab(tab){
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
-  fecharSidebar();
-  renderTab();
+function toggleRankingGelato(chave){
+  dashRankingExpandido[chave] = !dashRankingExpandido[chave];
+  const cached = dashRankingCache[chave];
+  const container = $('rankingCard_'+chave);
+  if(container && cached) container.innerHTML = htmlCardRanking(cached.ranking, chave, cached.titulo);
 }
 
-function renderTab(){
-  const fns = { contagem: renderContagem, historico: renderHistorico, relatorio: renderRelatorio, insumos: renderInsumos };
-  (fns[currentTab] || renderContagem)();
+let dashChart = null;
+let dashLojasAcessiveis = [];
+
+function inicializarDashboard(lojas){
+  const sel = $('dashLojaSelect');
+  if(!lojas || !lojas.length){
+    $('dashboardBlock').style.display = 'none';
+    return;
+  }
+  dashLojasAcessiveis = lojas;
+  $('dashboardBlock').style.display = 'block';
+  $('dashTitulo').textContent = 'Dashboard da Loja';
+  $('dashSubtitulo').textContent = 'N\u00fameros do m\u00eas corrente, at\u00e9 hoje.';
+  const opcoes = lojas.length > 1
+    ? '<option value="__todas__">Todas as lojas (consolidado)</option>' + lojas.map(l => '<option value="'+l+'">'+l+'</option>').join('')
+    : lojas.map(l => '<option value="'+l+'">'+l+'</option>').join('');
+  sel.innerHTML = opcoes;
+  sel.style.display = lojas.length > 1 ? '' : 'none';
+  carregarDashboard(lojas.length > 1 ? '__todas__' : lojas[0]);
 }
 
-// ── CATÁLOGO (Gelato/Pote/Confeitaria/Picolé vem da Precificação; Insumo é próprio) ──
-async function carregarCatalogo(){
-  catalogoCache = {};
-  ORDEM_CATEGORIAS.forEach(c => catalogoCache[c] = []);
+async function inicializarDashboardBackoffice(tierFull){
+  dashLojasAcessiveis = LOJAS_DISPONIVEIS.slice();
+  $('dashboardBlock').style.display = 'block';
+  $('dashTitulo').textContent = tierFull ? 'Dashboard \u2014 Vis\u00e3o Consolidada' : 'Ranking & Qualidade \u2014 Vis\u00e3o Consolidada';
+  $('dashSubtitulo').textContent = tierFull
+    ? 'Venda de freezers, perdas, uniformes, compras de gelato, avalia\u00e7\u00e3o e vitrine de toda a opera\u00e7\u00e3o. N\u00fameros do m\u00eas corrente, at\u00e9 hoje.'
+    : 'Ranking de sabores e compilado de qualidade (nota e vitrine) de todas as lojas.';
+  $('dashLojaSelect').style.display = 'none';
 
-  const { data: precif, error: errPrecif } = await sb.from('precificacao_produtos')
-    .select('id, nome, categoria, ativo')
-    .in('categoria', CATEGORIAS_PRECIFICACAO)
-    .order('nome');
-  if (!errPrecif && precif) {
-    precif.forEach(p => {
-      // Considera gelatos inativos também (pode haver estoque de sabor descontinuado);
-      // demais categorias, só ativos.
-      if (p.ativo || p.categoria === 'Gelato') {
-        catalogoCache[p.categoria].push({ id: p.id, nome: p.nome, ativo: p.ativo, unidade: p.categoria === 'Gelato' ? 'caixa' : 'unid.' });
+  const el = $('dashConteudo');
+  el.innerHTML = '<div class="loading">Carregando indicadores\u2026</div>';
+
+  const hoje = new Date();
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  const dataHoje = hoje.toISOString().slice(0,10);
+
+  const promises = [
+    Promise.all(dashLojasAcessiveis.map(l => sb.rpc('dashboard_resumo_loja', { p_loja: l, p_data_inicio: inicioMes, p_data_fim: dataHoje }))),
+    sb.rpc('dashboard_evolucao_avaliacao_consolidada', { p_lojas: dashLojasAcessiveis }),
+    sb.rpc('dashboard_ranking_gelato', { p_lojas: dashLojasAcessiveis, p_data_fim: dataHoje }),
+  ];
+  if(tierFull){
+    promises.push(sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }));
+    promises.push(Promise.all(dashLojasAcessiveis.map(l => sb.rpc('dashboard_valor_pedidos_por_categoria', { p_loja: l, p_data_inicio: inicioMes, p_data_fim: dataHoje }))));
+  }
+  const [resumos, evolucaoR, rankingR, freezersR, pedidosPorLojaR] = await Promise.all(promises);
+
+  const erro = resumos.find(r => r.error);
+  if(erro){
+    el.innerHTML = '<div class="empty">Erro ao carregar: '+erro.error.message+'</div>';
+    return;
+  }
+
+  const dados = resumos.map(r => (r.data && r.data[0]) || {});
+  const perdasMes = dados.reduce((s,d) => s + Number(d.perdas_mes||0), 0);
+  const freelancersMes = dados.reduce((s,d) => s + Number(d.freelancers_mes||0), 0);
+  const uniformesPosse = dados.reduce((s,d) => s + Number(d.uniformes_em_posse||0), 0);
+  const avaliadas = dados.filter(d => d.ultima_avaliacao_pct != null);
+  const mediaAvaliacao = avaliadas.length ? avaliadas.reduce((s,d) => s + Number(d.ultima_avaliacao_pct), 0) / avaliadas.length : null;
+  const vitrinesAvaliadas = dados.filter(d => d.vitrine_estrelas != null);
+  const mediaVitrine = vitrinesAvaliadas.length ? vitrinesAvaliadas.reduce((s,d) => s + Number(d.vitrine_estrelas), 0) / vitrinesAvaliadas.length : null;
+
+  let freezersValor = 0, freezersQtd = 0, freezersPontos = 0, comprasGelatoMes = 0;
+  if(tierFull){
+    const freezersDados = (freezersR.data && freezersR.data[0]) || {};
+    freezersValor = Number(freezersDados.valor_total||0);
+    freezersQtd = Number(freezersDados.quantidade_itens||0);
+    freezersPontos = Number(freezersDados.freezers_com_venda||0);
+    (pedidosPorLojaR||[]).forEach(r => {
+      const gelato = (r.data||[]).find(c => c.categoria === 'Gelato');
+      if(gelato) comprasGelatoMes += Number(gelato.valor||0);
+    });
+  }
+
+  const evolucao = evolucaoR.data || [];
+  const ranking = rankingR.data || [];
+
+  el.innerHTML =
+    '<div class="dash-grid">'+
+      (tierFull ? (
+        '<div class="dash-card"><div class="lbl">Venda de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezersValor)+'</div>'+
+          '<div class="sub">'+freezersQtd.toLocaleString('pt-BR')+' un/kg vendidos em '+freezersPontos+' freezer(s)</div>'+
+        '</div>'+
+        '<div class="dash-card"><div class="lbl">Perdas no m\u00eas (todas as lojas)</div><div class="val">'+fmtMoedaDash(perdasMes)+'</div></div>'+
+        '<div class="dash-card"><div class="lbl">Gasto com freelancers (todas as lojas)</div><div class="val">'+fmtMoedaDash(freelancersMes)+'</div></div>'+
+        '<div class="dash-card"><div class="lbl">Compras de gelato no m\u00eas (todas as lojas)</div><div class="val">'+fmtMoedaDash(comprasGelatoMes)+'</div></div>'+
+        '<div class="dash-card"><div class="lbl">Uniformes em posse (todas as lojas)</div><div class="val">'+fmtMoedaDash(uniformesPosse)+'</div></div>'
+      ) : '')+
+      '<div class="dash-card"><div class="lbl">M\u00e9dia de avalia\u00e7\u00e3o de qualidade</div><div class="val">'+(mediaAvaliacao!=null?mediaAvaliacao.toFixed(1)+'%':'\u2014')+'</div>'+
+        (avaliadas.length ? '<div class="sub">m\u00e9dia de '+avaliadas.length+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')+
+      '</div>'+
+      '<div class="dash-card"><div class="lbl">M\u00e9dia de pontua\u00e7\u00e3o de vitrine</div><div class="val">'+(mediaVitrine!=null?mediaVitrine.toFixed(1)+' \u2605':'\u2014')+'</div>'+
+        (vitrinesAvaliadas.length ? '<div class="sub">m\u00e9dia de '+vitrinesAvaliadas.length+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')+
+      '</div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px">'+
+      '<div class="dash-card">'+
+        '<div class="lbl" style="margin-bottom:10px">Evolu\u00e7\u00e3o da avalia\u00e7\u00e3o de qualidade \u2014 m\u00e9dia mensal, todas as lojas</div>'+
+        (evolucao.length ? '<canvas id="dashChartCanvas" height="90"></canvas>' : '<div class="empty" style="padding:20px 0">Sem avalia\u00e7\u00f5es suficientes pra montar o gr\u00e1fico ainda.</div>')+
+      '</div>'+
+      '<div class="dash-card" id="rankingCard_backoffice">'+
+        htmlCardRanking(ranking, 'backoffice', 'Ranking de sabores de gelato \u2014 \u00faltimos 30 dias (todas as lojas)')+
+      '</div>'+
+    '</div>';
+
+  if(evolucao.length && window.Chart){
+    if(dashChart) dashChart.destroy();
+    const ctx = $('dashChartCanvas').getContext('2d');
+    dashChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: evolucao.map(e => fmtMesDash(e.mes)),
+        datasets: [{
+          label: 'M\u00e9dia mensal (%)',
+          data: evolucao.map(e => Number(e.media_pct)),
+          borderColor: '#6B1E2E',
+          backgroundColor: 'rgba(107,30,46,0.12)',
+          tension: 0.25,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 100 } }
       }
     });
   }
+}
 
-  const { data: insumos, error: errInsumos } = await sb.from('inventario_insumos_catalogo')
-    .select('*').eq('ativo', true).order('ordem').order('nome');
-  if (!errInsumos && insumos) {
-    catalogoCache['Insumo'] = insumos.map(i => ({ id: i.id, nome: i.nome, ativo: true, unidade: i.unidade }));
+async function inicializarRankingFabrica(){
+  dashLojasAcessiveis = LOJAS_DISPONIVEIS.slice();
+  $('dashboardBlock').style.display = 'block';
+  $('dashTitulo').textContent = 'Ranking de Pedidos \u2014 Toda a Opera\u00e7\u00e3o';
+  $('dashSubtitulo').textContent = 'Vis\u00e3o consolidada de todas as lojas, pra ajudar no planejamento de produ\u00e7\u00e3o.';
+  $('dashLojaSelect').style.display = 'none';
+
+  const el = $('dashConteudo');
+  el.innerHTML = '<div class="loading">Carregando ranking\u2026</div>';
+
+  const dataHoje = new Date().toISOString().slice(0,10);
+  const hoje = new Date();
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+
+  const promRanking = sb.rpc('dashboard_ranking_gelato', { p_lojas: dashLojasAcessiveis, p_data_fim: dataHoje });
+  const promFreezers = souFreezersBackofficeFlag ? sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }) : Promise.resolve({ data:null, error:null });
+
+  const [{ data: rankingData, error }, { data: freezersData }] = await Promise.all([promRanking, promFreezers]);
+  if(error){
+    el.innerHTML = '<div class="empty">Erro ao carregar: '+error.message+'</div>';
+    return;
   }
+  const ranking = rankingData || [];
+  const freezers = (freezersData && freezersData[0]) || null;
+
+  el.innerHTML =
+    (freezers ?
+      '<div class="dash-grid" style="margin-bottom:14px">'+
+        '<div class="dash-card"><div class="lbl">Faturamento de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezers.valor_total)+'</div>'+
+          '<div class="sub">'+Number(freezers.quantidade_itens||0).toLocaleString('pt-BR')+' un/kg vendidos em '+Number(freezers.freezers_com_venda||0)+' freezer(s)</div>'+
+        '</div>'+
+      '</div>' : '') +
+    '<div class="dash-card" id="rankingCard_fabrica">'+
+      htmlCardRanking(ranking, 'fabrica', 'Sabores de gelato mais pedidos \u2014 \u00faltimos 30 dias')+
+    '</div>';
 }
 
-function catalogoTemItens(){
-  return ORDEM_CATEGORIAS.some(c => catalogoCache[c] && catalogoCache[c].length);
-}
-
-// ── ABA: NOVA CONTAGEM ────────────────────────────────────
-async function renderContagem(){
-  const el = $('mainContent');
-  if (!lojaAtual) { el.innerHTML = '<div class="empty">Selecione uma loja.</div>'; return; }
-  el.innerHTML = '<div class="loading">Carregando…</div>';
+async function carregarResumoFabricaExtra(){
+  $('fabricaResumoBlock').style.display = 'block';
+  const el = $('fabricaResumoConteudo');
+  el.innerHTML = '<div class="loading">Carregando\u2026</div>';
 
   const hoje = new Date();
-  const hojeStr = hojeISO();
-  const ehTerca = hoje.getDay() === 2;
-  const ehUltimoDia = ultimoDiaDoMes(hoje);
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  const dataHoje = hoje.toISOString().slice(0,10);
 
-  const { data: existente } = await sb.from('inventario_contagens')
-    .select('*').eq('loja', lojaAtual).eq('data_contagem', hojeStr).maybeSingle();
-
-  let bannerHtml = '';
-  if (ehTerca || ehUltimoDia) {
-    const motivos = [];
-    if (ehTerca) motivos.push('contagem semanal (terça-feira)');
-    if (ehUltimoDia) motivos.push('contagem adicional de fim de mês');
-    bannerHtml = `<div class="alert-banner ok"><h4>📅 Hoje é dia de contagem</h4>Hoje é dia programado para ${motivos.join(' e ')}. </div>`;
-  } else {
-    bannerHtml = `<div class="alert-banner warn"><h4>Hoje não é um dia programado</h4>A contagem é semanal (terças-feiras), com uma contagem adicional no último dia do mês. Você ainda pode registrar uma contagem hoje se precisar.</div>`;
+  const { data: freezersData, error } = await sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje });
+  if(error){
+    el.innerHTML = '<div class="empty">Erro ao carregar: '+error.message+'</div>';
+    return;
   }
+  const freezers = (freezersData && freezersData[0]) || {};
 
-  if (existente && existente.status === 'finalizada') {
-    el.innerHTML = `<div class="card">${bannerHtml}
-      <h2>Nova Contagem — ${esc(lojaAtual)}</h2>
-      <div class="alert-banner info"><h4>✔ Contagem de hoje já finalizada</h4>A contagem de ${fmtData(hojeStr)} (${existente.tipo === 'mensal' ? 'mensal' : 'semanal'}) já foi concluída às ${fmtDataHora(existente.finalizado_em)}. Consulte no Histórico.</div>
-      <button class="btn" onclick="mudarTab('historico')">Ver no Histórico</button>
-    </div>`;
+  el.innerHTML =
+    '<div class="dash-grid">'+
+      '<div class="dash-card"><div class="lbl">Faturamento de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezers.valor_total)+'</div>'+
+        '<div class="sub">'+Number(freezers.quantidade_itens||0).toLocaleString('pt-BR')+' un/kg vendidos em '+Number(freezers.freezers_com_venda||0)+' freezer(s)</div>'+
+      '</div>'+
+    '</div>';
+}
+
+function ontemISO(){ const d = new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+
+async function carregarAlertaVitrineFaltante(minhasLojas, verTudo){
+  const el = $('alertaVitrineFaltante');
+  if(!el) return;
+  const ontem = ontemISO();
+  const { data, error } = await sb.rpc('qualidade_vitrine_faltantes', { p_lojas: LOJAS_DISPONIVEIS.slice(), p_data: ontem });
+  if(error || !data){ el.style.display = 'none'; return; }
+  const faltantes = data.map(d => d.loja);
+  if(!faltantes.length){ el.style.display = 'none'; return; }
+  const dataFmt = new Date(ontem+'T12:00').toLocaleDateString('pt-BR');
+  let html = '';
+  const minhasFaltando = (minhasLojas||[]).filter(l => faltantes.includes(l));
+  if(minhasFaltando.length){
+    html += '<div class="alert-banner warn"><h4>\u26a0\ufe0f Fotos da vitrine pendentes</h4>'+
+      (minhasFaltando.length>1
+        ? 'Suas lojas <strong>'+minhasFaltando.map(esc).join(', ')+'</strong> ainda n\u00e3o enviaram as fotos da vitrine de ontem ('+dataFmt+').'
+        : '<strong>'+esc(minhasFaltando[0])+'</strong> ainda n\u00e3o enviou as fotos da vitrine de ontem ('+dataFmt+').')+
+      ' Envie pelo m\u00f3dulo de Qualidade, aba Vitrine.'+
+    '</div>';
+  }
+  if(verTudo){
+    html += '<div class="alert-banner info"><h4>\ud83d\udccb Relat\u00f3rio di\u00e1rio \u2014 vitrines n\u00e3o enviadas ('+dataFmt+')</h4>'+
+      faltantes.length+' loja(s) n\u00e3o enviaram fotos da vitrine ontem:'+
+      '<ul>'+faltantes.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ul>'+
+    '</div>';
+  }
+  if(!html){ el.style.display = 'none'; return; }
+  el.innerHTML = html;
+  el.style.display = '';
+}
+
+async function inicializarDashboardRepositor(){
+  $('dashboardBlock').style.display = 'block';
+  $('dashTitulo').textContent = 'Minha Carteira de Freezers';
+  $('dashSubtitulo').textContent = 'Resumo da opera\u00e7\u00e3o de freezers sob sua responsabilidade, ranking de pedidos e faturamento do m\u00eas.';
+  $('dashLojaSelect').style.display = 'none';
+
+  const el = $('dashConteudo');
+  el.innerHTML = '<div class="loading">Carregando\u2026</div>';
+
+  const hoje = new Date();
+  const inicio30 = new Date(hoje.getTime() - 30*86400000).toISOString().slice(0,10);
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  const dataHoje = hoje.toISOString().slice(0,10);
+
+  const [{ data: meusFreezers, error }, { data: rankingData }, { data: freezersFatData }] = await Promise.all([
+    sb.from('freezers').select('id, ponto_venda, rede, status').eq('status','ativo'),
+    sb.rpc('dashboard_ranking_gelato', { p_lojas: LOJAS_DISPONIVEIS.slice(), p_data_fim: dataHoje }),
+    sb.rpc('dashboard_venda_freezers_mes', { p_data_inicio: inicioMes, p_data_fim: dataHoje }),
+  ]);
+  if(error){ el.innerHTML = '<div class="empty">Erro ao carregar: '+error.message+'</div>'; return; }
+  const ranking = rankingData || [];
+  const freezersFat = (freezersFatData && freezersFatData[0]) || {};
+  const blocoTopo =
+    '<div class="dash-grid" style="margin-bottom:14px">'+
+      '<div class="dash-card"><div class="lbl">Faturamento de freezers no m\u00eas (parcial)</div><div class="val">'+fmtMoedaDash(freezersFat.valor_total)+'</div>'+
+        '<div class="sub">'+Number(freezersFat.quantidade_itens||0).toLocaleString('pt-BR')+' un/kg vendidos em '+Number(freezersFat.freezers_com_venda||0)+' freezer(s)</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="dash-card" id="rankingCard_repositor" style="margin-bottom:16px">'+
+      htmlCardRanking(ranking, 'repositor', 'Ranking de pedidos \u2014 sabores de gelato mais pedidos \u2014 \u00faltimos 30 dias')+
+    '</div>';
+  const freezerIds = (meusFreezers||[]).map(f => f.id);
+
+  if(!freezerIds.length){
+    el.innerHTML = blocoTopo + '<div class="dash-card"><div class="lbl">Freezers</div><div class="val">0</div><div class="sub">Voc\u00ea ainda n\u00e3o tem freezers na carteira.</div></div>';
     return;
   }
 
-  contagemAtiva = existente || null;
+  const { data: visitas } = await sb.from('freezer_visitas').select('freezer_id, data_visita, falha_led, risco_falha_geral').in('freezer_id', freezerIds);
 
-  el.innerHTML = `<div class="card">
-    ${bannerHtml}
-    <h2>Nova Contagem — ${esc(lojaAtual)}</h2>
-    <p class="hint">Pese/conte os itens fisicamente na loja e registre aqui. Você pode salvar parcialmente e continuar depois.</p>
-    <div class="row">
-      <div class="field"><label>Data da contagem</label><input type="date" class="inp" id="contData" value="${existente ? existente.data_contagem : hojeStr}" ${existente ? 'disabled' : ''}></div>
-      <div class="field"><label>Tipo</label>
-        <select class="inp" id="contTipo" ${existente ? 'disabled' : ''}>
-          <option value="semanal" ${(existente ? existente.tipo==='semanal' : !ehUltimoDia)?'selected':''}>Semanal</option>
-          <option value="mensal" ${(existente ? existente.tipo==='mensal' : ehUltimoDia)?'selected':''}>Mensal (fim de mês)</option>
-        </select>
-      </div>
-      ${!existente ? '<button class="btn" onclick="iniciarContagem()">Iniciar Contagem</button>' : ''}
-    </div>
-    <div id="contFormulario"></div>
-  </div>`;
+  const visitas30d = (visitas||[]).filter(v => v.data_visita >= inicio30);
+  const ultimaPorFreezer = {};
+  (visitas||[]).forEach(v => {
+    if(!ultimaPorFreezer[v.freezer_id] || v.data_visita > ultimaPorFreezer[v.freezer_id].data_visita) ultimaPorFreezer[v.freezer_id] = v;
+  });
 
-  if (existente) {
-    await carregarFormularioContagem();
+  const semVisita = meusFreezers.map(f => {
+    const ultima = ultimaPorFreezer[f.id];
+    const dias = ultima ? Math.floor((hoje - new Date(ultima.data_visita+'T12:00')) / 86400000) : null;
+    return { ...f, ultima_visita: ultima ? ultima.data_visita : null, dias };
+  }).sort((a,b) => (b.dias ?? 9999) - (a.dias ?? 9999)).slice(0, 5);
+
+  const comRisco = meusFreezers.filter(f => {
+    const u = ultimaPorFreezer[f.id];
+    return u && (u.falha_led || u.risco_falha_geral);
+  });
+
+  el.innerHTML = blocoTopo +
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px">'+
+      '<div class="dash-card" style="flex:1;min-width:160px"><div class="lbl">Freezers ativos</div><div class="val">'+freezerIds.length+'</div></div>'+
+      '<div class="dash-card" style="flex:1;min-width:160px"><div class="lbl">Visitas (30 dias)</div><div class="val">'+visitas30d.length+'</div></div>'+
+      '<div class="dash-card" style="flex:1;min-width:160px"><div class="lbl">Risco de falha</div><div class="val" style="color:'+(comRisco.length?'#B43C3C':'inherit')+'">'+comRisco.length+'</div></div>'+
+    '</div>'+
+    '<div class="dash-card" style="margin-bottom:16px">'+
+      '<div class="lbl">Freezers h\u00e1 mais tempo sem visita</div>'+
+      (semVisita.length ? semVisita.map(f => '<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--creme-dark);font-size:.85rem"><span>'+f.ponto_venda+(f.rede?' \u2014 '+f.rede:'')+'</span><span style="font-weight:600;color:'+(f.dias===null?'inherit':f.dias>30?'#B43C3C':f.dias>14?'#B8860B':'inherit')+'">'+(f.dias===null?'Nunca visitado':f.dias+' dias')+'</span></div>').join('') : '<div class="sub">Nenhum freezer ativo.</div>')+
+    '</div>'+
+    (comRisco.length ? '<div class="dash-card"><div class="lbl" style="color:#B43C3C">\u26a0\ufe0f Freezers com risco sinalizado</div>'+
+      comRisco.map(f => '<div style="padding:6px 0;border-top:1px solid var(--creme-dark);font-size:.85rem">'+f.ponto_venda+(f.rede?' \u2014 '+f.rede:'')+'</div>').join('')+
+    '</div>' : '')+
+    '<p class="hello-sub" style="margin-top:14px"><a href="https://thiagodlborges.github.io/freezers-luna/">Abrir m\u00f3dulo de Freezers \u2192</a></p>';
+}
+
+function fmtMoedaDash(v){
+  return (Number(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+}
+
+async function buscarDadosLoja(loja, inicioMes, dataHoje){
+  const [resumoR, evolucaoR, pedidosR] = await Promise.all([
+    sb.rpc('dashboard_resumo_loja', { p_loja: loja, p_data_inicio: inicioMes, p_data_fim: dataHoje }),
+    sb.rpc('dashboard_evolucao_avaliacao', { p_loja: loja }),
+    sb.rpc('dashboard_valor_pedidos_por_categoria', { p_loja: loja, p_data_inicio: inicioMes, p_data_fim: dataHoje }),
+  ]);
+  return {
+    loja,
+    resumo: (resumoR.data && resumoR.data[0]) || {},
+    evolucao: evolucaoR.data || [],
+    pedidos: pedidosR.data || [],
+    erro: resumoR.error || evolucaoR.error || pedidosR.error || null,
+  };
+}
+
+async function carregarDashboard(valor){
+  const el = $('dashConteudo');
+  el.innerHTML = '<div class="loading">Carregando indicadores\u2026</div>';
+
+  const hoje = new Date();
+  const inicioMes = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  const dataHoje = hoje.toISOString().slice(0,10);
+  const consolidado = valor === '__todas__';
+  const lojasAlvo = consolidado ? dashLojasAcessiveis : [valor];
+
+  const resultados = await Promise.all(lojasAlvo.map(l => buscarDadosLoja(l, inicioMes, dataHoje)));
+  const { data: rankingData, error: rankingErr } = await sb.rpc('dashboard_ranking_gelato', { p_lojas: lojasAlvo, p_data_fim: dataHoje });
+  const ranking = rankingErr ? [] : (rankingData || []);
+  const primeiroErro = resultados.find(x => x.erro);
+  if(primeiroErro){
+    el.innerHTML = '<div class="empty">Erro ao carregar: '+primeiroErro.erro.message+'</div>';
+    return;
+  }
+
+  const r = {
+    perdas_mes: resultados.reduce((s,x) => s + Number(x.resumo.perdas_mes||0), 0),
+    freelancers_mes: resultados.reduce((s,x) => s + Number(x.resumo.freelancers_mes||0), 0),
+    uniformes_em_posse: resultados.reduce((s,x) => s + Number(x.resumo.uniformes_em_posse||0), 0),
+  };
+  const avaliadas = resultados.filter(x => x.resumo.ultima_avaliacao_pct != null);
+  if(avaliadas.length){
+    r.ultima_avaliacao_pct = avaliadas.reduce((s,x) => s + Number(x.resumo.ultima_avaliacao_pct), 0) / avaliadas.length;
+    r.ultima_avaliacao_lojas = avaliadas.length;
+  }
+  const vitrinesAvaliadas = resultados.filter(x => x.resumo.vitrine_estrelas != null);
+  if(vitrinesAvaliadas.length){
+    r.vitrine_estrelas = vitrinesAvaliadas.reduce((s,x) => s + Number(x.resumo.vitrine_estrelas), 0) / vitrinesAvaliadas.length;
+    r.vitrine_lojas = vitrinesAvaliadas.length;
+  }
+
+  let evolucao = [];
+  let evolucaoConsolidada = false;
+  if(consolidado){
+    const { data: evoCons, error: evoErr } = await sb.rpc('dashboard_evolucao_avaliacao_consolidada', { p_lojas: lojasAlvo });
+    if(!evoErr && evoCons && evoCons.length){ evolucao = evoCons; evolucaoConsolidada = true; }
+  } else {
+    evolucao = resultados[0].evolucao;
+  }
+
+  const pedidosPorCategoria = {};
+  resultados.forEach(x => x.pedidos.forEach(p => {
+    if(!pedidosPorCategoria[p.categoria]) pedidosPorCategoria[p.categoria] = { categoria: p.categoria, valor: 0, itens_sem_preco: 0 };
+    pedidosPorCategoria[p.categoria].valor += Number(p.valor||0);
+    pedidosPorCategoria[p.categoria].itens_sem_preco += Number(p.itens_sem_preco||0);
+  }));
+  const pedidos = Object.values(pedidosPorCategoria).sort((a,b) => a.categoria.localeCompare(b.categoria));
+  const comprasGelato = pedidosPorCategoria['Gelato'] ? pedidosPorCategoria['Gelato'].valor : 0;
+
+  const totalPedidos = pedidos.reduce((s,p) => s + p.valor, 0);
+  const semPreco = pedidos.reduce((s,p) => s + p.itens_sem_preco, 0);
+
+  el.innerHTML =
+    '<div class="dash-grid">'+
+      '<div class="dash-card"><div class="lbl">Perdas no m\u00eas'+(consolidado?' (todas as lojas)':'')+'</div><div class="val">'+fmtMoedaDash(r.perdas_mes)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">Gasto com freelancers</div><div class="val">'+fmtMoedaDash(r.freelancers_mes)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">Compras de gelato no m\u00eas</div><div class="val">'+fmtMoedaDash(comprasGelato)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">Uniformes em posse</div><div class="val">'+fmtMoedaDash(r.uniformes_em_posse)+'</div></div>'+
+      '<div class="dash-card"><div class="lbl">\u00daltima avalia\u00e7\u00e3o de qualidade</div><div class="val">'+(r.ultima_avaliacao_pct!=null?Number(r.ultima_avaliacao_pct).toFixed(1)+'%':'\u2014')+'</div>'+
+        (consolidado
+          ? (r.ultima_avaliacao_lojas ? '<div class="sub">m\u00e9dia de '+r.ultima_avaliacao_lojas+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')
+          : (resultados[0].resumo.ultima_avaliacao_data ? '<div class="sub">em '+fmtDataDash(resultados[0].resumo.ultima_avaliacao_data)+'</div>' : '<div class="sub">nenhuma avalia\u00e7\u00e3o registrada ainda</div>'))+
+      '</div>'+
+      '<div class="dash-card"><div class="lbl">Pontua\u00e7\u00e3o de vitrine</div><div class="val">'+(r.vitrine_estrelas!=null?Number(r.vitrine_estrelas).toFixed(1)+' \u2605':'\u2014')+'</div>'+
+        (consolidado
+          ? (r.vitrine_lojas ? '<div class="sub">m\u00e9dia de '+r.vitrine_lojas+' loja(s) avaliada(s)</div>' : '<div class="sub">nenhuma loja avaliada ainda</div>')
+          : (resultados[0].resumo.vitrine_data ? '<div class="sub">em '+fmtDataDash(resultados[0].resumo.vitrine_data)+'</div>' : '<div class="sub">nenhuma avalia\u00e7\u00e3o registrada ainda</div>'))+
+      '</div>'+
+      '<div class="dash-card"><div class="lbl">Pedidos no m\u00eas (aprox., todas categorias)</div><div class="val">'+fmtMoedaDash(totalPedidos)+'</div>'+
+        (semPreco ? '<div class="sub">'+semPreco+' item(ns) sem pre\u00e7o cadastrado, n\u00e3o entraram na soma</div>' : '')+
+      '</div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px" id="dashLinhaBaixo">'+
+      '<div class="dash-card">'+
+        '<div class="lbl" style="margin-bottom:10px">Evolu\u00e7\u00e3o da avalia\u00e7\u00e3o de qualidade'+(consolidado?' \u2014 m\u00e9dia mensal, todas as lojas':'')+'</div>'+
+        (evolucao.length ? '<canvas id="dashChartCanvas" height="90"></canvas>' :
+          '<div class="empty" style="padding:20px 0">Sem avalia\u00e7\u00f5es suficientes pra montar o gr\u00e1fico ainda.</div>')+
+      '</div>'+
+      '<div class="dash-card">'+
+        '<div class="lbl" style="margin-bottom:6px">Pedidos por categoria (valor aproximado)</div>'+
+        (pedidos.length ? pedidos.map(p =>
+          '<div class="dash-cat-row"><span>'+p.categoria+'</span><span>'+fmtMoedaDash(p.valor)+
+            (p.itens_sem_preco ? ' <span class="qtd">('+p.itens_sem_preco+' sem pre\u00e7o)</span>' : '')+
+          '</span></div>'
+        ).join('') : '<div class="empty" style="padding:20px 0">Nenhum pedido no per\u00edodo.</div>')+
+      '</div>'+
+    '</div>'+
+    '<div class="dash-card" style="margin-top:14px" id="rankingCard_principal">'+
+      htmlCardRanking(ranking, 'principal', 'Ranking de sabores de gelato \u2014 \u00faltimos 30 dias'+(consolidado?' (todas as lojas)':''))+
+    '</div>';
+
+  if(evolucao.length && window.Chart){
+    if(dashChart) dashChart.destroy();
+    const ctx = $('dashChartCanvas').getContext('2d');
+    dashChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: evolucao.map(e => evolucaoConsolidada ? fmtMesDash(e.mes) : fmtDataDash(e.data_avaliacao)),
+        datasets: [{
+          label: evolucaoConsolidada ? 'M\u00e9dia mensal (%)' : 'Pontua\u00e7\u00e3o (%)',
+          data: evolucao.map(e => Number(evolucaoConsolidada ? e.media_pct : e.pontuacao_pct)),
+          borderColor: '#6B1E2E',
+          backgroundColor: 'rgba(107,30,46,0.12)',
+          tension: 0.25,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
   }
 }
 
-async function iniciarContagem(){
-  const data = $('contData').value;
-  const tipo = $('contTipo').value;
-  if (!data) { alert('Selecione a data.'); return; }
 
-  const { data: nova, error } = await sb.from('inventario_contagens').insert({
-    loja: lojaAtual, data_contagem: data, tipo,
-    criado_por: meuPerfil.id, criado_por_nome: meuPerfil.nome
-  }).select('*').single();
+function fmtMesDash(iso){
+  if(!iso) return '';
+  const [y,m] = iso.split('-');
+  const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return MESES[Number(m)-1]+'/'+y.slice(2);
+}
 
-  if (error) {
-    if (error.message.includes('duplicate') || error.code === '23505') {
-      alert('Já existe uma contagem para esta loja nesta data. Recarregando…');
-      renderContagem();
+function fmtDataDash(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return d+'/'+m+'/'+y;
+}
+
+const ICONS = {
+  pedidos_loja: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
+  pedidos_fabrica: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>',
+  cmv: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>',
+  projetos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/><path d="M9 8h1"/></svg>',
+  estoque_fabrica: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+  estoque_cd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>',
+  cobranca: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
+  uniformes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 .55.45 1 1 1h10a1 1 0 0 0 1-1V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23Z"/></svg>',
+  freelancers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><path d="M2 12h20"/></svg>',
+  precificacao: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>',
+  'precificacao-fabrica': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>',
+  perdas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+  qualidade: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>',
+  freezers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" y2="22" x2="12"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></svg>',
+  marketing_demandas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>',
+  dre_fabrica: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+  gestor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></svg>'
+};
+const ICON_PADRAO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
+
+function render(sistemas){
+  sistemasCache = sistemas || [];
+  const nav = $('sidebarNav');
+  if(!sistemas.length){
+    nav.innerHTML = '<div style="padding:0 22px;color:var(--text-light);font-size:.8rem">Nenhum sistema liberado para o seu acesso.<br>Fale com o administrador.</div>';
+    return;
+  }
+  nav.innerHTML = sistemas.map(s => (
+    '<a class="side-item" href="'+s.url+'">'+
+      '<span class="ic">'+(ICONS[s.slug]||ICON_PADRAO)+'</span>'+
+      '<span class="nm">'+s.nome+'</span>'+
+    '</a>'
+  )).join('');
+}
+
+function toggleSidebar(){
+  $('sidebar').classList.toggle('open');
+  $('sidebarOverlay').classList.toggle('show');
+}
+function fecharSidebar(){
+  $('sidebar').classList.remove('open');
+  $('sidebarOverlay').classList.remove('show');
+}
+
+// ── CENTRAL DE APROVAÇÕES ──────────────────────────────────
+async function carregarAprovacoes(){
+  const tarefas = [];
+  const promises = [];
+
+  // Freelancers pendentes — master e coordenador de lojas
+  tarefas.push('freelancers');
+  promises.push(sb.from('freelancer_solicitacoes')
+    .select('id, loja, solicitado_por_nome, criado_em, freelancers(nome_completo)')
+    .eq('status','pendente').order('criado_em'));
+
+  // Pedidos loja → fábrica aguardando aprovação — master e coordenador de lojas
+  tarefas.push('pedidos');
+  promises.push(sb.from('pedidos')
+    .select('id, numero_pedido, loja, data_pedido, data_entrega_prevista, observacoes')
+    .eq('status','pendente_aprovacao').order('data_pedido'));
+
+  if(souMaster){
+    tarefas.push('substituicoes');
+    promises.push(sb.from('notificacoes')
+      .select('id, numero_pedido, loja, mensagem, produto_original, produto_substituto, quantidade_original, quantidade_substituta, criado_em')
+      .eq('tipo','substituicao').eq('status_resposta','pendente').order('criado_em'));
+
+    tarefas.push('precos');
+    promises.push(sb.from('precificacao_precos')
+      .select('id, elo, custo, preco_venda, vigencia_inicio, criado_por_nome, precificacao_produtos(nome)')
+      .eq('status','pendente').order('criado_em'));
+
+    tarefas.push('tributos');
+    promises.push(sb.from('precificacao_tributos')
+      .select('id, elo, categoria, tipo_tributo, aliquota, vigencia_inicio, criado_por_nome')
+      .eq('status','pendente').order('criado_em'));
+
+    tarefas.push('combos');
+    promises.push(sb.from('precificacao_combo_precos')
+      .select('id, preco_combo, vigencia_inicio, criado_por_nome, precificacao_combos(nome)')
+      .eq('status','pendente').order('criado_em'));
+
+    tarefas.push('projetos');
+    promises.push(sb.from('projects')
+      .select('id, name, area, responsible, planned_result')
+      .eq('status_aprovacao','proposta').order('start_date'));
+
+    tarefas.push('comunicados');
+    promises.push(sb.from('comunicados')
+      .select('id, titulo, mensagem, destino, criado_por_nome, criado_em')
+      .eq('status','pendente').order('criado_em'));
+  }
+
+  const resultados = await Promise.all(promises);
+  const dados = {};
+  tarefas.forEach((t, i) => { dados[t] = (resultados[i] && resultados[i].data) || []; });
+  renderAprovacoes(dados);
+}
+
+function renderAprovacoes(dados){
+  const grupos = [];
+
+  if(dados.comunicados && dados.comunicados.length){
+    grupos.push({
+      titulo: '📢 Comunicados — aguardando aprovação',
+      itens: dados.comunicados.map(c => ({
+        onclick: "abrirDetalheAprovacao('comunicado','"+c.id+"')",
+        l1: esc(c.titulo),
+        l2: 'Por '+esc(c.criado_por_nome||'—')+' · '+fmtData(c.criado_em)+' · '+(c.destino==='especifico'?'destinatários específicos':'todos os usuários'),
+        aprovar: "aprovarComunicado('"+c.id+"')",
+        rejeitar: "rejeitarComunicado('"+c.id+"')",
+      }))
+    });
+  }
+
+  if(dados.freelancers && dados.freelancers.length){
+    grupos.push({
+      titulo: '💼 Freelancers — contratações pendentes',
+      itens: dados.freelancers.map(f => ({
+        onclick: "abrirDetalheAprovacao('freelancer','"+f.id+"')",
+        l1: (f.freelancers ? f.freelancers.nome_completo : 'Freelancer'),
+        l2: esc(f.loja)+' · solicitado por '+esc(f.solicitado_por_nome||'—')+' · '+fmtData(f.criado_em),
+        aprovar: "aprovarFreelancer('"+f.id+"')",
+        rejeitar: "reprovarFreelancer('"+f.id+"')",
+      }))
+    });
+  }
+
+  if(dados.pedidos && dados.pedidos.length){
+    grupos.push({
+      titulo: '🏭 Pedidos para a fábrica — aguardando aprovação',
+      itens: dados.pedidos.map(p => ({
+        onclick: "abrirDetalheAprovacao('pedido',"+p.id+")",
+        l1: esc(p.numero_pedido)+' — '+esc(p.loja),
+        l2: 'Pedido em '+fmtData(p.data_pedido)+' · entrega prevista '+fmtData(p.data_entrega_prevista)+(p.observacoes?' · '+esc(p.observacoes):''),
+        aprovar: "aprovarPedido("+p.id+")",
+        rejeitar: "rejeitarPedido("+p.id+")",
+      }))
+    });
+  }
+
+  if(dados.substituicoes && dados.substituicoes.length){
+    grupos.push({
+      titulo: '🔄 Trocas de sabor — pedidos à fábrica',
+      itens: dados.substituicoes.map(n => ({
+        onclick: "abrirDetalheAprovacao('substituicao','"+n.id+"')",
+        l1: esc(n.numero_pedido||'—')+' — '+esc(n.loja||''),
+        l2: esc(n.produto_original||'?')+(n.quantidade_original?' ('+Number(n.quantidade_original)+')':'')+' → '+esc(n.produto_substituto||'?')+(n.quantidade_substituta?' ('+Number(n.quantidade_substituta)+')':''),
+        aprovar: "aprovarSubstituicao('"+n.id+"')",
+        rejeitar: "rejeitarSubstituicao('"+n.id+"')",
+      }))
+    });
+  }
+
+  if(dados.precos && dados.precos.length){
+    grupos.push({
+      titulo: '💲 Precificação — novos preços',
+      itens: dados.precos.map(p => ({
+        onclick: "abrirDetalheAprovacao('preco','"+p.id+"')",
+        l1: (p.precificacao_produtos?esc(p.precificacao_produtos.nome):'Produto')+' · '+labelElo(p.elo),
+        l2: 'Custo '+fmtMoeda(p.custo)+' · Venda '+fmtMoeda(p.preco_venda)+' · vigência '+fmtData(p.vigencia_inicio)+' · proposto por '+esc(p.criado_por_nome||'—'),
+        aprovar: "aprovarPrecificacao('precificacao_precos','"+p.id+"')",
+        rejeitar: "rejeitarPrecificacao('precificacao_precos','"+p.id+"')",
+      }))
+    });
+  }
+
+  if(dados.tributos && dados.tributos.length){
+    grupos.push({
+      titulo: '📑 Precificação — tributos',
+      itens: dados.tributos.map(t => ({
+        onclick: "abrirDetalheAprovacao('tributo','"+t.id+"')",
+        l1: esc(t.categoria)+' · '+esc(t.tipo_tributo)+' · '+labelElo(t.elo),
+        l2: 'Alíquota '+Number(t.aliquota)+'% · vigência '+fmtData(t.vigencia_inicio)+' · proposto por '+esc(t.criado_por_nome||'—'),
+        aprovar: "aprovarPrecificacao('precificacao_tributos','"+t.id+"')",
+        rejeitar: "rejeitarPrecificacao('precificacao_tributos','"+t.id+"')",
+      }))
+    });
+  }
+
+  if(dados.combos && dados.combos.length){
+    grupos.push({
+      titulo: '🎁 Precificação — combos',
+      itens: dados.combos.map(c => ({
+        onclick: "abrirDetalheAprovacao('combo','"+c.id+"')",
+        l1: (c.precificacao_combos?esc(c.precificacao_combos.nome):'Combo'),
+        l2: 'Preço '+fmtMoeda(c.preco_combo)+' · vigência '+fmtData(c.vigencia_inicio)+' · proposto por '+esc(c.criado_por_nome||'—'),
+        aprovar: "aprovarPrecificacao('precificacao_combo_precos','"+c.id+"')",
+        rejeitar: "rejeitarPrecificacao('precificacao_combo_precos','"+c.id+"')",
+      }))
+    });
+  }
+
+  if(dados.projetos && dados.projetos.length){
+    grupos.push({
+      titulo: '📋 Projetos — aguardando validação',
+      itens: dados.projetos.map(p => ({
+        onclick: "abrirDetalheAprovacao('projeto','"+p.id+"')",
+        l1: esc(p.name)+' ('+esc(p.area)+')',
+        l2: 'Responsável '+esc(p.responsible||'—')+(p.planned_result?' · '+esc(p.planned_result):''),
+        aprovar: "validarProjeto('"+p.id+"')",
+        rejeitar: null,
+      }))
+    });
+  }
+
+  if(!grupos.length){
+    $('aprovacoesConteudo').innerHTML = '<div class="empty" style="padding:26px">Nenhuma pendência de aprovação no momento. 🎉</div>';
+    return;
+  }
+
+  $('aprovacoesConteudo').innerHTML = grupos.map(g => (
+    '<div class="approval-group">'+
+      '<div class="approval-group-title">'+g.titulo+' <span class="badge-count">'+g.itens.length+'</span></div>'+
+      g.itens.map(it => (
+        '<div class="approval-item">'+
+          '<div class="approval-info" onclick="'+it.onclick+'"><div class="approval-l1">'+it.l1+'</div><div class="approval-l2">'+it.l2+'</div></div>'+
+          '<div class="approval-actions">'+
+            '<button class="btn-approve" onclick="'+it.aprovar+'">Aprovar</button>'+
+            (it.rejeitar ? '<button class="btn-reject" onclick="'+it.rejeitar+'">Rejeitar</button>' : '')+
+          '</div>'+
+        '</div>'
+      )).join('')+
+    '</div>'
+  )).join('');
+}
+
+async function aprovarFreelancer(id){
+  if(!confirm('Aprovar esta contratação de freelancer?')) return;
+  const { error } = await sb.from('freelancer_solicitacoes').update({
+    status: 'aprovado', aprovado_por: meuId, aprovado_por_nome: meuNome, data_aprovacao: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  carregarAprovacoes();
+}
+
+async function reprovarFreelancer(id){
+  const motivo = prompt('Motivo da reprovação (opcional):');
+  if(motivo === null) return; // cancelou o prompt
+  const { error } = await sb.from('freelancer_solicitacoes').update({
+    status: 'reprovado', motivo_reprovacao: motivo || null, aprovado_por: meuId, aprovado_por_nome: meuNome, data_aprovacao: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ alert('Erro ao reprovar: '+error.message); return; }
+  carregarAprovacoes();
+}
+
+async function aprovarPedido(id){
+  if(!confirm('Aprovar este pedido para seguir à produção?')) return;
+  const { data: pedido, error } = await sb.from('pedidos').update({ status: 'aprovado', aprovado_por: meuNome }).eq('id', id).select().single();
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  await sb.from('notificacoes').insert({
+    pedido_id: pedido.id, numero_pedido: pedido.numero_pedido, loja: pedido.loja,
+    de: 'fabrica', tipo: 'confirmacao', titulo: 'Pedido aprovado',
+    mensagem: 'Seu pedido '+pedido.numero_pedido+' foi aprovado e segue para produção.'
+  });
+  carregarAprovacoes();
+}
+
+async function rejeitarPedido(id){
+  if(!confirm('Rejeitar este pedido?')) return;
+  const { data: pedido, error } = await sb.from('pedidos').update({ status: 'rejeitado', aprovado_por: meuNome }).eq('id', id).select().single();
+  if(error){ alert('Erro ao rejeitar: '+error.message); return; }
+  await sb.from('notificacoes').insert({
+    pedido_id: pedido.id, numero_pedido: pedido.numero_pedido, loja: pedido.loja,
+    de: 'fabrica', tipo: 'rejeicao', titulo: 'Pedido rejeitado',
+    mensagem: 'Seu pedido '+pedido.numero_pedido+' foi rejeitado. Fale com a coordenação para mais detalhes.'
+  });
+  carregarAprovacoes();
+}
+
+async function aprovarSubstituicao(id){
+  if(!confirm('Aprovar esta troca de sabor? O item do pedido é atualizado na hora — se o pedido for enviado depois, o produto NOVO (substituto) é quem sai do estoque.')) return;
+  const { error } = await sb.rpc('fn_decidir_substituicao', { p_notif_id: id, p_decisao: 'aceito' });
+  if(error){ alert(error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
+}
+
+async function rejeitarSubstituicao(id){
+  if(!confirm('Recusar esta troca de sabor? O pedido continua com o item original.')) return;
+  const { error } = await sb.rpc('fn_decidir_substituicao', { p_notif_id: id, p_decisao: 'recusado' });
+  if(error){ alert(error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
+}
+
+async function aprovarPrecificacao(tabela, id){
+  if(!confirm('Aprovar este item de Precificação?')) return;
+  const { error } = await sb.from(tabela).update({ status: 'aprovado' }).eq('id', id);
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  carregarAprovacoes();
+}
+
+async function rejeitarPrecificacao(tabela, id){
+  if(!confirm('Rejeitar este item de Precificação?')) return;
+  const { error } = await sb.from(tabela).update({ status: 'rejeitado' }).eq('id', id);
+  if(error){ alert('Erro ao rejeitar: '+error.message); return; }
+  carregarAprovacoes();
+}
+
+async function validarProjeto(id){
+  if(!confirm('Validar este projeto?')) return;
+  const { error } = await sb.from('projects').update({ status_aprovacao: 'validado' }).eq('id', id);
+  if(error){ alert('Erro ao validar: '+error.message); return; }
+  carregarAprovacoes();
+}
+
+async function aprovarComunicado(id){
+  if(!confirm('Aprovar este comunicado? Ele vai aparecer em tela cheia para os destinatários assim que entrarem no sistema.')) return;
+  const { error } = await sb.from('comunicados').update({
+    status: 'aprovado', aprovado_por: meuId, aprovado_por_nome: meuNome, aprovado_em: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
+  renderComunicadosHistorico();
+}
+
+async function rejeitarComunicado(id){
+  const motivo = prompt('Motivo da rejeição (opcional):');
+  if(motivo === null) return; // cancelou o prompt
+  const { error } = await sb.from('comunicados').update({
+    status: 'rejeitado', motivo_rejeicao: motivo || null, aprovado_por: meuId, aprovado_por_nome: meuNome, aprovado_em: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ alert('Erro ao rejeitar: '+error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
+  renderComunicadosHistorico();
+}
+
+// ── DETALHE COMPLETO DE CADA APROVAÇÃO ─────────────────────
+function linha(label, valor){ return '<div class="detail-label">'+label+'</div><div class="detail-value">'+valor+'</div>'; }
+function linkModulo(slugs){
+  const lista = Array.isArray(slugs) ? slugs : [slugs];
+  let s = null;
+  for(const slug of lista){ s = sistemasCache.find(x => x.slug === slug); if(s) break; }
+  if(!s) return '';
+  return '<a class="link-modulo" href="'+s.url+'" target="_blank">Abrir módulo → '+esc(s.nome)+'</a>';
+}
+
+async function detalheComunicado(id){
+  const { data: c, error } = await sb.from('comunicados').select('*').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  $('detalheTitulo').textContent = 'Comunicado — '+esc(c.titulo);
+  let destinatariosHtml = '';
+  if(c.destino === 'especifico'){
+    const { data: dests } = await sb.from('comunicado_destinatarios').select('perfis(nome)').eq('comunicado_id', id);
+    destinatariosHtml = linha('Destinatários', (dests||[]).map(d => esc(d.perfis ? d.perfis.nome : '—')).join(', ') || '—');
+  }
+  $('detalheConteudo').innerHTML =
+    linha('Enviado por', esc(c.criado_por_nome||'—')+' em '+fmtData(c.criado_em.slice(0,10))) +
+    linha('Destino', c.destino === 'especifico' ? 'Pessoas específicas' : 'Todos os usuários') +
+    destinatariosHtml +
+    '<div class="detail-label">Mensagem</div><div class="detail-value" style="white-space:pre-wrap">'+esc(c.mensagem)+'</div>';
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="aprovarComunicado(\''+id+'\')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarComunicado(\''+id+'\')">Rejeitar</button>';
+}
+
+function abrirDetalheAprovacao(tipo, id){
+  $('modalAprovacaoDetalhe').classList.add('show');
+  $('detalheTitulo').textContent = 'Detalhe';
+  $('detalheConteudo').innerHTML = '<div class="loading">Carregando&hellip;</div>';
+  $('detalheAcoes').innerHTML = '';
+  const fns = { freelancer: detalheFreelancer, pedido: detalhePedido, substituicao: detalheSubstituicao, preco: detalhePreco, tributo: detalheTributo, combo: detalheCombo, projeto: detalheProjeto, comunicado: detalheComunicado };
+  (fns[tipo] || (() => { $('detalheConteudo').innerHTML = '<div class="empty">Tipo desconhecido.</div>'; }))(id);
+}
+
+async function detalheFreelancer(id){
+  const { data, error } = await sb.from('freelancer_solicitacoes')
+    .select('id, loja, solicitado_por_nome, criado_em, observacao, freelancers(nome_completo, cpf, banco, agencia_bancaria, conta, tipo_conta, chave_pix), freelancer_solicitacao_diarias(data_servico, carga_horaria, valor_diaria)')
+    .eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  const f = data.freelancers || {};
+  const diarias = data.freelancer_solicitacao_diarias || [];
+  $('detalheTitulo').textContent = 'Solicitação de Freelancer';
+  $('detalheConteudo').innerHTML =
+    linha('Freelancer', esc(f.nome_completo||'—')) +
+    linha('CPF', esc(f.cpf||'—')) +
+    linha('Dados bancários', esc(f.banco||'—')+' · Ag '+esc(f.agencia_bancaria||'—')+' · Conta '+esc(f.conta||'—')+(f.tipo_conta?' ('+esc(f.tipo_conta)+')':'')) +
+    linha('Chave Pix', esc(f.chave_pix||'—')) +
+    linha('Loja', esc(data.loja)) +
+    linha('Solicitado por', esc(data.solicitado_por_nome||'—')+' em '+fmtData(data.criado_em)) +
+    (data.observacao ? linha('Observação', esc(data.observacao)) : '') +
+    (diarias.length ?
+      '<div class="detail-label">Diárias solicitadas</div><table class="detail-table"><thead><tr><th>Data</th><th>Carga</th><th>Valor</th></tr></thead><tbody>'+
+        diarias.map(d=>'<tr><td>'+fmtData(d.data_servico)+'</td><td>'+esc(d.carga_horaria)+'</td><td>'+fmtMoeda(d.valor_diaria)+'</td></tr>').join('')+
+      '</tbody></table>'
+      : linha('Diárias', 'Nenhuma diária detalhada ainda.'))+
+    linkModulo('freelancers');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarFreelancer(\''+id+'\')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="reprovarFreelancer(\''+id+'\')">Reprovar</button>';
+}
+
+async function detalhePedido(id){
+  const [{ data: pedido, error }, { data: itens }] = await Promise.all([
+    sb.from('pedidos').select('*').eq('id', id).single(),
+    sb.from('pedido_itens').select('quantidade, unidade, observacao, produtos(nome)').eq('pedido_id', id).order('id')
+  ]);
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  const lista = itens || [];
+  $('detalheTitulo').textContent = 'Pedido '+esc(pedido.numero_pedido);
+  $('detalheConteudo').innerHTML =
+    linha('Loja', esc(pedido.loja)) +
+    linha('Data do pedido', fmtData(pedido.data_pedido)) +
+    linha('Entrega prevista', fmtData(pedido.data_entrega_prevista)) +
+    (pedido.observacoes ? linha('Observações', esc(pedido.observacoes)) : '') +
+    (lista.length ?
+      '<div class="detail-label">Itens do pedido</div><table class="detail-table"><thead><tr><th>Item</th><th>Qtd</th></tr></thead><tbody>'+
+        lista.map(it=>'<tr><td>'+esc(it.produtos?it.produtos.nome:(it.observacao||'—'))+'</td><td>'+Number(it.quantidade)+' '+esc(it.unidade)+'</td></tr>').join('')+
+      '</tbody></table>'
+      : linha('Itens', 'Sem itens detalhados.'))+
+    linkModulo(['pedidos_fabrica','pedidos_loja']);
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarPedido('+id+')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarPedido('+id+')">Rejeitar</button>';
+}
+
+async function detalheSubstituicao(id){
+  const { data: n, error } = await sb.from('notificacoes').select('*').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  $('detalheTitulo').textContent = 'Troca de sabor — '+esc(n.numero_pedido||'');
+  $('detalheConteudo').innerHTML =
+    linha('Loja', esc(n.loja||'—')) +
+    linha('Produto original', esc(n.produto_original||'—')+(n.quantidade_original?' · '+Number(n.quantidade_original)+' un':'')) +
+    linha('Produto substituto', esc(n.produto_substituto||'—')+(n.quantidade_substituta?' · '+Number(n.quantidade_substituta)+' un':'')) +
+    (n.mensagem ? linha('Mensagem da fábrica', esc(n.mensagem)) : '') +
+    linha('Sugerido em', fmtData(n.criado_em)) +
+    linkModulo(['pedidos_fabrica','pedidos_loja']);
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="aprovarSubstituicao(\''+id+'\')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarSubstituicao(\''+id+'\')">Recusar</button>';
+}
+
+async function detalhePreco(id){
+  const { data: p, error } = await sb.from('precificacao_precos')
+    .select('*, precificacao_produtos(nome, categoria, origem)').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  const prod = p.precificacao_produtos || {};
+  const { data: vigente } = await sb.from('precificacao_precos')
+    .select('custo, preco_venda, vigencia_inicio')
+    .eq('produto_id', p.produto_id).eq('elo', p.elo).eq('status','aprovado')
+    .lte('vigencia_inicio', new Date().toISOString().slice(0,10))
+    .order('vigencia_inicio', { ascending:false }).limit(1).maybeSingle();
+  $('detalheTitulo').textContent = 'Novo preço — '+esc(prod.nome||'');
+  $('detalheConteudo').innerHTML =
+    linha('Produto', esc(prod.nome||'—')+' · '+esc(prod.categoria||'')) +
+    linha('Elo', labelElo(p.elo)) +
+    linha('Preço vigente hoje', vigente ? ('Custo '+fmtMoeda(vigente.custo)+' · Venda '+fmtMoeda(vigente.preco_venda)+' (desde '+fmtData(vigente.vigencia_inicio)+')') : 'Nenhum preço aprovado ainda para este elo.') +
+    linha('Tributo', p.precificacao_tributos ? esc(p.precificacao_tributos.tipo_tributo)+' ('+Number(p.precificacao_tributos.aliquota)+'%)' : '—') +
+    linha('Proposto por', esc(p.criado_por_nome||'—')) +
+    '<div class="detail-label">Custo, preço e vigência (edite se precisar antes de aprovar)</div>'+
+    '<div class="detail-edit-row">'+
+      '<div class="field"><label>Custo</label><input class="inp" id="edPrecoCusto" type="number" step="0.01" value="'+p.custo+'"></div>'+
+      '<div class="field"><label>Preço de venda</label><input class="inp" id="edPrecoVenda" type="number" step="0.01" value="'+p.preco_venda+'"></div>'+
+      '<div class="field"><label>Vigência a partir de</label><input class="inp" id="edPrecoVigencia" type="date" value="'+p.vigencia_inicio+'"></div>'+
+    '</div>'+
+    linkModulo('precificacao');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="editarEAprovarPrecoPortal(\''+id+'\',\''+(p.tributo_aplicado_id||'')+'\')">Editar e Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarPrecificacao(\'precificacao_precos\',\''+id+'\')">Rejeitar</button>';
+}
+
+async function editarEAprovarPrecoPortal(id, tributoAtualId){
+  const custo = Number($('edPrecoCusto').value);
+  const preco_venda = Number($('edPrecoVenda').value);
+  const vigencia_inicio = $('edPrecoVigencia').value;
+  if(!(custo>=0) || !(preco_venda>=0) || !vigencia_inicio){ alert('Preencha custo, preço e vigência válidos.'); return; }
+  const { error } = await sb.rpc('editar_aprovar_preco', {
+    p_id: id, p_custo: custo, p_preco_venda: preco_venda,
+    p_tributo_aplicado_id: tributoAtualId || null, p_vigencia_inicio: vigencia_inicio,
+  });
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
+}
+
+async function detalheTributo(id){
+  const { data: t, error } = await sb.from('precificacao_tributos').select('*').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  $('detalheTitulo').textContent = 'Novo tributo — '+esc(t.categoria);
+  $('detalheConteudo').innerHTML =
+    linha('Categoria', esc(t.categoria)) +
+    linha('Elo', labelElo(t.elo)) +
+    linha('Tipo de tributo', esc(t.tipo_tributo)) +
+    linha('Alíquota (débito)', Number(t.aliquota)+'%') +
+    linha('Alíquota (crédito PIS/Cofins)', Number(t.aliquota_credito||0)+'%') +
+    linha('Vigência a partir de', fmtData(t.vigencia_inicio)) +
+    linha('Proposto por', esc(t.criado_por_nome||'—')) +
+    linkModulo('precificacao');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');aprovarPrecificacao(\'precificacao_tributos\',\''+id+'\')">Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarPrecificacao(\'precificacao_tributos\',\''+id+'\')">Rejeitar</button>';
+}
+
+async function detalheCombo(id){
+  const { data: c, error } = await sb.from('precificacao_combo_precos')
+    .select('*, precificacao_combos(nome, precificacao_combo_itens(quantidade, elo, precificacao_produtos(nome)))').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  const combo = c.precificacao_combos || {};
+  const itens = combo.precificacao_combo_itens || [];
+  $('detalheTitulo').textContent = 'Combo — '+esc(combo.nome||'');
+  $('detalheConteudo').innerHTML =
+    linha('Combo', esc(combo.nome||'—')) +
+    (itens.length ?
+      '<div class="detail-label">Itens do combo</div><table class="detail-table"><thead><tr><th>Produto</th><th>Qtd</th><th>Elo</th></tr></thead><tbody>'+
+        itens.map(it=>'<tr><td>'+esc(it.precificacao_produtos?it.precificacao_produtos.nome:'—')+'</td><td>'+it.quantidade+'</td><td>'+labelElo(it.elo)+'</td></tr>').join('')+
+      '</tbody></table>'
+      : linha('Itens', 'Sem itens cadastrados.'))+
+    linha('Proposto por', esc(c.criado_por_nome||'—')) +
+    '<div class="detail-label">Preço e vigência (edite se precisar antes de aprovar)</div>'+
+    '<div class="detail-edit-row">'+
+      '<div class="field"><label>Preço do combo</label><input class="inp" id="edComboPreco" type="number" step="0.01" value="'+c.preco_combo+'"></div>'+
+      '<div class="field"><label>Vigência a partir de</label><input class="inp" id="edComboVigencia" type="date" value="'+c.vigencia_inicio+'"></div>'+
+    '</div>'+
+    linkModulo('precificacao');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="editarEAprovarComboPortal(\''+id+'\',\''+(c.tributo_aplicado_id||'')+'\')">Editar e Aprovar</button>'+
+    '<button class="btn-outline btn" onclick="rejeitarPrecificacao(\'precificacao_combo_precos\',\''+id+'\')">Rejeitar</button>';
+}
+
+async function editarEAprovarComboPortal(id, tributoAtualId){
+  const preco_combo = Number($('edComboPreco').value);
+  const vigencia_inicio = $('edComboVigencia').value;
+  if(!(preco_combo>=0) || !vigencia_inicio){ alert('Preencha o preço e a vigência válidos.'); return; }
+  const { error } = await sb.rpc('editar_aprovar_combo_preco', {
+    p_id: id, p_preco_combo: preco_combo,
+    p_tributo_aplicado_id: tributoAtualId || null, p_vigencia_inicio: vigencia_inicio,
+  });
+  if(error){ alert('Erro ao aprovar: '+error.message); return; }
+  fecharModal('modalAprovacaoDetalhe');
+  carregarAprovacoes();
+}
+
+async function detalheProjeto(id){
+  const { data: p, error } = await sb.from('projects').select('*').eq('id', id).single();
+  if(error){ $('detalheConteudo').innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
+  $('detalheTitulo').textContent = 'Projeto — '+esc(p.name);
+  $('detalheConteudo').innerHTML =
+    linha('Área', esc(p.area)) +
+    linha('Responsável', esc(p.responsible||'—')) +
+    linha('Resultado planejado', esc(p.planned_result||'—')+(p.result_target?(' ('+p.result_target+' '+esc(p.result_unit||'')+')'):'')) +
+    linha('Prazo', fmtData(p.start_date)+' até '+fmtData(p.end_date)) +
+    (p.scope ? linha('Escopo', esc(p.scope)) : '') +
+    linkModulo('projetos');
+  $('detalheAcoes').innerHTML =
+    '<button class="btn" onclick="fecharModal(\'modalAprovacaoDetalhe\');validarProjeto(\''+id+'\')">Validar</button>';
+}
+
+async function logout(){ await sb.auth.signOut(); window.location.reload(); }
+
+// ── Trocar minha senha ──
+function abrirTrocarSenha(){
+  $('novaSenha1').value=''; $('novaSenha2').value='';
+  showMsg('trocarMsg','','');
+  $('modalTrocar').classList.add('show');
+}
+
+function fecharModal(id){ $(id).classList.remove('show'); }
+
+async function trocarMinhaSenha(){
+  const s1 = $('novaSenha1').value, s2 = $('novaSenha2').value;
+  const btn = $('btnTrocar');
+  if(!s1 || s1.length < 6){ showMsg('trocarMsg','A senha precisa ter pelo menos 6 caracteres.','err'); return; }
+  if(s1 !== s2){ showMsg('trocarMsg','As senhas n\u00e3o coincidem.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Salvando\u2026';
+  const { error } = await sb.auth.updateUser({ password: s1 });
+  btn.disabled = false; btn.textContent = 'Salvar';
+  if(error){ showMsg('trocarMsg','N\u00e3o foi poss\u00edvel trocar agora: '+error.message,'err'); return; }
+  showMsg('trocarMsg','Senha atualizada com sucesso!','ok');
+  setTimeout(() => fecharModal('modalTrocar'), 1400);
+}
+
+// ── Reset admin (só master) ──
+function abrirResetAdmin(){
+  $('resetEmail').value=''; $('resetResultado').innerHTML='';
+  showMsg('resetMsg','','');
+  $('modalReset').classList.add('show');
+}
+
+async function resetarSenhaUsuario(){
+  const email = $('resetEmail').value.trim();
+  const btn = $('btnReset');
+  if(!email){ showMsg('resetMsg','Digite o e-mail do usu\u00e1rio.','err'); return; }
+  const { data: sessionData } = await sb.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if(!token){ showMsg('resetMsg','Sess\u00e3o expirada, recarregue a p\u00e1gina.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Gerando\u2026';
+  $('resetResultado').innerHTML = '';
+  try{
+    const r = await fetch(SUPABASE_URL + '/functions/v1/reset-senhas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ email })
+    });
+    const d = await r.json();
+    btn.disabled = false; btn.textContent = 'Gerar senha tempor\u00e1ria';
+    if(!d.ok){
+      showMsg('resetMsg', d.error === 'usuario nao encontrado' ? 'Nenhum usu\u00e1rio com esse e-mail.' : 'Erro: '+(d.error||'desconhecido'), 'err');
       return;
     }
-    alert('Erro ao iniciar contagem: ' + error.message);
-    return;
+    showMsg('resetMsg','Senha tempor\u00e1ria gerada para '+d.nome+':','ok');
+    $('resetResultado').innerHTML = '<div class="result-box">'+d.senhaTemporaria+'</div>';
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Gerar senha tempor\u00e1ria';
+    showMsg('resetMsg','Erro de conex\u00e3o. Tente novamente.','err');
   }
-  contagemAtiva = nova;
-  renderContagem();
 }
 
-async function carregarFormularioContagem(){
-  const wrap = $('contFormulario');
-  wrap.innerHTML = '<div class="loading">Carregando itens…</div>';
+// ── Gerenciar usuários e acessos (só master) ──
+let usuariosCache = { perfis: [], acessos: [], sistemas: [] };
 
-  // Itens já lançados nesta contagem (rascunho)
-  const { data: itensExistentes } = await sb.from('inventario_itens').select('*').eq('contagem_id', contagemAtiva.id);
-  itensAtuais = {};
-  (itensExistentes || []).forEach(i => {
-    const id = i.precificacao_produto_id || i.insumo_id;
-    itensAtuais[chaveItem(i.categoria, id)] = { quantidade: i.quantidade, replicado: i.replicado_anterior };
+async function chamarAdminUsuarios(action, payload={}, tentouRenovar=false){
+  const { data: sessionData } = await sb.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if(!token) throw new Error('Sess\u00e3o expirada, recarregue a p\u00e1gina.');
+  const r = await fetch(SUPABASE_URL + '/functions/v1/admin-usuarios', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ action, ...payload })
   });
-
-  // Última contagem finalizada anterior a esta, pra permitir "repetir"
-  const { data: anteriorHead } = await sb.from('inventario_contagens')
-    .select('id').eq('loja', lojaAtual).eq('status', 'finalizada')
-    .lt('data_contagem', contagemAtiva.data_contagem)
-    .order('data_contagem', { ascending: false }).limit(1).maybeSingle();
-
-  itensAnteriores = {};
-  if (anteriorHead) {
-    const { data: itensAnt } = await sb.from('inventario_itens').select('*').eq('contagem_id', anteriorHead.id);
-    (itensAnt || []).forEach(i => {
-      const id = i.precificacao_produto_id || i.insumo_id;
-      itensAnteriores[chaveItem(i.categoria, id)] = i.quantidade;
-    });
+  // Se o token expirou no meio do uso, renova a sess\u00e3o e tenta mais uma vez
+  if (r.status === 401 && !tentouRenovar) {
+    const { error: refreshErr } = await sb.auth.refreshSession();
+    if (!refreshErr) return chamarAdminUsuarios(action, payload, true);
   }
+  return r.json();
+}
 
-  if (!catalogoTemItens()) {
-    wrap.innerHTML = '<div class="empty">Nenhum item cadastrado ainda (verifique a Precificação e a lista de Insumos).</div>';
+async function abrirGerenciarUsuarios(){
+  $('modalUsuarios').classList.add('show');
+  $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-light)">Carregando...</td></tr>';
+  await carregarUsuarios();
+}
+
+async function carregarUsuarios(){
+  try{
+    const d = await chamarAdminUsuarios('listar');
+    if(!d.ok){ showMsg('usuariosMsg', 'Erro: '+(d.error||'desconhecido'), 'err'); return; }
+    usuariosCache = { perfis: d.perfis, acessos: d.acessos, sistemas: d.sistemas };
+    renderTabelaUsuarios();
+  }catch(e){
+    showMsg('usuariosMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+const LOJAS_DISPONIVEIS = ['Esplanada','Cianê','Tucuruvi','Indaiatuba','Jundiaí','Praça da Moça - Diadema','Buriti Mogi Guaçu','SP Market','Iguatemi Campinas','Shopping Itaquera','Atrium'];
+
+function renderTabelaUsuarios(){
+  const filtro = ($('filtroUsuarios').value || '').toLowerCase().trim();
+  const { perfis, acessos, sistemas } = usuariosCache;
+
+  // Cabeçalho: um <th> de verdade por sistema (evita texto/checkbox desalinhados)
+  document.querySelectorAll('#linhaCabecalhoUsuarios .th-sistema').forEach(el => el.remove());
+  const thsSistemas = sistemas.map(s =>
+    '<th class="th-sistema" style="text-align:center;padding:8px 6px;width:82px;font-size:.66rem;font-weight:600;line-height:1.2">'+s.nome+'</th>'
+  ).join('');
+  $('thExcluir').insertAdjacentHTML('beforebegin', thsSistemas);
+
+  const acessoSet = new Set(acessos.map(a => a.perfil_id+'|'+a.sistema_slug));
+  const lista = perfis.filter(p =>
+    !filtro || (p.nome||'').toLowerCase().includes(filtro) || (p.email||'').toLowerCase().includes(filtro)
+  );
+
+  if(!lista.length){
+    $('corpoTabelaUsuarios').innerHTML = '<tr><td colspan="'+(4+sistemas.length)+'" style="padding:20px;text-align:center;color:var(--text-light)">Nenhum usu\u00e1rio encontrado.</td></tr>';
     return;
   }
 
-  let html = '';
-  ORDEM_CATEGORIAS.forEach(cat => {
-    const itens = catalogoCache[cat] || [];
-    if (!itens.length) return;
-    const temAnteriorNaCategoria = itens.some(it => itensAnteriores[chaveItem(cat, it.id)] !== undefined);
-    html += `<div class="categoria-titulo"><span>${esc(cat)}</span>
-      ${temAnteriorNaCategoria ? `<button class="cat-repetir" onclick="repetirCategoria('${esc(cat)}')">🔁 Repetir tudo da anterior</button>` : ''}
+  $('corpoTabelaUsuarios').innerHTML = lista.map(p => {
+    const checks = sistemas.map(s => {
+      const marcado = acessoSet.has(p.id+'|'+s.slug);
+      const disabled = p.tipo === 'master' ? 'disabled title="Master j\u00e1 tem acesso a tudo"' : '';
+      return '<td style="padding:8px 6px;text-align:center;width:82px">'+
+        '<input type="checkbox" '+(marcado||p.tipo==='master' ? 'checked' : '')+' '+disabled+
+        ' onchange="toggleAcesso(\''+p.id+'\',\''+s.slug+'\',this.checked)" style="width:16px;height:16px;cursor:pointer">'+
+      '</td>';
+    }).join('');
+    const podeTerLoja = p.tipo === 'loja' || p.tipo === 'master_loja';
+    const lojasTexto = p.loja ? p.loja : (p.lojas && p.lojas.length ? p.lojas.join(' + ') : '\u2014');
+    const celulaLoja = podeTerLoja
+      ? '<button onclick=\'abrirEditarLojas('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.loja)+','+JSON.stringify(p.lojas)+')\' style="background:none;border:none;color:var(--bordo);text-decoration:underline;cursor:pointer;font-size:.78rem;text-align:left;padding:0">'+lojasTexto+'</button>'
+      : '<span style="color:var(--text-light)">\u2014</span>';
+    return '<tr style="border-top:1px solid var(--creme-dark)">'+
+      '<td style="padding:10px 12px;white-space:nowrap"><div style="font-weight:500">'+p.nome+'</div><div style="color:var(--text-light);font-size:.72rem">'+p.email+'</div></td>'+
+      '<td style="padding:10px 12px;white-space:nowrap">'+p.tipo+
+        (p.uniformes_backoffice?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Backoffice Unif.</span>':'')+
+        (p.freelancer_coordenador?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Coord. Freelancers</span>':'')+
+        (p.freelancer_agencia?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Ag\u00eancia Freelancers</span>':'')+
+        (p.precificacao_fabrica_backoffice?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Backoffice Precific. F\u00e1brica</span>':'')+
+        (p.precificacao_loja_backoffice?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Backoffice Precific. Loja</span>':'')+
+        (p.marketing_backoffice?'<br><span style="font-size:.65rem;color:var(--marrom-dark)">+ Coord. Marketing</span>':'')+
+      '</td>'+
+      '<td style="padding:10px 12px;max-width:160px">'+celulaLoja+'</td>'+
+      checks+
+      '<td style="padding:10px 12px;white-space:nowrap">'+
+        '<button onclick=\'abrirEditarUsuario('+JSON.stringify(p.id)+','+JSON.stringify(p.nome)+','+JSON.stringify(p.email)+','+JSON.stringify(p.tipo)+','+JSON.stringify(!!p.uniformes_backoffice)+','+JSON.stringify(!!p.freelancer_coordenador)+','+JSON.stringify(!!p.freelancer_agencia)+','+JSON.stringify(!!p.precificacao_fabrica_backoffice)+','+JSON.stringify(!!p.precificacao_loja_backoffice)+','+JSON.stringify(!!p.marketing_backoffice)+','+JSON.stringify(p.loja||null)+')\' style="background:none;border:none;color:var(--marrom-dark);cursor:pointer;font-size:.85rem;margin-right:8px" title="Editar usu\u00e1rio">\u270f\ufe0f</button>'+
+        '<button onclick="excluirUsuario(\''+p.id+'\',\''+p.nome.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:#B43C3C;cursor:pointer;font-size:.85rem" title="Excluir usu\u00e1rio">\uD83D\uDDD1\uFE0F</button>'+
+      '</td>'+
+    '</tr>';
+  }).join('');
+}
+
+let lojasEditandoId = null;
+
+function abrirEditarLojas(perfil_id, nome, loja, lojas){
+  lojasEditandoId = perfil_id;
+  $('lojasNomeUsuario').textContent = nome;
+  const atuais = new Set(loja ? [loja] : (lojas || []));
+  $('lojasCheckboxes').innerHTML = LOJAS_DISPONIVEIS.map(l =>
+    '<label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer">'+
+      '<input type="checkbox" value="'+l+'" '+(atuais.has(l) ? 'checked' : '')+' style="width:15px;height:15px">'+l+
+    '</label>'
+  ).join('');
+  showMsg('lojasMsg','','');
+  $('modalLojas').classList.add('show');
+}
+
+async function salvarLojas(){
+  const marcadas = Array.from($('lojasCheckboxes').querySelectorAll('input:checked')).map(i => i.value);
+  const btn = $('btnSalvarLojas');
+  btn.disabled = true; btn.textContent = 'Salvando\u2026';
+  try{
+    const d = await chamarAdminUsuarios('atualizar_lojas', { perfil_id: lojasEditandoId, lojas: marcadas });
+    btn.disabled = false; btn.textContent = 'Salvar';
+    if(!d.ok){ showMsg('lojasMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
+    showMsg('lojasMsg','Salvo!','ok');
+    await carregarUsuarios();
+    setTimeout(() => fecharModal('modalLojas'), 700);
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Salvar';
+    showMsg('lojasMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+async function toggleAcesso(perfil_id, sistema_slug, marcado){
+  showMsg('usuariosMsg', 'Salvando...', 'ok');
+  try{
+    const d = await chamarAdminUsuarios(marcado ? 'conceder_acesso' : 'revogar_acesso', { perfil_id, sistema_slug });
+    if(!d.ok){ showMsg('usuariosMsg', 'Erro: '+(d.error||'desconhecido'), 'err'); await carregarUsuarios(); return; }
+    if(marcado) usuariosCache.acessos.push({ perfil_id, sistema_slug });
+    else usuariosCache.acessos = usuariosCache.acessos.filter(a => !(a.perfil_id===perfil_id && a.sistema_slug===sistema_slug));
+    showMsg('usuariosMsg', 'Acesso atualizado.', 'ok');
+  }catch(e){
+    showMsg('usuariosMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+async function excluirUsuario(perfil_id, nome){
+  if(!confirm('Excluir o usu\u00e1rio "'+nome+'"? Essa a\u00e7\u00e3o \u00e9 permanente e remove todos os acessos dele.')) return;
+  showMsg('usuariosMsg', 'Excluindo...', 'ok');
+  try{
+    const d = await chamarAdminUsuarios('excluir_usuario', { perfil_id });
+    if(!d.ok){ showMsg('usuariosMsg', 'Erro: '+(d.error||'desconhecido'), 'err'); return; }
+    showMsg('usuariosMsg', 'Usu\u00e1rio exclu\u00eddo.', 'ok');
+    await carregarUsuarios();
+  }catch(e){
+    showMsg('usuariosMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+function onNovoTipoChange(){
+  const tipo = $('novoTipo').value;
+  if(usuarioEditandoId){ $('novoLojaWrap').style.display = 'none'; }
+  else { $('novoLojaWrap').style.display = (tipo === 'loja' || tipo === 'master_loja') ? 'block' : 'none'; }
+  $('novoTipoBackofficeHint').style.display = (tipo === 'backoffice') ? '' : 'none';
+}
+
+let usuarioEditandoId = null;
+
+function abrirNovoUsuario(){
+  usuarioEditandoId = null;
+  $('tituloNovoUsuario').textContent = 'Novo usuário';
+  $('subNovoUsuario').textContent = 'Cria o login e já mostra uma senha temporária para você repassar.';
+  $('btnNovoUsuario').textContent = 'Criar usuário';
+  $('novoLojaWrap').style.display = '';
+  $('novoLoja').innerHTML = LOJAS_DISPONIVEIS.map(l=>'<option value="'+l+'">'+l+'</option>').join('');
+  $('novoNome').value=''; $('novoEmail').value=''; $('novoTipo').value='loja'; $('novoBackoffice').checked=false;
+  $('novoFreelancerCoordenador').checked=false; $('novoFreelancerAgencia').checked=false; $('novoPrecificacaoFabricaBackoffice').checked=false; $('novoPrecificacaoLojaBackoffice').checked=false; $('novoMarketingBackoffice').checked=false;
+  onNovoTipoChange();
+  showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
+  $('btnFecharNovoUsuario').textContent = 'Cancelar';
+  $('modalNovoUsuario').classList.add('show');
+}
+
+function abrirEditarUsuario(perfil_id, nome, email, tipo, backoffice, freelancerCoordenador, freelancerAgencia, precificacaoFabricaBackoffice, precificacaoLojaBackoffice, marketingBackoffice, lojaAtualDoUsuario){
+  usuarioEditandoId = perfil_id;
+  $('tituloNovoUsuario').textContent = 'Editar usuário';
+  $('subNovoUsuario').textContent = 'Corrige nome, e-mail ou tipo de acesso. Loja(s) e senha se editam nos botões próprios da tabela.';
+  $('btnNovoUsuario').textContent = 'Salvar alterações';
+  $('novoLoja').innerHTML = LOJAS_DISPONIVEIS.map(l=>'<option value="'+l+'">'+l+'</option>').join('');
+  if(lojaAtualDoUsuario) $('novoLoja').value = lojaAtualDoUsuario;
+  $('novoLojaWrap').style.display = 'none';
+  $('novoNome').value = nome; $('novoEmail').value = email; $('novoTipo').value = tipo;
+  $('novoBackoffice').checked = !!backoffice;
+  $('novoFreelancerCoordenador').checked = !!freelancerCoordenador;
+  $('novoFreelancerAgencia').checked = !!freelancerAgencia;
+  $('novoPrecificacaoFabricaBackoffice').checked = !!precificacaoFabricaBackoffice;
+  $('novoPrecificacaoLojaBackoffice').checked = !!precificacaoLojaBackoffice;
+  $('novoMarketingBackoffice').checked = !!marketingBackoffice;
+  showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
+  $('btnFecharNovoUsuario').textContent = 'Cancelar';
+  $('modalNovoUsuario').classList.add('show');
+}
+
+async function salvarUsuario(){
+  if (usuarioEditandoId) return editarUsuario();
+  return criarUsuario();
+}
+
+async function editarUsuario(){
+  const nome = $('novoNome').value.trim();
+  const email = $('novoEmail').value.trim();
+  const tipo = $('novoTipo').value;
+  const uniformes_backoffice = $('novoBackoffice').checked;
+  const freelancer_coordenador = $('novoFreelancerCoordenador').checked;
+  const freelancer_agencia = $('novoFreelancerAgencia').checked;
+  const precificacao_fabrica_backoffice = $('novoPrecificacaoFabricaBackoffice').checked;
+  const precificacao_loja_backoffice = $('novoPrecificacaoLojaBackoffice').checked;
+  const marketing_backoffice = $('novoMarketingBackoffice').checked;
+  const btn = $('btnNovoUsuario');
+  if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Salvando\u2026';
+  try{
+    const d = await chamarAdminUsuarios('editar_usuario', { perfil_id: usuarioEditandoId, nome, email, tipo, uniformes_backoffice, freelancer_coordenador, freelancer_agencia, precificacao_fabrica_backoffice, precificacao_loja_backoffice, marketing_backoffice });
+    btn.disabled = false; btn.textContent = 'Salvar altera\u00e7\u00f5es';
+    if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
+    showMsg('novoUsuarioMsg','Salvo!','ok');
+    await carregarUsuarios();
+    setTimeout(() => fecharModal('modalNovoUsuario'), 700);
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Salvar altera\u00e7\u00f5es';
+    showMsg('novoUsuarioMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+async function criarUsuario(){
+  const nome = $('novoNome').value.trim();
+  const email = $('novoEmail').value.trim();
+  const tipo = $('novoTipo').value;
+  const loja = (tipo === 'loja' || tipo === 'master_loja') ? $('novoLoja').value.trim() : null;
+  const uniformes_backoffice = $('novoBackoffice').checked;
+  const freelancer_coordenador = $('novoFreelancerCoordenador').checked;
+  const freelancer_agencia = $('novoFreelancerAgencia').checked;
+  const precificacao_fabrica_backoffice = $('novoPrecificacaoFabricaBackoffice').checked;
+  const precificacao_loja_backoffice = $('novoPrecificacaoLojaBackoffice').checked;
+  const marketing_backoffice = $('novoMarketingBackoffice').checked;
+  const btn = $('btnNovoUsuario');
+  if(!nome || !email){ showMsg('novoUsuarioMsg','Preencha nome e e-mail.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Criando\u2026';
+  try{
+    const d = await chamarAdminUsuarios('criar_usuario', { nome, email, tipo, loja, uniformes_backoffice, freelancer_coordenador, freelancer_agencia, precificacao_fabrica_backoffice, precificacao_loja_backoffice, marketing_backoffice });
+    btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';
+    if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
+    showMsg('novoUsuarioMsg','Usu\u00e1rio criado! Senha tempor\u00e1ria:','ok');
+    $('novoUsuarioResultado').innerHTML = '<div class="result-box">'+d.senhaTemporaria+'</div>';
+    $('btnFecharNovoUsuario').textContent = 'Fechar';
+    await carregarUsuarios();
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';
+    showMsg('novoUsuarioMsg', e.message || 'Erro de conex\u00e3o.', 'err');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// COMUNICADOS
+// ══════════════════════════════════════════════════════════
+
+async function verificarComunicadosPendentes(){
+  const { data: todos, error } = await sb.from('comunicados').select('*').eq('ativo', true).eq('status','aprovado').order('criado_em', { ascending:true });
+  if(error || !todos || !todos.length) return;
+  const { data: lidos } = await sb.from('comunicado_leituras').select('comunicado_id').eq('perfil_id', meuId);
+  const idsLidos = new Set((lidos||[]).map(l => l.comunicado_id));
+  comunicadosPendentes = todos.filter(c => !idsLidos.has(c.id) && c.criado_por !== meuId);
+  if(comunicadosPendentes.length){
+    indiceComunicadoAtual = 0;
+    mostrarComunicadoAtual();
+  }
+}
+
+function mostrarComunicadoAtual(){
+  const c = comunicadosPendentes[indiceComunicadoAtual];
+  $('comContador').textContent = comunicadosPendentes.length > 1
+    ? 'Comunicado '+(indiceComunicadoAtual+1)+' de '+comunicadosPendentes.length
+    : 'Comunicado';
+  $('comTitulo').textContent = c.titulo;
+  $('comData').textContent = new Date(c.criado_em).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' }) + (c.criado_por_nome ? ' — '+c.criado_por_nome : '');
+  $('comMensagem').textContent = c.mensagem;
+  $('overlayComunicado').classList.add('show');
+}
+
+async function confirmarLeituraComunicado(){
+  const c = comunicadosPendentes[indiceComunicadoAtual];
+  const btn = $('btnConfirmarComunicado');
+  btn.disabled = true; btn.textContent = 'Confirmando…';
+  const { error } = await sb.from('comunicado_leituras').insert({ comunicado_id: c.id, perfil_id: meuId });
+  btn.disabled = false; btn.textContent = '✓ Confirmar leitura';
+  if(error && !error.message.includes('duplicate')){
+    alert('Erro ao confirmar leitura: '+error.message);
+    return;
+  }
+  indiceComunicadoAtual++;
+  if(indiceComunicadoAtual < comunicadosPendentes.length){
+    mostrarComunicadoAtual();
+  } else {
+    $('overlayComunicado').classList.remove('show');
+    renderComunicadosHistorico();
+  }
+}
+
+async function renderComunicadosHistorico(){
+  const el = $('comunicadosLista');
+  const { data: todos, error } = await sb.from('comunicados').select('*').order('criado_em', { ascending:false });
+  if(error){ el.innerHTML = '<div class="empty">Não foi possível carregar os comunicados.</div>'; return; }
+  if(!todos || !todos.length){ el.innerHTML = '<div class="empty">Nenhum comunicado por aqui ainda.</div>'; return; }
+
+  const { data: lidos } = await sb.from('comunicado_leituras').select('comunicado_id, lido_em').eq('perfil_id', meuId);
+  const mapaLidos = {};
+  (lidos||[]).forEach(l => { mapaLidos[l.comunicado_id] = l.lido_em; });
+
+  el.innerHTML = todos.map(c => {
+    const lidoEm = mapaLidos[c.id];
+    const dataFmt = new Date(c.criado_em).toLocaleDateString('pt-BR');
+    const souDono = c.criado_por === meuId;
+    let badgeStatus = '';
+    if(c.status === 'pendente') badgeStatus = '<span class="badge-pendente">⏳ Aguardando aprovação</span>';
+    else if(c.status === 'rejeitado') badgeStatus = '<span class="badge-rejeitado">✕ Rejeitado</span>' + (c.motivo_rejeicao ? '' : '');
+    else badgeStatus = (lidoEm ? '<span class="badge-lido">✓ Lido</span>' : '<span class="badge-pendente">Pendente de leitura</span>');
+    const podeVerRecibo = (souDono || souMaster) && c.status === 'aprovado';
+    return `<div class="comunicado-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <div>
+          <h3 style="margin:0 0 4px;font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--bordo-dark)">${esc(c.titulo)}</h3>
+          <div style="font-size:.78rem;color:var(--text-light)">${dataFmt} — ${esc(c.criado_por_nome||'')}${c.destino==='especifico'?' · destinatários específicos':' · todos os usuários'}${souDono?' · <em>seu comunicado</em>':''}</div>
+        </div>
+        ${badgeStatus}
+      </div>
+      <p style="margin:12px 0 0;font-size:.88rem;line-height:1.5;white-space:pre-wrap">${esc(c.mensagem)}</p>
+      ${c.status === 'rejeitado' && c.motivo_rejeicao ? '<p style="margin:8px 0 0;font-size:.8rem;color:#B43C3C"><strong>Motivo da rejeição:</strong> '+esc(c.motivo_rejeicao)+'</p>' : ''}
+      ${podeVerRecibo ? '<div id="recibo-'+c.id+'" style="font-size:.76rem;color:var(--text-light);margin-top:10px">Carregando confirmações…</div>' : ''}
     </div>`;
-    itens.forEach(it => {
-      const chave = chaveItem(cat, it.id);
-      const atual = itensAtuais[chave];
-      const anterior = itensAnteriores[chave];
-      html += `<div class="item-row" data-chave="${esc(chave)}">
-        <div class="item-nome">${esc(it.nome)}${!it.ativo ? '<span class="item-inativo-tag">inativo</span>' : ''}</div>
-        <div class="item-anterior">${anterior !== undefined ? 'ant.: ' + Number(anterior) : ''}</div>
-        <button type="button" class="item-repetir" title="Repetir valor anterior" onclick="repetirItem('${esc(chave)}')" ${anterior===undefined?'disabled':''}>🔁</button>
-        <input type="number" min="0" step="0.01" class="item-qtd${atual&&atual.replicado?' replicado':''}" value="${atual ? atual.quantidade : ''}" data-cat="${esc(cat)}" data-id="${esc(String(it.id))}">
-        <span class="item-unid">${esc(it.unidade||'')}</span>
-      </div>`;
-    });
-  });
+  }).join('');
 
-  wrap.innerHTML = html + `
-    <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
-      <button class="btn btn-outline" onclick="salvarRascunho()">Salvar e Continuar Depois</button>
-      <button class="btn" onclick="finalizarContagem()">Finalizar Contagem</button>
-    </div>
-    <div id="contMsg" class="msg"></div>`;
-}
-
-function repetirItem(chave){
-  const row = document.querySelector(`.item-row[data-chave="${CSS.escape(chave)}"]`);
-  if (!row) return;
-  const valor = itensAnteriores[chave];
-  if (valor === undefined) return;
-  const input = row.querySelector('.item-qtd');
-  input.value = Number(valor);
-  input.classList.add('replicado');
-}
-
-function repetirCategoria(cat){
-  document.querySelectorAll(`.item-row input.item-qtd[data-cat="${CSS.escape(cat)}"]`).forEach(input => {
-    const row = input.closest('.item-row');
-    const chave = row.dataset.chave;
-    const valor = itensAnteriores[chave];
-    if (valor !== undefined && !input.value) {
-      input.value = Number(valor);
-      input.classList.add('replicado');
-    }
+  todos.forEach(c => {
+    const souDono = c.criado_por === meuId;
+    if((souDono || souMaster) && c.status === 'aprovado') carregarReciboComunicado(c);
   });
 }
 
-function coletarLinhasFormulario(){
-  return [...document.querySelectorAll('#contFormulario .item-row')].map(row => {
-    const input = row.querySelector('.item-qtd');
-    return {
-      chave: row.dataset.chave,
-      categoria: input.dataset.cat,
-      id: input.dataset.id,
-      quantidade: input.value === '' ? null : parseFloat(input.value),
-      replicado: input.classList.contains('replicado')
-    };
-  });
-}
-
-async function salvarLinhas(linhas){
-  const paraSalvar = linhas.filter(l => l.quantidade !== null && !isNaN(l.quantidade));
-  for (const l of paraSalvar) {
-    const item = (catalogoCache[l.categoria] || []).find(i => String(i.id) === l.id);
-    const payload = {
-      contagem_id: contagemAtiva.id,
-      categoria: l.categoria,
-      nome_produto: item ? item.nome : l.id,
-      unidade: item ? item.unidade : null,
-      quantidade: l.quantidade,
-      replicado_anterior: l.replicado,
-    };
-    if (l.categoria === 'Insumo') payload.insumo_id = l.id; else payload.precificacao_produto_id = l.id;
-
-    const conflictCol = l.categoria === 'Insumo' ? 'contagem_id,insumo_id' : 'contagem_id,precificacao_produto_id';
-    const { error } = await sb.from('inventario_itens').upsert(payload, { onConflict: conflictCol });
-    if (error) return error;
-  }
-  return null;
-}
-
-async function salvarRascunho(){
-  const linhas = coletarLinhasFormulario();
-  const btn = document.querySelector('#contFormulario button.btn-outline');
-  btn.disabled = true; btn.textContent = 'Salvando…';
-  const error = await salvarLinhas(linhas);
-  btn.disabled = false; btn.textContent = 'Salvar e Continuar Depois';
-  if (error) { showMsg('contMsg', 'Erro ao salvar: ' + error.message, 'err'); return; }
-  showMsg('contMsg', 'Rascunho salvo.', 'ok');
-}
-
-async function finalizarContagem(){
-  const linhas = coletarLinhasFormulario();
-  const semValor = linhas.filter(l => l.quantidade === null || isNaN(l.quantidade));
-  if (semValor.length) {
-    abrirModalConfirm('Itens sem valor', `${semValor.length} item(ns) ficaram sem quantidade preenchida e não vão entrar na contagem. Confirma finalizar mesmo assim?`, async () => {
-      await executarFinalizacao(linhas);
-    });
-    return;
-  }
-  await executarFinalizacao(linhas);
-}
-
-async function executarFinalizacao(linhas){
-  showMsg('contMsg', '', '');
-  const error = await salvarLinhas(linhas);
-  if (error) { showMsg('contMsg', 'Erro ao salvar: ' + error.message, 'err'); return; }
-
-  const { error: errFinal } = await sb.from('inventario_contagens')
-    .update({ status: 'finalizada', finalizado_em: new Date().toISOString() })
-    .eq('id', contagemAtiva.id);
-  if (errFinal) { showMsg('contMsg', 'Erro ao finalizar: ' + errFinal.message, 'err'); return; }
-
-  contagemAtiva = null;
-  renderContagem();
-}
-
-// ── ABA: HISTÓRICO ────────────────────────────────────────
-async function renderHistorico(){
-  const el = $('mainContent');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-
-  const filtroLoja = souGerencial ? `
-    <div class="field"><label>Loja</label><select class="inp" id="histFiltroLoja" onchange="carregarHistoricoLista()">
-      ${souGerencial ? '<option value="">Todas as lojas</option>' : ''}
-      ${TODAS_LOJAS.map(l=>'<option value="'+esc(l)+'"'+(l===lojaAtual?' selected':'')+'>'+esc(l)+'</option>').join('')}
-    </select></div>` : '';
-
-  el.innerHTML = `<div class="card">
-    <h2>Histórico de Contagens</h2>
-    ${filtroLoja ? '<div class="row">'+filtroLoja+'</div>' : ''}
-    <div id="histLista"><div class="loading">Carregando…</div></div>
-  </div>
-  <div id="histDetalheWrap"></div>`;
-
-  await carregarHistoricoLista();
-}
-
-async function carregarHistoricoLista(){
-  const el = $('histLista');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-
-  let query = sb.from('inventario_contagens').select('*').order('data_contagem', { ascending: false });
-  if (souGerencial) {
-    const filtro = $('histFiltroLoja') ? $('histFiltroLoja').value : '';
-    if (filtro) query = query.eq('loja', filtro);
+async function carregarReciboComunicado(c){
+  const el = $('recibo-'+c.id);
+  if(!el) return;
+  let totalDestinatarios;
+  if(c.destino === 'todos'){
+    const { count } = await sb.from('perfis').select('id', { count:'exact', head:true });
+    totalDestinatarios = count || 0;
   } else {
-    query = query.eq('loja', lojaAtual);
+    const { count } = await sb.from('comunicado_destinatarios').select('id', { count:'exact', head:true }).eq('comunicado_id', c.id);
+    totalDestinatarios = count || 0;
   }
-  const { data, error } = await query.limit(100);
-  if (error) { el.innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
-  if (!data || !data.length) { el.innerHTML = '<div class="empty">Nenhuma contagem registrada ainda.</div>'; return; }
-
-  el.innerHTML = `<div class="table-wrap"><table>
-    <tr><th>Data</th>${souGerencial ? '<th>Loja</th>' : ''}<th>Tipo</th><th>Status</th><th>Finalizada em</th><th></th></tr>
-    ${data.map(c => `<tr>
-      <td>${fmtData(c.data_contagem)}</td>
-      ${souGerencial ? `<td>${esc(c.loja)}</td>` : ''}
-      <td><span class="badge badge-${c.tipo}">${c.tipo === 'mensal' ? 'Mensal' : 'Semanal'}</span></td>
-      <td><span class="badge badge-${c.status === 'finalizada' ? 'concluido' : 'andamento'}">${c.status === 'finalizada' ? 'Finalizada' : 'Em andamento'}</span></td>
-      <td>${c.finalizado_em ? fmtDataHora(c.finalizado_em) : '—'}</td>
-      <td><button class="btn-sm btn" onclick="verDetalheContagem(${c.id})">Ver</button></td>
-    </tr>`).join('')}
-  </table></div>`;
+  const { count: totalLidos } = await sb.from('comunicado_leituras').select('id', { count:'exact', head:true }).eq('comunicado_id', c.id);
+  el.textContent = (totalLidos||0)+' de '+totalDestinatarios+' confirmaram a leitura';
 }
 
-async function verDetalheContagem(id){
-  const wrap = $('histDetalheWrap');
-  wrap.innerHTML = '<div class="card"><div class="loading">Carregando…</div></div>';
-  wrap.scrollIntoView({ behavior: 'smooth' });
-
-  const { data: cont } = await sb.from('inventario_contagens').select('*').eq('id', id).single();
-  const { data: itens } = await sb.from('inventario_itens').select('*').eq('contagem_id', id).order('categoria').order('nome_produto');
-
-  if (!cont) { wrap.innerHTML = '<div class="card"><div class="empty">Contagem não encontrada.</div></div>'; return; }
-
-  const grupos = {};
-  (itens || []).forEach(i => { (grupos[i.categoria] = grupos[i.categoria] || []).push(i); });
-
-  wrap.innerHTML = `<div class="card">
-    <h2>${esc(cont.loja)} — ${fmtData(cont.data_contagem)} <span class="badge badge-${cont.tipo}">${cont.tipo === 'mensal' ? 'Mensal' : 'Semanal'}</span></h2>
-    <p class="hint">Registrado por ${esc(cont.criado_por_nome||'—')} · ${cont.status === 'finalizada' ? 'Finalizada em ' + fmtDataHora(cont.finalizado_em) : 'Em andamento'}</p>
-    ${Object.keys(grupos).sort((a,b)=>ORDEM_CATEGORIAS.indexOf(a)-ORDEM_CATEGORIAS.indexOf(b)).map(cat => `
-      <div class="categoria-titulo"><span>${esc(cat)}</span></div>
-      <div class="table-wrap"><table>
-        <tr><th>Item</th><th>Quantidade</th><th>Unidade</th></tr>
-        ${grupos[cat].map(i => `<tr><td>${esc(i.nome_produto)}${i.replicado_anterior ? ' <span class="badge badge-semanal">repetido</span>' : ''}</td><td>${Number(i.quantidade)}</td><td>${esc(i.unidade||'')}</td></tr>`).join('')}
-      </table></div>
-    `).join('') || '<div class="empty">Nenhum item registrado nesta contagem.</div>'}
-    <button class="modal-close" onclick="document.getElementById('histDetalheWrap').innerHTML=''">Fechar</button>
-  </div>`;
+async function abrirNovoComunicado(){
+  $('comNovoTitulo').value = '';
+  $('comNovaMensagem').value = '';
+  $('comNovoDestino').value = 'todos';
+  $('comDestinatariosWrap').style.display = 'none';
+  destinatariosSelecionados = new Set();
+  showMsg('comNovoMsg','','');
+  $('modalNovoComunicado').classList.add('show');
 }
 
-// ── ABA: RELATÓRIO CONSOLIDADO (gerencial) ────────────────
-async function renderRelatorio(){
-  const el = $('mainContent');
-  el.innerHTML = `<div class="card">
-    <h2>Relatório Consolidado</h2>
-    <p class="hint">Compara todas as lojas por data de contagem.</p>
-    <div class="row">
-      <div class="field"><label>Loja</label><select class="inp" id="relFiltroLoja" onchange="carregarRelatorio()">
-        <option value="">Todas as lojas</option>
-        ${TODAS_LOJAS.map(l=>'<option value="'+esc(l)+'">'+esc(l)+'</option>').join('')}
-      </select></div>
-      <div class="field"><label>De</label><input type="date" class="inp" id="relDataIni" onchange="carregarRelatorio()"></div>
-      <div class="field"><label>Até</label><input type="date" class="inp" id="relDataFim" onchange="carregarRelatorio()"></div>
-      <button class="btn btn-outline" onclick="exportarRelatorioCSV()">⬇ Exportar CSV</button>
-    </div>
-    <div id="relResultado"><div class="loading">Carregando…</div></div>
-  </div>`;
-  await carregarRelatorio();
+function onDestinoComunicadoChange(){
+  const especifico = $('comNovoDestino').value === 'especifico';
+  $('comDestinatariosWrap').style.display = especifico ? 'block' : 'none';
+  if(especifico && !todosPerfisCache) carregarPerfisParaDestinatarios();
 }
 
-let ultimoRelatorioDados = [];
-
-async function carregarRelatorio(){
-  const el = $('relResultado');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-
-  const loja = $('relFiltroLoja').value;
-  const dataIni = $('relDataIni').value;
-  const dataFim = $('relDataFim').value;
-
-  let query = sb.from('inventario_contagens').select('*, inventario_itens(*)').eq('status', 'finalizada').order('data_contagem', { ascending: false });
-  if (loja) query = query.eq('loja', loja);
-  if (dataIni) query = query.gte('data_contagem', dataIni);
-  if (dataFim) query = query.lte('data_contagem', dataFim);
-
-  const { data, error } = await query.limit(200);
-  if (error) { el.innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
-  if (!data || !data.length) { el.innerHTML = '<div class="empty">Nenhuma contagem finalizada no período.</div>'; ultimoRelatorioDados = []; return; }
-
-  ultimoRelatorioDados = data;
-
-  el.innerHTML = `<div class="table-wrap"><table>
-    <tr><th>Data</th><th>Loja</th><th>Tipo</th><th>Itens contados</th><th></th></tr>
-    ${data.map(c => `<tr>
-      <td>${fmtData(c.data_contagem)}</td><td>${esc(c.loja)}</td>
-      <td><span class="badge badge-${c.tipo}">${c.tipo === 'mensal' ? 'Mensal' : 'Semanal'}</span></td>
-      <td>${(c.inventario_itens||[]).length}</td>
-      <td><button class="btn-sm btn" onclick="verDetalheContagem(${c.id})">Ver</button></td>
-    </tr>`).join('')}
-  </table></div>
-  <div id="histDetalheWrap"></div>`;
+async function carregarPerfisParaDestinatarios(){
+  $('comListaDestinatarios').innerHTML = '<div class="loading" style="padding:16px">Carregando…</div>';
+  const { data, error } = await sb.from('perfis').select('id, nome, email, loja').order('nome');
+  if(error){ $('comListaDestinatarios').innerHTML = '<div class="empty">Erro ao carregar pessoas.</div>'; return; }
+  todosPerfisCache = data || [];
+  renderListaDestinatarios(todosPerfisCache);
 }
 
-function exportarRelatorioCSV(){
-  if (!ultimoRelatorioDados.length) { alert('Não há dados para exportar. Gere o relatório antes.'); return; }
-  const esc2 = v => `"${String(v).replace(/"/g, '""')}"`;
-  const linhas = [['Loja','Data','Tipo','Categoria','Item','Quantidade','Unidade','Repetido da anterior'].map(esc2).join(',')];
-  ultimoRelatorioDados.forEach(c => {
-    (c.inventario_itens||[]).forEach(i => {
-      linhas.push([c.loja, fmtData(c.data_contagem), c.tipo, i.categoria, i.nome_produto, Number(i.quantidade), i.unidade||'', i.replicado_anterior?'Sim':'Não'].map(esc2).join(','));
-    });
-  });
-  const csv = '\uFEFF' + linhas.join('\r\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `inventario-loja-${hojeISO()}.csv`;
-  a.click();
+function renderListaDestinatarios(lista){
+  $('comListaDestinatarios').innerHTML = lista.map(p => (
+    '<label class="destinatario-linha">'+
+      '<input type="checkbox" '+(destinatariosSelecionados.has(p.id)?'checked':'')+' onchange="toggleDestinatarioComunicado(\''+p.id+'\',this.checked)">'+
+      '<span>'+esc(p.nome)+(p.loja?' <span style="color:var(--text-light);font-size:.78rem">— '+esc(p.loja)+'</span>':'')+'</span>'+
+    '</label>'
+  )).join('') || '<div class="empty">Nenhuma pessoa encontrada.</div>';
 }
 
-// ── ABA: ITENS DE INSUMO (CRUD, gerencial) ────────────────
-async function renderInsumos(){
-  const el = $('mainContent');
-  el.innerHTML = `<div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <h2 style="margin:0">Itens de Insumo</h2>
-      <button class="btn" onclick="adicionarLinhaInsumo()">+ Novo Item</button>
-    </div>
-    <p class="hint">Esta lista alimenta a categoria "Insumo" nas contagens. Gelato, Pote, Confeitaria e Picolé vêm automaticamente da Precificação.</p>
-    <div id="insumosLista"><div class="loading">Carregando…</div></div>
-  </div>`;
-  await carregarInsumos();
+function toggleDestinatarioComunicado(id, marcado){
+  if(marcado) destinatariosSelecionados.add(id); else destinatariosSelecionados.delete(id);
 }
 
-async function carregarInsumos(){
-  const el = $('insumosLista');
-  const { data, error } = await sb.from('inventario_insumos_catalogo').select('*').order('ordem').order('nome');
-  if (error) { el.innerHTML = '<div class="empty">Erro: '+esc(error.message)+'</div>'; return; }
-  if (!data || !data.length) { el.innerHTML = '<div class="empty">Nenhum insumo cadastrado ainda. Clique em "+ Novo Item" para começar.</div>'; return; }
-
-  el.innerHTML = `<div class="table-wrap"><table>
-    <tr><th>Nome</th><th>Unidade</th><th>Ativo</th><th></th></tr>
-    ${data.map(i => `<tr class="${i.ativo?'':'inativo'}" data-id="${i.id}">
-      <td><input class="inp" style="width:100%;min-width:180px" value="${esc(i.nome)}" data-field="nome"></td>
-      <td><input class="inp" style="width:90px" value="${esc(i.unidade)}" data-field="unidade"></td>
-      <td><input type="checkbox" ${i.ativo?'checked':''} data-field="ativo"></td>
-      <td style="white-space:nowrap">
-        <button class="btn-sm btn" onclick="salvarInsumo('${i.id}')">Salvar</button>
-        <button class="btn-danger" onclick="excluirInsumo('${i.id}')">🗑</button>
-      </td>
-    </tr>`).join('')}
-  </table></div>`;
+function filtrarDestinatariosComunicado(){
+  const termo = $('comFiltroDestinatarios').value.trim().toLowerCase();
+  if(!todosPerfisCache) return;
+  const filtrado = termo ? todosPerfisCache.filter(p => (p.nome||'').toLowerCase().includes(termo)) : todosPerfisCache;
+  renderListaDestinatarios(filtrado);
 }
 
-function adicionarLinhaInsumo(){
-  const el = $('insumosLista');
-  if (el.querySelector('table')) {
-    const tbl = el.querySelector('table');
-    const tr = document.createElement('tr');
-    tr.dataset.id = 'novo';
-    tr.innerHTML = `<td><input class="inp" style="width:100%;min-width:180px" placeholder="Nome do insumo" data-field="nome"></td>
-      <td><input class="inp" style="width:90px" value="unid." data-field="unidade"></td>
-      <td><input type="checkbox" checked data-field="ativo"></td>
-      <td><button class="btn-sm btn" onclick="salvarInsumo('novo', this)">Salvar</button></td>`;
-    tbl.appendChild(tr);
-    tr.querySelector('input').focus();
-  } else {
-    el.innerHTML = `<div class="table-wrap"><table>
-      <tr><th>Nome</th><th>Unidade</th><th>Ativo</th><th></th></tr>
-      <tr data-id="novo">
-        <td><input class="inp" style="width:100%;min-width:180px" placeholder="Nome do insumo" data-field="nome"></td>
-        <td><input class="inp" style="width:90px" value="unid." data-field="unidade"></td>
-        <td><input type="checkbox" checked data-field="ativo"></td>
-        <td><button class="btn-sm btn" onclick="salvarInsumo('novo', this)">Salvar</button></td>
-      </tr>
-    </table></div>`;
+async function salvarNovoComunicado(){
+  const titulo = $('comNovoTitulo').value.trim();
+  const mensagem = $('comNovaMensagem').value.trim();
+  const destino = $('comNovoDestino').value;
+  if(!titulo || !mensagem){ showMsg('comNovoMsg','Preencha título e mensagem.','err'); return; }
+  if(destino === 'especifico' && destinatariosSelecionados.size === 0){ showMsg('comNovoMsg','Selecione pelo menos uma pessoa.','err'); return; }
+
+  const btn = $('btnPublicarComunicado');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+
+  const { data: novo, error } = await sb.from('comunicados').insert({
+    titulo, mensagem, destino, criado_por: meuId, criado_por_nome: meuNome,
+  }).select('id').single();
+
+  if(error){ showMsg('comNovoMsg','Erro: '+error.message,'err'); btn.disabled=false; btn.textContent='Enviar para aprovação'; return; }
+
+  if(destino === 'especifico'){
+    const linhas = Array.from(destinatariosSelecionados).map(pid => ({ comunicado_id: novo.id, perfil_id: pid }));
+    const { error: errDest } = await sb.from('comunicado_destinatarios').insert(linhas);
+    if(errDest){ showMsg('comNovoMsg','Comunicado criado, mas houve erro ao definir os destinatários: '+errDest.message,'err'); btn.disabled=false; btn.textContent='Enviar para aprovação'; return; }
   }
+
+  btn.disabled = false; btn.textContent = 'Enviar para aprovação';
+  fecharModal('modalNovoComunicado');
+  alert('Comunicado enviado! Ele vai aparecer para os destinatários assim que for aprovado.');
+  renderComunicadosHistorico();
+  if(souMaster) carregarAprovacoes();
 }
 
-async function salvarInsumo(id, btnEl){
-  const tr = (btnEl ? btnEl.closest('tr') : document.querySelector(`tr[data-id="${id}"]`));
-  const nome = tr.querySelector('[data-field="nome"]').value.trim();
-  const unidade = tr.querySelector('[data-field="unidade"]').value.trim() || 'unid.';
-  const ativo = tr.querySelector('[data-field="ativo"]').checked;
-  if (!nome) { alert('Informe o nome do insumo.'); return; }
-
-  if (id === 'novo') {
-    const { error } = await sb.from('inventario_insumos_catalogo').insert({ nome, unidade, ativo, criado_por: meuPerfil.id, criado_por_nome: meuPerfil.nome });
-    if (error) { alert('Erro ao salvar: ' + error.message); return; }
-  } else {
-    const { error } = await sb.from('inventario_insumos_catalogo').update({ nome, unidade, ativo }).eq('id', id);
-    if (error) { alert('Erro ao salvar: ' + error.message); return; }
-  }
-  await carregarCatalogo();
-  await carregarInsumos();
-}
-
-async function excluirInsumo(id){
-  abrirModalConfirm('Excluir insumo', 'Remover este item da lista de insumos? Contagens já finalizadas que usaram este item continuam com o histórico preservado.', async () => {
-    const { error } = await sb.from('inventario_insumos_catalogo').delete().eq('id', id);
-    if (error) { alert('Erro ao excluir: ' + error.message); return; }
-    await carregarCatalogo();
-    await carregarInsumos();
-  });
-}
-
-sb.auth.getSession().then(({ data }) => { if (data && data.session) verificarAcessoEIniciar(); else window.location.href = PORTAL_URL; });
+sb.auth.getSession().then(({ data }) => { if(data && data.session) entrarPortal(data.session.user); });
+$('senha').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
 </script>
 </body>
 </html>

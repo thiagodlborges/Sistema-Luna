@@ -130,7 +130,7 @@
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,24,16,.45);z-index:50;
     align-items:center;justify-content:center;padding:20px}
   .modal-overlay.show{display:flex}
-  .modal{width:100%;max-width:420px;background:var(--white);border-radius:14px;padding:28px 26px;
+  .modal{width:100%;max-width:420px;max-height:90vh;overflow-y:auto;background:var(--white);border-radius:14px;padding:28px 26px;
     box-shadow:0 24px 60px rgba(0,0,0,.25)}
   .modal h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo-dark);margin-bottom:6px}
   .modal p.sub{color:var(--text-light);font-size:.82rem;margin-bottom:18px}
@@ -398,7 +398,7 @@
     <div class="modal-actions">
       <button class="btn" id="btnNovoUsuario" onclick="salvarUsuario()">Criar usuário</button>
     </div>
-    <button class="modal-close" onclick="fecharModal('modalNovoUsuario')">Cancelar</button>
+    <button class="modal-close" id="btnFecharNovoUsuario" onclick="fecharModal('modalNovoUsuario')">Cancelar</button>
   </div>
 </div>
 
@@ -1841,6 +1841,7 @@ function abrirNovoUsuario(){
   $('novoFreelancerCoordenador').checked=false; $('novoFreelancerAgencia').checked=false; $('novoPrecificacaoFabricaBackoffice').checked=false; $('novoPrecificacaoLojaBackoffice').checked=false; $('novoMarketingBackoffice').checked=false;
   onNovoTipoChange();
   showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
+  $('btnFecharNovoUsuario').textContent = 'Cancelar';
   $('modalNovoUsuario').classList.add('show');
 }
 
@@ -1860,6 +1861,7 @@ function abrirEditarUsuario(perfil_id, nome, email, tipo, backoffice, freelancer
   $('novoPrecificacaoLojaBackoffice').checked = !!precificacaoLojaBackoffice;
   $('novoMarketingBackoffice').checked = !!marketingBackoffice;
   showMsg('novoUsuarioMsg','',''); $('novoUsuarioResultado').innerHTML='';
+  $('btnFecharNovoUsuario').textContent = 'Cancelar';
   $('modalNovoUsuario').classList.add('show');
 }
 
@@ -1914,6 +1916,7 @@ async function criarUsuario(){
     if(!d.ok){ showMsg('novoUsuarioMsg','Erro: '+(d.error||'desconhecido'),'err'); return; }
     showMsg('novoUsuarioMsg','Usu\u00e1rio criado! Senha tempor\u00e1ria:','ok');
     $('novoUsuarioResultado').innerHTML = '<div class="result-box">'+d.senhaTemporaria+'</div>';
+    $('btnFecharNovoUsuario').textContent = 'Fechar';
     await carregarUsuarios();
   }catch(e){
     btn.disabled = false; btn.textContent = 'Criar usu\u00e1rio';

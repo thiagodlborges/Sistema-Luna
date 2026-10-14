@@ -123,6 +123,7 @@
   .detail-edit-row .inp{margin-bottom:0}
   .detail-table th{text-align:left;padding:7px 9px;background:var(--creme);color:var(--text-light);font-size:.66rem;text-transform:uppercase;letter-spacing:.04em}
   .detail-table td{padding:7px 9px;border-top:1px solid var(--creme-dark)}
+  body.home-vazia #hello,body.home-vazia #helloSub,body.home-vazia #alertaVitrineFaltante,body.home-vazia #dashboardBlock,body.home-vazia #fabricaResumoBlock,body.home-vazia #comunicadosBlock,body.home-vazia #aprovacoesBlock{display:none !important}
   .link-modulo{display:inline-block;margin-top:2px;margin-bottom:6px;font-size:.78rem;color:var(--marrom-dark);text-decoration:underline}
   footer{text-align:center;color:var(--marrom);font-size:.7rem;letter-spacing:.06em;padding:22px}
 
@@ -570,6 +571,11 @@ async function entrarPortal(user){
     const { data: sistemas, error } = await sb.rpc('meus_sistemas');
     if(error) throw error;
     render(sistemas||[]);
+    // Acesso geral da loja: só o Sistema Gestor, sem loja vinculada → tela inicial vazia
+    const soGestor = !souMaster && !minhasLojas.length && (sistemas||[]).length === 1 && sistemas[0].slug === 'gestor';
+    if(soGestor){
+      document.body.classList.add('home-vazia');
+    }
   }catch(e){
     $('sidebarNav').innerHTML = '<div style="padding:0 22px;color:var(--text-light);font-size:.8rem">Não foi possível carregar os sistemas agora. Recarregue a página.</div>';
   }

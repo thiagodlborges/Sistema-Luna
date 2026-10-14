@@ -256,7 +256,7 @@
           <div class="hello" style="font-size:1.4rem;margin-bottom:0">📢 Comunicados</div>
           <button class="btn-outline btn" id="btnNovoComunicado" style="display:none;width:auto;padding:10px 18px" onclick="abrirNovoComunicado()">+ Novo Comunicado</button>
         </div>
-        <div class="hello-sub" style="margin-bottom:16px">Histórico de comunicados recebidos por você.</div>
+        <div class="hello-sub" style="margin-bottom:16px">Comunicados novos para você. Depois de lidos, deixam de aparecer aqui.</div>
         <div id="comunicadosLista"><div class="loading">Carregando…</div></div>
       </div>
 
@@ -572,7 +572,7 @@ async function entrarPortal(user){
     if(error) throw error;
     render(sistemas||[]);
     // Acesso geral da loja: só o Sistema Gestor, sem loja vinculada → tela inicial vazia
-    const soGestor = !souMaster && !minhasLojas.length && (sistemas||[]).length === 1 && sistemas[0].slug === 'gestor';
+    const soGestor = !souMaster && (sistemas||[]).length === 1 && sistemas[0].slug === 'gestor';
     if(soGestor){
       document.body.classList.add('home-vazia');
     }
@@ -1979,13 +1979,15 @@ async function confirmarLeituraComunicado(){
 
 async function renderComunicadosHistorico(){
   const el = $('comunicadosLista');
-  const { data: todos, error } = await sb.from('comunicados').select('*').order('criado_em', { ascending:false });
+  const { data: todosBrutos, error } = await sb.from('comunicados').select('*').order('criado_em', { ascending:false });
   if(error){ el.innerHTML = '<div class="empty">Não foi possível carregar os comunicados.</div>'; return; }
-  if(!todos || !todos.length){ el.innerHTML = '<div class="empty">Nenhum comunicado por aqui ainda.</div>'; return; }
-
   const { data: lidos } = await sb.from('comunicado_leituras').select('comunicado_id, lido_em').eq('perfil_id', meuId);
   const mapaLidos = {};
   (lidos||[]).forEach(l => { mapaLidos[l.comunicado_id] = l.lido_em; });
+
+  // Comunicado já lido (leitura gravada em comunicado_leituras) não aparece mais na tela inicial
+  const todos = (todosBrutos||[]).filter(c => !mapaLidos[c.id]);
+  if(!todos.length){ el.innerHTML = '<div class="empty">Nenhum comunicado novo.</div>'; return; }
 
   el.innerHTML = todos.map(c => {
     const lidoEm = mapaLidos[c.id];
